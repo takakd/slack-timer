@@ -3,7 +3,7 @@
 Send a reminde when the time to get proteins.
 
 
-![Protein](docs/ctrl-a-meal-replacement-03e4RajfFAE-unsplash.jpg)
+![Protein](https://github.com/takakd/protein-reminder/blob/master/website/ctrl-a-meal-replacement-03e4RajfFAE-unsplash.jpg?raw=true)
 
 <span>Photo by <a href="https://unsplash.com/@drinkctrl?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">CTRL - A Meal Replacement</a> on <a href="https://unsplash.com/s/photos/protein?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
 
