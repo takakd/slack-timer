@@ -1,0 +1,4 @@
+bin
+local
+vendor/*
+!vendor/README.md

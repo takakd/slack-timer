@@ -1,3 +1,5 @@
-module github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME
+module proteinreminder
 
 go 1.14
+
+require github.com/pkg/errors v0.9.1
