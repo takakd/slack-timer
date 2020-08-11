@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: app-protein-mongodb
   labels:
-    name: protein
+    app: protein
 spec:
 #  clusterIP: None
   #type: NodePort

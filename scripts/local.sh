@@ -24,11 +24,6 @@ _EOT_
 exit 1
 }
 
-# Usage
-usage() {
-    echo "usage: scripts/local.sh build|run"
-}
-
 build() {
     cd "${SCRIPT_DIR}/../cmd" || exit
     go build -p 2 -v -x -mod vendor -tags=local local.go
@@ -39,10 +34,20 @@ fmt() {
 }
 
 run() {
+    # call kube_clean if it's entered Ctrl+C
+    trap kube_cleanup SIGINT
+
+    # start kubernetes
+    kubectl apply -f "${SCRIPT_DIR}/../deployments/local/deployment.yaml"
+    kubectl apply -f "${SCRIPT_DIR}/../deployments/local/service.yaml"
+
     cd "${SCRIPT_DIR}/../cmd" || exit
-#    go run local.go
     ${SCRIPT_DIR}/../cmd/local
-    #open http://localhost:8080
+}
+kube_cleanup() {
+    kubectl delete deployment -l app=protein
+    kubectl delete service -l app=protein
+    exit 0
 }
 
 cmd_test() {
