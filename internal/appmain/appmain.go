@@ -7,10 +7,10 @@ import (
 	"proteinreminder/internal/server"
 )
 
-// Run webserver.
 func Run() {
+	logger := ioc.GetLogger()
+
 	defer func() {
-		logger := ioc.GetLogger()
 		if r := recover(); r != nil {
 			logger.Error(r)
 			os.Exit(1)
@@ -24,5 +24,8 @@ func Run() {
 		panic(errorutil.MakePanicMessage(err))
 	}
 
-	server.Run()
+	err = server.Run()
+	if err != nil {
+		logger.Error(err)
+	}
 }
