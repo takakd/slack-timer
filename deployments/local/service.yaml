@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-protein-mongodb
+  labels:
+    app: protein
+spec:
+#  clusterIP: None
+  #type: NodePort
+  type: LoadBalancer
+  selector:
+    app: mongodb
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: 27017
