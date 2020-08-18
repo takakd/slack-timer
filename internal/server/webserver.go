@@ -8,6 +8,7 @@ import (
 	"proteinreminder/internal/httputil"
 	"proteinreminder/internal/ioc"
 	"proteinreminder/internal/log"
+	"proteinreminder/internal/controller"
 )
 
 const (
@@ -15,6 +16,8 @@ const (
 	Version           = "1.0"
 	DefaultServerPort = "8080"
 )
+
+// --------------------------------------------------------
 
 // Controllers implement request handlers according to this type.
 type WithContextHandlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request)
@@ -37,6 +40,8 @@ func makeHandlerFunc(ctx context.Context, logger log.Logger, f WithContextHandle
 	}
 }
 
+// --------------------------------------------------------
+
 type Server struct {
 	addr string
 }
@@ -54,8 +59,10 @@ func NewServer() *Server {
 func (s *Server) Run(ctx context.Context) error {
 	logger := ioc.GetLogger()
 
-	//http.HandleFunc("/"+Version+"/test", logHandlerFunc(logger, controller.SlackCallbackHandler))
+	// POST: /api/<ver>/slack-callback
+	http.HandleFunc("/"+Version+"/test", makeHandlerFunc(ctx, logger, controller.SlackCallbackHandler))
 
+	// GET: /api/<ver>/test
 	http.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, logger, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		httputil.WriteJsonResponse(w, 200, []byte(fmt.Sprintf("called /%s/test", Version)))
 	}))

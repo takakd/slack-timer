@@ -2,6 +2,7 @@ package model
 
 import (
 	"time"
+	"github.com/pkg/errors"
 )
 
 type ProteinEvent struct {
@@ -9,11 +10,12 @@ type ProteinEvent struct {
 	recorded time.Time
 }
 
+// --------------------------------------------------------
 // Repository
 
 func GetProteinEvent(userId string) *ProteinEvent {
 	// TODO: get db from ioc
-	p := NewProteinEvent(userId)
+	p, _ := NewProteinEvent(userId)
 	return p
 }
 
@@ -21,13 +23,18 @@ func SaveProteinEvent(p *ProteinEvent) error {
 	return nil
 }
 
+// --------------------------------------------------------
 // Entity
 
-func NewProteinEvent(userId string) *ProteinEvent {
+func NewProteinEvent(userId string) (*ProteinEvent, error) {
+	if userId == ""{
+		return nil, errors.New("userId should be set")
+	}
+
 	p := &ProteinEvent{
 		userId: userId,
 	}
-	return p
+	return p, nil
 }
 
 // NOTE: Allow this module to set the value.

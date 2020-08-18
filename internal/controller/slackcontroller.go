@@ -11,14 +11,21 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"context"
 )
 
 //
 // POST slack-callback
 //
+// Library exists: https://github.com/slack-go/slack
 
 const (
-	ErrorCode1 = 1
+	SlackErrorCodeNoError= 0
+	SlackErrorCodeParse = 1
+	SlackErrorCodeVaidate = 2
+	SlackErrorCodeSavingProteinEvent1 = 3
+	SlackErrorCodeSavingProteinEvent2 = 4
+	SlackErrorCodeCreateResponse = 5
 )
 
 type SlackCallbackRequest struct {
@@ -67,8 +74,7 @@ func NewSlackCallbackRequest(r *http.Request) *SlackCallbackRequest {
 
 func (r *SlackCallbackRequest) parse() error {
 	r.request.ParseForm()
-	err := httputil.SetFormValueToStruct(r.request.Form, &r.params)
-	if err != nil {
+	if err := httputil.SetFormValueToStruct(r.request.Form, &r.params); err != nil {
 		return err
 	}
 
@@ -121,7 +127,7 @@ func MakeErrorCallbackResponseBody(message string, code int) []byte {
 }
 
 // POST handler.
-func SlackCallbackHandler(w http.ResponseWriter, r *http.Request) {
+func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "404 not found", http.StatusNotFound)
 		return
@@ -132,29 +138,29 @@ func SlackCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	req := NewSlackCallbackRequest(r)
 	if err := req.parse(); err != nil {
 		logger.Error("%v", err.Error())
-		// TODO: mod error code
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("parameter error", ErrorCode1))
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("parameter error", SlackErrorCodeParse))
 		return
 	}
 
-	ok, validateErrors := req.validate()
-	if !ok {
+	if ok, validateErrors := req.validate(); !ok {
 		var firstError *ValidateError
 		for _, v := range validateErrors.errors {
 			firstError = v
 			break
 		}
-		// TODO: mod error code
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody(firstError.Summary, ErrorCode1))
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody(firstError.Summary, SlackErrorCodeVaidate))
 		return
 	}
 
-	// Save event
-	event := model.NewProteinEvent(req.params.UserId)
-	err := model.SaveProteinEvent(event)
+	// Save event.
+	event, err := model.NewProteinEvent(req.params.UserId)
 	if err != nil {
-		// TODO: mod error code
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to save", ErrorCode1))
+		logger.Error("%v", err.Error())
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create event", SlackErrorCodeSavingProteinEvent1))
+		return
+	}
+	if err := model.SaveProteinEvent(event); err != nil {
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to save event", SlackErrorCodeSavingProteinEvent2))
 		return
 	}
 
@@ -164,8 +170,7 @@ func SlackCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	respBody, err := json.Marshal(resp)
 	if err != nil {
 		logger.Error("%v", err.Error())
-		// TODO: mod error code
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create response.", ErrorCode1))
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create response", SlackErrorCodeCreateResponse))
 		return
 	}
 
