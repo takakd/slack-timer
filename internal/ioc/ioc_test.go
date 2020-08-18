@@ -7,3 +7,7 @@ import (
 func TestGetLogger(t *testing.T) {
 	GetLogger()
 }
+
+func TestGetConfig(t *testing.T) {
+	GetConfig()
+}

@@ -16,11 +16,11 @@ const (
 
 func TestNewStdoutLogger(t *testing.T) {
 	testutil.IsTestCallPanic(func() {
-		NewStdoutLogger(LogLevelInfo)
+		NewStdoutLogger(LevelInfo)
 	})
 }
 
-func outputLogTest(t *testing.T, loggerLevel LogLevel, level LogLevel, wantPattern string, v ...interface{}) string {
+func outputLogTest(t *testing.T, loggerLevel Level, level Level, wantPattern string, v ...interface{}) string {
 
 	// Ref: https://stackoverflow.com/questions/10473800/in-go-how-do-i-capture-stdout-of-a-function-into-a-string
 	old := os.Stdout
@@ -47,7 +47,7 @@ func outputLogTest(t *testing.T, loggerLevel LogLevel, level LogLevel, wantPatte
 
 func TestStdoutLogger_outputLog(t *testing.T) {
 	pattern := fmt.Sprintf("%s %s", DateTimePattern, regexp.QuoteMeta("[INFO] a b テスト"))
-	result := outputLogTest(t, LogLevelInfo, LogLevelInfo, pattern, "a", "b", "テスト")
+	result := outputLogTest(t, LevelInfo, LevelInfo, pattern, "a", "b", "テスト")
 	if result != "" {
 		t.Error(result)
 	}
@@ -55,13 +55,13 @@ func TestStdoutLogger_outputLog(t *testing.T) {
 
 func TestStdoutLogger_Debug(t *testing.T) {
 	dataList := []struct {
-		loggerLevel LogLevel
-		level       LogLevel
+		loggerLevel Level
+		level       Level
 		want        string
 	}{
-		{LogLevelDebug, LogLevelDebug, "[DEBUG] a b テスト"},
-		{LogLevelDebug, LogLevelInfo, "[INFO] a b テスト"},
-		{LogLevelDebug, LogLevelError, "[ERROR] a b テスト"},
+		{LevelDebug, LevelDebug, "[DEBUG] a b テスト"},
+		{LevelDebug, LevelInfo, "[INFO] a b テスト"},
+		{LevelDebug, LevelError, "[ERROR] a b テスト"},
 	}
 	for _, v := range dataList {
 		pattern := ""
@@ -77,13 +77,13 @@ func TestStdoutLogger_Debug(t *testing.T) {
 
 func TestStdoutLogger_Info(t *testing.T) {
 	dataList := []struct {
-		loggerLevel LogLevel
-		level       LogLevel
+		loggerLevel Level
+		level       Level
 		want        string
 	}{
-		{LogLevelInfo, LogLevelDebug, ""},
-		{LogLevelInfo, LogLevelInfo, "[INFO] a b テスト"},
-		{LogLevelInfo, LogLevelError, "[ERROR] a b テスト"},
+		{LevelInfo, LevelDebug, ""},
+		{LevelInfo, LevelInfo, "[INFO] a b テスト"},
+		{LevelInfo, LevelError, "[ERROR] a b テスト"},
 	}
 	for _, v := range dataList {
 		pattern := ""
@@ -99,13 +99,13 @@ func TestStdoutLogger_Info(t *testing.T) {
 
 func TestStdoutLogger_Error(t *testing.T) {
 	dataList := []struct {
-		loggerLevel LogLevel
-		level       LogLevel
+		loggerLevel Level
+		level       Level
 		want        string
 	}{
-		{LogLevelError, LogLevelDebug, ""},
-		{LogLevelError, LogLevelInfo, ""},
-		{LogLevelError, LogLevelError, "[ERROR] a b テスト"},
+		{LevelError, LevelDebug, ""},
+		{LevelError, LevelInfo, ""},
+		{LevelError, LevelError, "[ERROR] a b テスト"},
 	}
 	for _, v := range dataList {
 		pattern := ""

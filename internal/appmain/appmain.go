@@ -1,13 +1,30 @@
 package appmain
 
 import (
+	"context"
+	"github.com/joho/godotenv"
 	"os"
+	"path/filepath"
 	"proteinreminder/internal/errorutil"
+	"proteinreminder/internal/fileutil"
 	"proteinreminder/internal/ioc"
 	"proteinreminder/internal/server"
+	"runtime"
 )
 
-func Run() {
+func loadEnv() {
+	logger := ioc.GetLogger()
+
+	_, filename, _, _ := runtime.Caller(0)
+	appDir := filepath.Dir(filename)
+	envPath := filepath.Join(appDir, "../configs/.env")
+	if fileutil.FileExists(envPath) {
+		logger.Info(".env found. loaded it.")
+		godotenv.Load(envPath)
+	}
+}
+
+func Run(ctx context.Context) {
 	logger := ioc.GetLogger()
 
 	defer func() {
@@ -17,6 +34,8 @@ func Run() {
 		}
 		logger.Info("exit server.")
 	}()
+
+	loadEnv()
 
 	server := server.NewServer()
 	err := server.Init()

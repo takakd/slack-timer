@@ -14,12 +14,12 @@ type Logger interface {
 	Error(v ...interface{})
 }
 
-type LogLevel int
+type Level int
 
 const (
-	LogLevelError LogLevel = iota
-	LogLevelInfo
-	LogLevelDebug
+	LevelError Level = iota
+	LevelInfo
+	LevelDebug
 )
 
 //
@@ -28,12 +28,12 @@ const (
 
 // Stdout logger
 type StdoutLogger struct {
-	level  LogLevel
+	level  Level
 	logger *log.Logger
 }
 
 // Create stdout logger.
-func NewStdoutLogger(outputLoglevel LogLevel) *StdoutLogger {
+func NewStdoutLogger(outputLoglevel Level) *StdoutLogger {
 	return &StdoutLogger{
 		level:  outputLoglevel,
 		logger: log.New(os.Stdout, "", log.LstdFlags),
@@ -41,7 +41,7 @@ func NewStdoutLogger(outputLoglevel LogLevel) *StdoutLogger {
 }
 
 // Output log.
-func (l *StdoutLogger) outputLog(level LogLevel, v ...interface{}) {
+func (l *StdoutLogger) outputLog(level Level, v ...interface{}) {
 	if l.level < level {
 		// Ignore the log with lower priorities than the output level.
 		return
@@ -53,11 +53,11 @@ func (l *StdoutLogger) outputLog(level LogLevel, v ...interface{}) {
 	}
 
 	var label string
-	if level == LogLevelError {
+	if level == LevelError {
 		label = "ERROR"
-	} else if level == LogLevelInfo {
+	} else if level == LevelInfo {
 		label = "INFO"
-	} else if level == LogLevelDebug {
+	} else if level == LevelDebug {
 		label = "DEBUG"
 	}
 
@@ -67,15 +67,15 @@ func (l *StdoutLogger) outputLog(level LogLevel, v ...interface{}) {
 
 // Output debug log.
 func (l *StdoutLogger) Debug(v ...interface{}) {
-	l.outputLog(LogLevelDebug, v)
+	l.outputLog(LevelDebug, v)
 }
 
 // Output info log.
 func (l *StdoutLogger) Info(v ...interface{}) {
-	l.outputLog(LogLevelInfo, v)
+	l.outputLog(LevelInfo, v)
 }
 
 // Output error log.
 func (l *StdoutLogger) Error(v ...interface{}) {
-	l.outputLog(LogLevelError, v)
+	l.outputLog(LevelError, v)
 }

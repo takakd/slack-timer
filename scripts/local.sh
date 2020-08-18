@@ -5,6 +5,8 @@
 #
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
+ARGV=("$@")
+ARGC=$#
 
 function usage() {
 cat <<_EOT_
@@ -53,10 +55,14 @@ kube_cleanup() {
 cmd_test() {
     cd ${SCRIPT_DIR}/..
 
-    if [[ "$#" -ge 1 ]]; then
-        if [[ "$1" == "nocache"  ]]; then
+    ARGS=""
+    if [[ "$ARGC" -ge 2 ]]; then
+        if [[ "${ARGV[1]}" == "nocache"  ]]; then
             ARGS="-count 1"
         fi
+    fi
+    if [[ "$ARGC" -ge 3 ]]; then
+        ARGS="$ARGS -run ${ARGV[2]}"
     fi
 
     # @see https://stackoverflow.com/questions/16353016/how-to-go-test-all-tests-in-my-project/35852900#35852900

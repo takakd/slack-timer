@@ -28,3 +28,6 @@
 /cmd/local
 
 !vendor/README.md
+
+# ignore env
+.env
