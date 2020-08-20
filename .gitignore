@@ -31,3 +31,6 @@
 
 # ignore env
 .env
+
+# ignore working script.
+scripts/working*

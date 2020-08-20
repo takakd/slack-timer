@@ -1,11 +1,8 @@
-// Deprecated
-package config
+package drivers
 
 import (
 	"os"
 	"strings"
-	"github.com/joho/godotenv"
-	"proteinreminder/internal/errorutil"
 )
 
 type Config interface {
@@ -31,10 +28,10 @@ func GetEnvConfig() *EnvConfig {
 		return envConfig
 	}
 
-	if err := godotenv.Load(); err != nil {
-		panic(errorutil.MakePanicMessage("failed to load .env."))
-	}
-
+	// NOTE: Not need, cause using commandline mode.
+	//if err := godotenv.Load(); err != nil {
+	//	panic(errorutil.MakePanicMessage(err))
+	//}
 
 	return &EnvConfig{
 	}

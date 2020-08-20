@@ -1,5 +1,4 @@
-// Deprecated
-package config
+package drivers
 
 import (
 	"os"
