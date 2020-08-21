@@ -1,13 +1,13 @@
 package drivers
 
 import (
-	"net/url"
-	"strings"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"net/url"
+	"strings"
 )
 
 func GetMongoDb(ctx context.Context) (*mongo.Database, error) {
@@ -17,8 +17,6 @@ func GetMongoDb(ctx context.Context) (*mongo.Database, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(elements)
 
 	// e.g. mongodb://.../dbname -> dbname
 	dbName := strings.TrimLeft(elements.Path, "/")

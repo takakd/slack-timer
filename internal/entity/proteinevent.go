@@ -1,12 +1,12 @@
 package entity
 
 import (
-	"time"
+	"context"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"proteinreminder/internal/drivers"
-	"context"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"proteinreminder/internal/drivers"
+	"time"
 )
 
 // --------------------------------------------------------
@@ -123,4 +123,3 @@ func NewProteinEvent(userId string) (*ProteinEvent, error) {
 	}
 	return p, nil
 }
-

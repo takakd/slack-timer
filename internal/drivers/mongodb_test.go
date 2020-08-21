@@ -2,8 +2,8 @@ package drivers
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
+	"os"
 	"testing"
 )
 
@@ -16,22 +16,42 @@ func TestGetMongoDbCollection(t *testing.T) {
 	//	godotenv.Load(envPath)
 	//}
 
+	cases := []struct {
+		name               string
+		dbOk, collectionOk bool
+		mongoUri           string
+	}{
+		{name: "ok", dbOk: true, collectionOk: true, mongoUri: os.Getenv("MONGODB_URI")},
+		{name: "ng db", dbOk: false, collectionOk: false, mongoUri: "disabled uri"},
+	}
+
 	ctx := context.Background()
 
-	db, err := GetMongoDb(ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	collection := GetMongoDbCollection(db)
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var client *mongo.Client
+			defer func() {
+				if client != nil {
+					if disCnnErr := client.Disconnect(ctx); disCnnErr != nil {
+						t.Error(disCnnErr)
+					}
+				}
+			}()
 
-	t.Log("connected to mongodb.")
+			os.Setenv("MONGODB_URI", c.mongoUri)
 
-	filter := bson.M{"user_id": "123"}
-	opts := options.Update().SetUpsert(true)
-	//value := bson.M{"$set":bson.M{"test1": "abc"}}
-	value := bson.M{"$set": bson.M{"test1": "abc"}}
-	_, err = collection.UpdateOne(ctx, filter, value, opts)
-	if err != nil {
-		t.Error(err)
+			db, err := GetMongoDb(ctx)
+			if c.dbOk && err != nil {
+				t.Error("should be able to connect")
+				return
+			} else if !c.dbOk {
+				if err == nil {
+					t.Error("should not connect")
+				}
+				return
+			}
+
+			client = db.Client()
+		})
 	}
 }

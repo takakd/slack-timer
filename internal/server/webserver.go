@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"proteinreminder/internal/controller"
 	"proteinreminder/internal/httputil"
 	"proteinreminder/internal/ioc"
 	"proteinreminder/internal/log"
-	"proteinreminder/internal/controller"
 )
 
 const (

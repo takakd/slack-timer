@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/pkg/errors"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"time"
-	"context"
 )
 
 //
@@ -20,12 +20,12 @@ import (
 // Library exists: https://github.com/slack-go/slack
 
 const (
-	SlackErrorCodeNoError= 0
-	SlackErrorCodeParse = 1
-	SlackErrorCodeVaidate = 2
+	SlackErrorCodeNoError             = 0
+	SlackErrorCodeParse               = 1
+	SlackErrorCodeVaidate             = 2
 	SlackErrorCodeSavingProteinEvent1 = 3
 	SlackErrorCodeSavingProteinEvent2 = 4
-	SlackErrorCodeCreateResponse = 5
+	SlackErrorCodeCreateResponse      = 5
 )
 
 type SlackCallbackRequest struct {

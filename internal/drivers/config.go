@@ -18,7 +18,6 @@ type EnvConfig struct {
 
 var envConfig *EnvConfig = nil
 
-
 func (e *EnvConfig) Get(name string) string {
 	return os.Getenv(strings.ToUpper(name))
 }
@@ -33,8 +32,7 @@ func GetEnvConfig() *EnvConfig {
 	//	panic(errorutil.MakePanicMessage(err))
 	//}
 
-	return &EnvConfig{
-	}
+	return &EnvConfig{}
 }
 
 // @deprecated
