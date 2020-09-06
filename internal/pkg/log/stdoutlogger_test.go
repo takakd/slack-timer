@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewStdoutLogger(t *testing.T) {
-	testutil.IsTestCallPanic(func() {
+	testutil.DoesTestCallPanic(func() {
 		NewStdoutLogger()
 	})
 }

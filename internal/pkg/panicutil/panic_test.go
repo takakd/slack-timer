@@ -13,7 +13,7 @@ func TestMakePanicMessage(t *testing.T) {
 	}
 
 	// error case
-	ok := testutil.IsTestCallPanic(func() {
+	ok := testutil.DoesTestCallPanic(func() {
 		MakePanicMessage(nil)
 	})
 	if !ok {

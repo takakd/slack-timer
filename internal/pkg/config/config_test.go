@@ -47,7 +47,7 @@ func TestGetConfig(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			called := testutil.IsTestCallPanic(func() {
+			called := testutil.DoesTestCallPanic(func() {
 				GetConfig("", c.params)
 			})
 			if called {

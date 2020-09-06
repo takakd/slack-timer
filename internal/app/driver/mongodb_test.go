@@ -42,7 +42,9 @@ func TestGetMongoDbCollection(t *testing.T) {
 				}
 			}()
 
-			db, err := GetMongoDb(ctx, c.mongoUri)
+			conn := NewMongoDbConnector()
+
+			db, err := conn.GetDb(ctx, c.mongoUri)
 			if c.dbOk && err != nil {
 				t.Error("should be able to connect")
 				return

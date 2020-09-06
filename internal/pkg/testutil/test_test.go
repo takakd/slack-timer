@@ -12,7 +12,7 @@ func TestMakeTestMessageWithGotWant(t *testing.T) {
 }
 
 func TestIsTestCallPanic(t *testing.T) {
-	isCalled := IsTestCallPanic(func() {
+	isCalled := DoesTestCallPanic(func() {
 		var i interface{}
 		if i == nil {
 			panic("Hi, panic.")

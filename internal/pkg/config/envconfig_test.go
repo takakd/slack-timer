@@ -10,14 +10,14 @@ import (
 )
 
 func TestNewEnvConfig(t *testing.T) {
-	called := testutil.IsTestCallPanic(func() {
+	called := testutil.DoesTestCallPanic(func() {
 		NewEnvConfig()
 	})
 	if called {
 		t.Error("must not be called")
 	}
 
-	called = testutil.IsTestCallPanic(func() {
+	called = testutil.DoesTestCallPanic(func() {
 		NewEnvConfig("")
 	})
 	if !called {

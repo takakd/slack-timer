@@ -11,10 +11,10 @@ func MakeTestMessageWithGotWant(got, want interface{}) string {
 // Testing if testFunc calls panic.
 // true: called, false: not called.
 // e.g.
-// IsTestCallPanic(func(){
+// DoesTestCallPanic(func(){
 //   <place test target here.>
 // })
-func IsTestCallPanic(testFunc func()) (called bool) {
+func DoesTestCallPanic(testFunc func()) (called bool) {
 	defer func() {
 		if err := recover(); err == nil {
 			called = false
