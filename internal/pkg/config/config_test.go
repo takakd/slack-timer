@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/golang/mock/gomock"
 	"io/ioutil"
 	"path/filepath"
 	"proteinreminder/internal/pkg/fileutil"
@@ -57,19 +56,20 @@ func TestGetConfig(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	m := NewMockConfig(ctrl)
-	config = m
-
-	key := "key"
-	want := "value"
-	m.EXPECT().Get(key).Return(want)
-
-	got := Get(key)
-	if got != want {
-		t.Error(testutil.MakeTestMessageWithGotWant(got, want))
-	}
-}
+// Deprecated
+//func TestGet(t *testing.T) {
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	m := NewMockConfig(ctrl)
+//	config = m
+//
+//	key := "key"
+//	want := "value"
+//	m.EXPECT().Get(key).Return(want)
+//
+//	got := Get(key)
+//	if got != want {
+//		t.Error(testutil.MakeTestMessageWithGotWant(got, want))
+//	}
+//}

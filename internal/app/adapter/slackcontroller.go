@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"net/http"
-	"proteinreminder/internal/httputil"
-	"proteinreminder/internal/interfaces"
-	"proteinreminder/internal/ioc"
-	"proteinreminder/internal/panicutil"
-	"proteinreminder/internal/usecase"
+	"proteinreminder/internal/pkg/httputil"
+	"proteinreminder/internal/app/apprule"
+	"proteinreminder/internal/pkg/panicutil"
+	"proteinreminder/internal/app/usecase"
 	"regexp"
 	"strconv"
 	"time"
+	"proteinreminder/internal/pkg/log"
+	"proteinreminder/internal/pkg/config"
 )
 
 //
@@ -210,11 +211,9 @@ func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	logger := ioc.GetLogger()
-
 	validator, err := parseRequest(r)
 	if err != nil {
-		logger.Error("%v", err.Error())
+		log.Error("%v", err.Error())
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("parameter error", SlackErrorCodeParse))
 		return
 	}
@@ -229,22 +228,26 @@ func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	setProteinEvent := usecase.NewSetProteinEvent(interfaces.NewMongoDbRepository())
-	var errCode usecase.SetProteinEventError
+	saveProteinEvent, err := usecase.NewSaveProteinEvent(apprule.NewMongoDbRepository(config.GetConfig("")))
+	if err != nil {
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		return
+	}
+	var errCode usecase.SaveProteinEventError
 
 	switch req := validator.(type) {
 	case *SlackCallbackGotRequest:
-		errCode = setProteinEvent.SetProteinEventTimeToDrink(ctx, req.params.UserId, req.datetime)
+		errCode = saveProteinEvent.SaveTimeToDrink(ctx, req.params.UserId, req.datetime)
 	case *SlackCallbackSetRequest:
-		errCode = setProteinEvent.SetProteinEventIntervalSec(ctx, req.params.UserId, req.remindIntervalInMin)
+		errCode = saveProteinEvent.SaveIntervalSec(ctx, req.params.UserId, req.remindIntervalInMin)
 	}
 
-	if errCode != usecase.SetProteinEventNoError {
-		if errCode == usecase.SetProteinEventErrorFind {
+	if errCode != usecase.SaveProteinEventNoError {
+		if errCode == usecase.SaveProteinEventErrorFind {
 			httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to find event", SlackErrorCodeSavingProteinEvent1))
-		} else if errCode == usecase.SetProteinEventErrorCreate {
+		} else if errCode == usecase.SaveProteinEventErrorCreate {
 			httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create event", SlackErrorCodeSavingProteinEvent1))
-		} else if errCode == usecase.SetProteinEventErrorSave {
+		} else if errCode == usecase.SaveProteinEventErrorSave {
 			httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to save event", SlackErrorCodeSavingProteinEvent1))
 		}
 		return
@@ -256,7 +259,7 @@ func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	respBody, err := json.Marshal(resp)
 	if err != nil {
-		logger.Error("%v", err.Error())
+		log.Error("%v", err.Error())
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create response", SlackErrorCodeCreateResponse))
 	}
 	httputil.WriteJsonResponse(w, http.StatusOK, respBody)

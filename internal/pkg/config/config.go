@@ -49,8 +49,11 @@ func GetConfig(name string, params ...interface{}) Config {
 	return c
 }
 
-// TODO: deprecated because global function complicates unit tests.
-// Get config value.
-func Get(name string) string {
-	return config.Get(name)
-}
+// Deprecated
+///*
+//Get config value.
+//This is utility function.
+// */
+//func Get(name string) string {
+//	return config.Get(name)
+//}

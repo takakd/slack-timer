@@ -1,6 +1,6 @@
 package adapter
 
-import "proteinreminder/internal/collection"
+import "proteinreminder/internal/pkg/collection"
 
 // Validate Error type
 type ErrorType string

@@ -1,24 +1,16 @@
-package server
+package adapter
 
 import (
-	"proteinreminder/internal/testutil"
 	"testing"
+	"proteinreminder/internal/pkg/testutil"
 )
 
 func TestNewServer(t *testing.T) {
-	called := testutil.IsTestCallPanic(func() {
-		NewServer()
+	called := testutil.DoesTestCallPanic(func() {
+		NewWebServer()
 	})
 	if called {
 		t.Errorf("panic")
-	}
-}
-
-func TestInit(t *testing.T) {
-	server := NewServer()
-	err := server.Init()
-	if err != nil {
-		t.Errorf("failed.")
 	}
 }
 

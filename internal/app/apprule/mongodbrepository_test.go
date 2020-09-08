@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"testing"
 	"time"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func makeTestEvents() []*enterpriserule.ProteinEvent {
@@ -25,6 +26,41 @@ func makeTestEvents() []*enterpriserule.ProteinEvent {
 			"id2", time.Now().UTC(), 0,
 		},
 	}
+}
+
+func cleanupTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
+	if len(events) == 0 {
+		return
+	}
+	url, colName := getTestMongoDbEnv()
+	ctx := context.TODO()
+	db, err := getMongoDb(ctx, url)
+	if err != nil {
+		t.Fatal("failed to cleanup test events")
+		return
+	}
+	defer disconnectMongoDbClientFunc(ctx, db.Client(), func(e error) {
+		return
+	})
+
+	col := getMongoCollection(db, colName)
+
+	ids := make([]interface{}, len(events))
+	for i, event := range events {
+		ids[i] = event.UserId
+	}
+	filter := bson.D{{
+		"user_id",
+		bson.D{{
+			"$in",
+			bson.A(ids),
+		}},
+	}}
+	ret, err := col.DeleteMany(ctx, filter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(ret)
 }
 
 func getTestMongoDbEnv() (url, collection string) {
@@ -137,6 +173,8 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		if err != nil {
 			t.Error("error must be nil")
 		}
+
+		cleanupTestEvents(t, testEvents)
 	})
 
 	t.Run("OK", func(t *testing.T) {
@@ -177,6 +215,8 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 				t.Error(testutil.MakeTestMessageWithGotWant(got, event))
 			}
 		}
+
+		cleanupTestEvents(t, testEvents)
 	})
 }
 
@@ -233,6 +273,8 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 		t.Error(testutil.MakeTestMessageWithGotWant(got[0], wants[0]))
 		t.Error(testutil.MakeTestMessageWithGotWant(got[1], wants[1]))
 	}
+
+	cleanupTestEvents(t, events)
 }
 
 func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
@@ -265,4 +307,6 @@ func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
 			t.Error(testutil.MakeTestMessageWithGotWant(savedEvent, testEvents[i]))
 		}
 	}
+
+	cleanupTestEvents(t, testEvents)
 }

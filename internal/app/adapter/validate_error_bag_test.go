@@ -1,8 +1,8 @@
 package adapter
 
 import (
-	"proteinreminder/internal/testutil"
 	"testing"
+	"proteinreminder/internal/pkg/testutil"
 )
 
 //

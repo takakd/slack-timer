@@ -5,7 +5,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"proteinreminder/internal/testutil"
+	"proteinreminder/internal/pkg/testutil"
 	"strings"
 	"testing"
 	"time"
