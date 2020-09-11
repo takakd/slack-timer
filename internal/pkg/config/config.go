@@ -3,8 +3,8 @@ package config
 
 import (
 	"path/filepath"
+	"proteinreminder/internal/pkg/errorutil"
 	"proteinreminder/internal/pkg/fileutil"
-	"proteinreminder/internal/pkg/panicutil"
 )
 
 // Get config values used in the app.
@@ -23,7 +23,7 @@ func envPath() string {
 	var err error
 	appDir, err := fileutil.GetAppDir()
 	if err != nil {
-		panic(panicutil.MakePanicMessage("need app directory path."))
+		panic(errorutil.MakePanicMessage("need app directory path."))
 	}
 	path := filepath.Join(appDir, ".env")
 	if !fileutil.FileExists(path) {

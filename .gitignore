@@ -24,8 +24,8 @@
 # Heroku
 /bin
 
-# local
-/cmd/local
+# Binary
+/cmd/main
 
 !vendor/README.md
 

@@ -2,10 +2,20 @@ package log
 
 import (
 	"github.com/golang/mock/gomock"
+	"proteinreminder/internal/pkg/testutil"
+	"reflect"
 	"testing"
 )
 
-func TestStdoutLogger_Debug(t *testing.T) {
+func TestSetDefaultLogger(t *testing.T) {
+	l := GetLogger("")
+	SetDefaultLogger("")
+	if reflect.TypeOf(l) != reflect.TypeOf(logger) {
+		t.Error(testutil.MakeTestMessageWithGotWant(reflect.TypeOf(logger), reflect.TypeOf(l)))
+	}
+}
+
+func TestDebug(t *testing.T) {
 	cases := []struct {
 		name  string
 		level Level
@@ -37,7 +47,7 @@ func TestStdoutLogger_Debug(t *testing.T) {
 	}
 }
 
-func TestStdoutLogger_Info(t *testing.T) {
+func TestInfo(t *testing.T) {
 	cases := []struct {
 		name  string
 		level Level
@@ -69,7 +79,7 @@ func TestStdoutLogger_Info(t *testing.T) {
 	}
 }
 
-func TestStdoutLogger_Error(t *testing.T) {
+func TestError(t *testing.T) {
 	cases := []struct {
 		name  string
 		level Level

@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"net/http"
-	"proteinreminder/internal/pkg/httputil"
 	"proteinreminder/internal/app/apprule"
-	"proteinreminder/internal/pkg/panicutil"
 	"proteinreminder/internal/app/usecase"
+	"proteinreminder/internal/pkg/config"
+	"proteinreminder/internal/pkg/errorutil"
+	"proteinreminder/internal/pkg/httputil"
+	"proteinreminder/internal/pkg/log"
 	"regexp"
 	"strconv"
 	"time"
-	"proteinreminder/internal/pkg/log"
-	"proteinreminder/internal/pkg/config"
 )
 
 //
@@ -199,7 +199,7 @@ func MakeErrorCallbackResponseBody(message string, code int) []byte {
 	}
 	body, err := json.Marshal(resp)
 	if err != nil {
-		panic(panicutil.MakePanicMessage(err))
+		panic(errorutil.MakePanicMessage(err))
 	}
 	return body
 }

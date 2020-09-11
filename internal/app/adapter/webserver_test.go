@@ -1,8 +1,8 @@
 package adapter
 
 import (
-	"testing"
 	"proteinreminder/internal/pkg/testutil"
+	"testing"
 )
 
 func TestNewServer(t *testing.T) {

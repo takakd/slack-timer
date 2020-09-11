@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 	"path/filepath"
@@ -14,7 +15,6 @@ import (
 	"runtime"
 	"testing"
 	"time"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func makeTestEvents() []*enterpriserule.ProteinEvent {

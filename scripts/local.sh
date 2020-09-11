@@ -28,7 +28,7 @@ exit 1
 
 build() {
     cd "${SCRIPT_DIR}/../cmd" || exit
-    go build -p 2 -v -x -mod vendor -tags=local local.go
+    go build -p 2 -v -x -mod vendor main.go
 }
 
 fmt() {
@@ -36,21 +36,22 @@ fmt() {
 }
 
 run() {
-    # call kube_clean if it's entered Ctrl+C
-    trap kube_cleanup SIGINT
+    # Run mongoDB
+    docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
 
-    # start kubernetes
-    kubectl apply -f "${SCRIPT_DIR}/../deployments/local/deployment.yaml"
-    kubectl apply -f "${SCRIPT_DIR}/../deployments/local/service.yaml"
+    # Call if it's entered Ctrl+C
+    trap docker_cleanup SIGINT
 
+    echo Run go cmd.
     cd "${SCRIPT_DIR}/../cmd" || exit
-    ${SCRIPT_DIR}/../cmd/local
+    ${SCRIPT_DIR}/../cmd/main
+
+    # Stop mongoDB
+    docker_cleanup
 }
-kube_cleanup() {
-    kubectl delete deployment -l app=protein
-    kubectl delete service -l app=protein
-    exit 0
-}
+docker_cleanup() {
+    docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml down
+ }
 
 cmd_test() {
     cd ${SCRIPT_DIR}/..

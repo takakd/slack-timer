@@ -22,7 +22,7 @@ type WithContextHandlerFunc func(ctx context.Context, w http.ResponseWriter, r *
 Make server handler func with access log.
 Ref: https://golang.org/doc/articles/wiki/
 Ref: https://ema-hiro.hatenablog.com/entry/2018/05/14/003526
- */
+*/
 func makeHandlerFunc(ctx context.Context, f WithContextHandlerFunc) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Output access log.
@@ -40,7 +40,7 @@ func makeHandlerFunc(ctx context.Context, f WithContextHandlerFunc) func(w http.
 Web server
 
 Initialize routing and run server process.
- */
+*/
 type WebServer struct {
 	addr string
 }

@@ -38,6 +38,11 @@ func GetLogger(name string) Logger {
 	return l
 }
 
+// Set default logger which is called log.Info, log.Error...
+func SetDefaultLogger(name string) {
+	logger = GetLogger(name)
+}
+
 // Set logging level.
 func SetLevel(level Level) {
 	logLevel = level
@@ -46,7 +51,6 @@ func SetLevel(level Level) {
 // Output log.
 func outputLog(level Level, v ...interface{}) {
 	if logLevel < level {
-		fmt.Printf("%d, %d", logLevel, level)
 		// Ignore the log with lower priorities than the output level.
 		return
 	}
