@@ -34,3 +34,6 @@
 
 # ignore working script.
 scripts/working*
+
+# app
+deployments/local/tmp

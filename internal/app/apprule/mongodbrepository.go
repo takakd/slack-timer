@@ -153,7 +153,7 @@ func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to
 // Save ProteinEvent to DB.
 //
 // Return error and the slice of ProteinEvent saved successfully.
-func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (results []*enterpriserule.ProteinEvent, err error) {
+func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
 	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI"))
 	if err != nil {
 		return nil, err
@@ -164,7 +164,7 @@ func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*ente
 
 	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION"))
 
-	saved := make([]*enterpriserule.ProteinEvent, 0, len(events))
+	saved = make([]*enterpriserule.ProteinEvent, 0, len(events))
 	var filter bson.M
 	opts := options.Update().SetUpsert(true)
 	for _, event := range events {

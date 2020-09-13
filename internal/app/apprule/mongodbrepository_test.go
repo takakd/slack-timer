@@ -63,6 +63,11 @@ func cleanupTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
 	t.Log(ret)
 }
 
+func isSkipMongoDbRepositoryTest() bool {
+	url, _ := getTestMongoDbEnv()
+	return url == "" || url == "skip"
+}
+
 func getTestMongoDbEnv() (url, collection string) {
 	// NOTE: Also use commandline argument
 	_, filePath, _, _ := runtime.Caller(0)
@@ -78,6 +83,11 @@ func getTestMongoDbEnv() (url, collection string) {
 
 // Test getMongoDb, getMongoCollection, and disconnectMongoDbClientFunc together.
 func Test_getMongoDb(t *testing.T) {
+	if isSkipMongoDbRepositoryTest() {
+		t.Skip("skip")
+		return
+	}
+
 	testDbUrl, _ := getTestMongoDbEnv()
 
 	cases := []struct {
@@ -119,6 +129,11 @@ func Test_getMongoDb(t *testing.T) {
 }
 
 func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
+	if isSkipMongoDbRepositoryTest() {
+		t.Skip("skip")
+		return
+	}
+
 	t.Run("NG: GetDb", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -221,6 +236,11 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 }
 
 func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
+	if isSkipMongoDbRepositoryTest() {
+		t.Skip("skip")
+		return
+	}
+
 	now := time.Now().UTC()
 	events := []*enterpriserule.ProteinEvent{
 		{
@@ -278,6 +298,11 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 }
 
 func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
+	if isSkipMongoDbRepositoryTest() {
+		t.Skip("skip")
+		return
+	}
+
 	testEvents := makeTestEvents()
 
 	testDbUrl, testDbCol := getTestMongoDbEnv()
