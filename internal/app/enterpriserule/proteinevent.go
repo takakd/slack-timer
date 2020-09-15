@@ -7,9 +7,9 @@ import (
 
 // Holds the time to drink a protein and the interval of drinking.
 type ProteinEvent struct {
-	UserId               string        `bson:"user_id"`
-	UtcTimeToDrink       time.Time     `bson:"utc_time_to_drink"`
-	DrinkTimeIntervalSec time.Duration `bson:"drink_time_interval_sec"`
+	UserId               string        `db:"user_id" bson:"user_id"`
+	UtcTimeToDrink       time.Time     `db:"utc_time_to_drink" bson:"utc_time_to_drink"`
+	DrinkTimeIntervalSec time.Duration `db:"drink_time_interval_sec" bson:"drink_time_interval_sec"`
 }
 
 func NewProteinEvent(userId string) (*ProteinEvent, error) {

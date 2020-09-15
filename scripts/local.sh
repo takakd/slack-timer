@@ -17,11 +17,13 @@ Example.
   $0 build
 
 Command:
-  build     Build app binary.
-  fmt       Format sources.
-  run       Run on local.
-  test      Run test on local.
-  install   Install dependency modules
+  build         Build app binary.
+  fmt           Format sources.
+  run           Run on local.
+  test          Run test on local.
+  install       Install dependency modules
+  docker:run    Run docker on local.
+  docker:stop   Stop docker on local.
 _EOT_
 exit 1
 }
@@ -36,8 +38,7 @@ fmt() {
 }
 
 run() {
-    # Run mongoDB
-    docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
+    docker_run
 
     # Call if it's entered Ctrl+C
     trap docker_cleanup SIGINT
@@ -46,14 +47,18 @@ run() {
     cd "${SCRIPT_DIR}/../cmd" || exit
     ${SCRIPT_DIR}/../cmd/main
 
-    # Stop mongoDB
     docker_cleanup
+}
+docker_run() {
+    docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
 }
 docker_cleanup() {
     docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml down
- }
+}
 
 cmd_test() {
+    docker_run
+
     cd ${SCRIPT_DIR}/..
 
     ARGS=""
@@ -71,6 +76,8 @@ cmd_test() {
     #go test -v -cover "${ARGS}" ./...
     # OK
     go test -v -cover -tags="test local" ${ARGS} ./...
+
+    docker_cleanup
 }
 
 install() {
@@ -92,6 +99,10 @@ elif [[ $1 = "test" ]]; then
     cmd_test
 elif [[ $1 = "install" ]]; then
     install
+elif [[ $1 = "docker:run" ]]; then
+    docker_run
+elif [[ $1 = "docker:stop" ]]; then
+    docker_cleanup
 else
     usage
 fi

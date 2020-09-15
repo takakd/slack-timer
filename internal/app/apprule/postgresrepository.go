@@ -2,8 +2,9 @@ package apprule
 
 import (
 	"context"
-	_ "github.com/lib/pq"
+	"fmt"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"proteinreminder/internal/app/enterpriserule"
 	"proteinreminder/internal/pkg/config"
 	"time"
@@ -15,9 +16,10 @@ type PostgresRepository struct {
 }
 
 // Get sqlx.DB
-func getPostgreDb(ctx context.Context, dataSourceName string) (db *sqlx.DB, err error) {
+func getPostgresDb(ctx context.Context, dataSourceName string) (db *sqlx.DB, err error) {
 	db, err = sqlx.ConnectContext(ctx, "postgres", dataSourceName)
 	if err != nil {
+		db = nil
 		return
 	}
 	return
@@ -31,13 +33,13 @@ func NewPostgresRepository(config config.Config) Repository {
 
 // Find protein event by user id.
 func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string) (event *enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgreDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
+	db, err := getPostgresDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
 	if err != nil {
 		return
 	}
 
 	event = &enterpriserule.ProteinEvent{}
-	if err = db.GetContext(ctx, event, "SELECT * FROM protein_event WHERE user_id=$1", userId); err != nil {
+	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", r.config.Get("POSTGRES_TBL_PROTEINEVENT")), userId); err != nil {
 		return nil, nil
 	}
 	return
@@ -45,17 +47,20 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 
 // Find protein event from "from" to "to".
 func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgreDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
+	db, err := getPostgresDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
 	if err != nil {
 		return
 	}
 
 	values := []enterpriserule.ProteinEvent{}
-	if err = db.GetContext(ctx, &values, "SELECT * FROM protein_event WHERE $1 <= utc_time_to_drink AND utc_time_to_drink < $2", from, to); err != nil {
+	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", r.config.Get("POSTGRES_TBL_PROTEINEVENT")), from, to); err != nil {
 		return nil, nil
 	}
-	for _, v := range values {
-		results = append(results, &v)
+
+	results = make([]*enterpriserule.ProteinEvent, len(values))
+	for i := range values {
+		fmt.Println(values[i])
+		results[i] = &values[i]
 	}
 	return
 }
@@ -64,7 +69,7 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 //
 // Return error and the slice of ProteinEvent saved successfully.
 func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgreDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
+	db, err := getPostgresDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
 	if err != nil {
 		return
 	}
@@ -80,12 +85,12 @@ func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*ent
 	}()
 
 	for _, event := range events {
-		_, err = tx.NamedExecContext(ctx, `
-			INSERT INTO protein_event (user_id, utc_time_to_drink, drink_time_interval_sec)
+		_, err = tx.NamedExecContext(ctx, fmt.Sprintf(`
+			INSERT INTO %s (user_id, utc_time_to_drink, drink_time_interval_sec)
 			VALUES (:user_id, :utc_time_to_drink, :drink_time_interval_sec)
-			ON CONFLICT (:user_id) DO UPDATE
-			SET  utc_time_to_drink = :utc_time_to_drink, drink_time_interval_sec = :drink_time_interval_sec
-		`, event)
+			ON CONFLICT (user_id) DO UPDATE
+			SET utc_time_to_drink = :utc_time_to_drink, drink_time_interval_sec = :drink_time_interval_sec
+		`, r.config.Get("POSTGRES_TBL_PROTEINEVENT")), event)
 		if err != nil {
 			tx.Rollback()
 			return

@@ -63,9 +63,13 @@ func cleanupTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
 	t.Log(ret)
 }
 
-func isSkipMongoDbRepositoryTest() bool {
+func doesSkipMongoDbRepositoryTest(t *testing.T) bool {
 	url, _ := getTestMongoDbEnv()
-	return url == "" || url == "skip"
+	isSkip := url == "" || url == "skip"
+	if isSkip {
+		t.Skip("skip MongoDB test")
+	}
+	return isSkip
 }
 
 func getTestMongoDbEnv() (url, collection string) {
@@ -83,8 +87,7 @@ func getTestMongoDbEnv() (url, collection string) {
 
 // Test getMongoDb, getMongoCollection, and disconnectMongoDbClientFunc together.
 func Test_getMongoDb(t *testing.T) {
-	if isSkipMongoDbRepositoryTest() {
-		t.Skip("skip")
+	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
 
@@ -129,8 +132,7 @@ func Test_getMongoDb(t *testing.T) {
 }
 
 func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
-	if isSkipMongoDbRepositoryTest() {
-		t.Skip("skip")
+	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
 
@@ -236,8 +238,7 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 }
 
 func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
-	if isSkipMongoDbRepositoryTest() {
-		t.Skip("skip")
+	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
 
@@ -298,8 +299,7 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 }
 
 func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
-	if isSkipMongoDbRepositoryTest() {
-		t.Skip("skip")
+	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
 
