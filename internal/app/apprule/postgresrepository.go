@@ -16,8 +16,8 @@ type PostgresRepository struct {
 }
 
 // Get sqlx.DB
-func getPostgresDb(ctx context.Context, dataSourceName string) (db *sqlx.DB, err error) {
-	db, err = sqlx.ConnectContext(ctx, "postgres", dataSourceName)
+func getPostgresDb(ctx context.Context, dsn string) (db *sqlx.DB, err error) {
+	db, err = sqlx.ConnectContext(ctx, "postgres", dsn)
 	if err != nil {
 		db = nil
 		return
@@ -33,10 +33,12 @@ func NewPostgresRepository(config config.Config) Repository {
 
 // Find protein event by user id.
 func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string) (event *enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgresDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
+	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL"))
 	if err != nil {
 		return
 	}
+
+	defer db.Close()
 
 	event = &enterpriserule.ProteinEvent{}
 	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", r.config.Get("POSTGRES_TBL_PROTEINEVENT")), userId); err != nil {
@@ -47,10 +49,12 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 
 // Find protein event from "from" to "to".
 func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgresDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
+	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL"))
 	if err != nil {
 		return
 	}
+
+	defer db.Close()
 
 	values := []enterpriserule.ProteinEvent{}
 	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", r.config.Get("POSTGRES_TBL_PROTEINEVENT")), from, to); err != nil {
@@ -69,10 +73,12 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 //
 // Return error and the slice of ProteinEvent saved successfully.
 func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgresDb(ctx, r.config.Get("POSTGRES_DATASOURCE"))
+	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL"))
 	if err != nil {
 		return
 	}
+
+	defer db.Close()
 
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
