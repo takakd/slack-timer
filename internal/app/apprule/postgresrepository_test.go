@@ -27,6 +27,8 @@ func execTestPostgresSql(t *testing.T, sqlFileName string) {
 	db, err := getPostgresDb(ctx, src)
 	require.NoError(t, err)
 
+	defer db.Close()
+
 	sqlByte, err := ioutil.ReadFile(sqlFileName)
 	require.NoError(t, err)
 
@@ -68,6 +70,8 @@ func cleanupPostgresTestEvents(t *testing.T, events []*enterpriserule.ProteinEve
 		return
 	}
 
+	defer db.Close()
+
 	for _, event := range events {
 		_, err := db.NamedQueryContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE user_id=:user_id", tableName), event)
 		if err != nil {
@@ -85,7 +89,7 @@ func doesSkipPostgresRepositoryTest(t *testing.T) bool {
 	return isSkip
 }
 
-func getTestPostgresEnv(t *testing.T) (sourceStr, tableName string) {
+func getTestPostgresEnv(t *testing.T) (dsn, tableName string) {
 	// NOTE: Also use commandline argument
 	_, filePath, _, _ := runtime.Caller(0)
 	// e.g. internal/configs/.env.test
@@ -93,7 +97,7 @@ func getTestPostgresEnv(t *testing.T) (sourceStr, tableName string) {
 	if fileutil.FileExists(envPath) {
 		godotenv.Load(envPath)
 	}
-	sourceStr = os.Getenv("POSTGRES_DATASOURCE")
+	dsn = os.Getenv("DATABASE_URL")
 	tableName = os.Getenv("POSTGRES_TBL_PROTEINEVENT")
 	return
 }
@@ -108,21 +112,25 @@ func Test_getPostgresDb(t *testing.T) {
 		cleanupPostgresTestDb(t)
 	}()
 
-	testSrcName, _ := getTestPostgresEnv(t)
+	dsn, _ := getTestPostgresEnv(t)
 
 	cases := []struct {
 		name               string
 		dbOk, collectionOk bool
 		srcStr             string
 	}{
-		{name: "OK", dbOk: true, collectionOk: true, srcStr: testSrcName},
+		{name: "OK", dbOk: true, collectionOk: true, srcStr: dsn},
 		{name: "NG", dbOk: false, collectionOk: false, srcStr: "disabled source"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.TODO()
 			db, err := getPostgresDb(ctx, c.srcStr)
+
 			if c.dbOk {
+
+				defer db.Close()
+
 				if db == nil || err != nil {
 					t.Error("should be able to connect")
 					return
@@ -155,7 +163,7 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		userId := "abc123"
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return("disable")
+		c.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return("disable")
 
 		repo := NewPostgresRepository(c)
 		event, err := repo.FindProteinEvent(ctx, userId)
@@ -171,15 +179,15 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		testSrcName, tableName := getTestPostgresEnv(t)
+		dsn, tableName := getTestPostgresEnv(t)
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
 			// For SaveProteinEvent
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName),
+			mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
 			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 			// For FindProteinEvent
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName),
+			mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
 			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 		)
 
@@ -213,15 +221,15 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 
 		testEvents := makePostgresTestEvents()
 
-		testSrcName, tableName := getTestPostgresEnv(t)
+		dsn, tableName := getTestPostgresEnv(t)
 		mock := config.NewMockConfig(ctrl)
 		// For SaveProteinEvent
-		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName)
+		call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn)
 		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName).After(call)
 		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName).After(call)
 		// For FindProteinEvent
 		for i := 0; i < len(testEvents); i++ {
-			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName).After(call)
+			call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn).After(call)
 			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName).After(call)
 		}
 
@@ -281,16 +289,16 @@ func TestPostgresRepository_FindProteinEventByTime(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testSrcName, tableName := getTestPostgresEnv(t)
+	dsn, tableName := getTestPostgresEnv(t)
 	mock := config.NewMockConfig(ctrl)
 	gomock.InOrder(
 		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName),
+		mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
 		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 		// For FindProteinEventByTime
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName),
+		mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
 		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 	)
 
@@ -331,11 +339,11 @@ func TestPostgresRepository_SaveProteinEvent(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	testSrcName, tableName := getTestPostgresEnv(t)
+	dsn, tableName := getTestPostgresEnv(t)
 	mock := config.NewMockConfig(ctrl)
 	gomock.InOrder(
 		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_DATASOURCE")).Return(testSrcName),
+		mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
 		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
 	)
