@@ -1,7 +1,4 @@
-herokurun:
-	@echo "==> Starting run on heroku local..."
-	@sh -c "sh '$(CURDIR)/scripts/heroku.sh' build"
-	@sh -c "sh '$(CURDIR)/scripts/heroku.sh' run"
+.PHONY: run test fmt
 
 run:
 	@echo "==> Starting run on local..."
@@ -22,5 +19,3 @@ fmt:
 #testecho:
 #	@echo $(FOO)
 
-#.PHONY: fmtcheck generate protobuf website website-test
-.PHONY: test

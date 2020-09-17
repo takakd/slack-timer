@@ -24,7 +24,16 @@
 # Heroku
 /bin
 
-# local
-/cmd/local
+# Binary
+/cmd/main
 
 !vendor/README.md
+
+# ignore env
+.env
+
+# ignore working script.
+scripts/working*
+
+# app
+deployments/local/tmp
