@@ -59,7 +59,7 @@ func NewWebServer() *WebServer {
 func (s *WebServer) Run(ctx context.Context) error {
 
 	// POST: /api/<ver>/slack-callback
-	http.HandleFunc("/"+Version+"/test", makeHandlerFunc(ctx, SlackCallbackHandler))
+	http.HandleFunc(fmt.Sprintf("/%s/%s/slack-callback", ApiPrefixPath, Version), makeHandlerFunc(ctx, SlackCallbackHandler))
 
 	// GET: /api/<ver>/test
 	http.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
