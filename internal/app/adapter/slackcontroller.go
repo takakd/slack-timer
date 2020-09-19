@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
+	"fmt"
 	"net/http"
 	"proteinreminder/internal/app/apprule"
 	"proteinreminder/internal/app/usecase"
@@ -22,6 +22,7 @@ import (
 // Library exists: https://github.com/slack-go/slack
 // Ref: https://api.slack.com/interactivity/slash-commands
 
+// TODO: Change error definitions' type to Error.
 const (
 	SlackErrorCodeNoError             = 0
 	SlackErrorCodeParse               = 1
@@ -84,10 +85,10 @@ func parseRequest(r *http.Request) (Validator, error) {
 		return nil, err
 	}
 
-	re := regexp.MustCompile("(.*)\\s*")
+	re := regexp.MustCompile(`([^\s]*)\s*`)
 	m := re.FindStringSubmatch(request.params.Text)
 	if m == nil {
-		return nil, errors.New("invalid Text format")
+		return nil, fmt.Errorf("invalid Text format")
 	}
 
 	request.subType = CommandSubType(m[1])
@@ -95,7 +96,7 @@ func parseRequest(r *http.Request) (Validator, error) {
 	var validator Validator
 	if request.subType == SubTypeGot {
 		validator = MakeSlackCallbackGotRequest(request)
-	} else if request.subType == SubTypeGot {
+	} else if request.subType == SubTypeSet {
 		var err error
 		validator, err = MakeSlackCallbackSetRequest(request)
 		if err != nil {
@@ -157,10 +158,10 @@ func MakeSlackCallbackSetRequest(r *SlackCallbackRequest) (*SlackCallbackSetRequ
 		SlackCallbackRequest: *r,
 	}
 
-	re := regexp.MustCompile("(.*)\\s+([0-9]+)")
+	re := regexp.MustCompile(`(.*)\s+([0-9]+)`)
 	m := re.FindStringSubmatch(r.params.Text)
 	if m == nil {
-		return nil, errors.New("invalid Text format")
+		return nil, fmt.Errorf("invalid Text format")
 	}
 
 	if minutes, err := strconv.Atoi(m[2]); err != nil {

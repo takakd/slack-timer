@@ -39,8 +39,8 @@ func GetLogger(name string) Logger {
 }
 
 // Set default logger which is called log.Info, log.Error...
-func SetDefaultLogger(name string) {
-	logger = GetLogger(name)
+func SetDefaultLogger(l Logger) {
+	logger = l
 }
 
 // Set logging level.

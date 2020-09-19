@@ -3,6 +3,7 @@ package adapter
 import (
 	"bytes"
 	"context"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"proteinreminder/internal/pkg/testutil"
@@ -15,13 +16,13 @@ import (
 // POST slack-callback
 //
 
-func TestparseRequest(t *testing.T) {
+func TestParseRequest(t *testing.T) {
 	cases := []struct {
 		name    string
 		text    string
 		subType CommandSubType
 	}{
-		{"set", "set", SubTypeSet},
+		{"set", "set 1", SubTypeSet},
 		{"got", "got", SubTypeGot},
 		{"nil", "invalid", ""},
 	}
@@ -37,6 +38,7 @@ func TestparseRequest(t *testing.T) {
 				if err != nil {
 					t.Error(testutil.MakeTestMessageWithGotWant(err, nil))
 				}
+				require.NotNil(t, req)
 			}
 
 			switch r := req.(type) {
@@ -50,24 +52,25 @@ func TestparseRequest(t *testing.T) {
 				}
 			default:
 				if c.subType != "" {
-					t.Error("wrong type.")
+					t.Errorf("wrong type. type=%v,%v", r, c.subType)
 				}
 			}
 		})
 	}
 }
 
-func Testvalidate(t *testing.T) {
+func TestValidate(t *testing.T) {
 	cases := []struct {
 		name       string
+		body       string
 		containErr bool
 	}{
-		{"OK", false},
-		{"NG", true},
+		{"OK", "text=got&user_id=abc", false},
+		{"NG", "text=got&user_id=", true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			body := strings.NewReader(`text=got`)
+			body := strings.NewReader(c.body)
 			httpReq := httptest.NewRequest(http.MethodPost, "/", body)
 			httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
 			req, _ := parseRequest(httpReq)
@@ -78,36 +81,6 @@ func Testvalidate(t *testing.T) {
 			}
 		})
 	}
-	//body = strings.NewReader(`text=&user_id=`)
-	//httpReq = httptest.NewRequest(http.MethodPost, "/", body)
-	//httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
-	//
-	//req = NewSlackCallbackRequest(httpReq)
-	//req.parse()
-	//ok, errors := req.validate()
-	//if ok {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(ok, false))
-	//}
-	//if !errors.ContainsError("keyword", Empty) {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	//}
-	//error, exists := errors.GetError("keyword")
-	//if !exists {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	//}
-	//if error.Summary != "need keyword." {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(error.Summary, "need keyword."))
-	//}
-	//if !errors.ContainsError("user_id", Empty) {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	//}
-	//error, exists = errors.GetError("user_id")
-	//if !exists {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	//}
-	//if error.Summary != "need user_id." {
-	//	t.Error(testutil.MakeTestMessageWithGotWant(error.Summary, "need user_id."))
-	//}
 }
 
 func TestSlackCallbackGotRequest_validate(t *testing.T) {
