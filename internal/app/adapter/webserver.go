@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
+	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/httputil"
 	"proteinreminder/internal/pkg/log"
+	"time"
 )
 
 const (
@@ -42,29 +43,39 @@ Web server
 Initialize routing and run server process.
 */
 type WebServer struct {
-	addr string
+	server *http.Server
 }
 
-func NewWebServer() *WebServer {
+func NewWebServer(ctx context.Context, config config.Config) *WebServer {
+
+	addr := ":" + DefaultServerPort
+	if port := config.Get("PORT"); port != "" {
+		addr = ":" + port
+	}
+
+	mux := http.NewServeMux()
+
+	// POST: /api/<ver>/slack-callback
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/slack-callback", ApiPrefixPath, Version), makeHandlerFunc(ctx, SlackCallbackHandler))
+
+	// GET: /api/<ver>/test
+	mux.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		httputil.WriteJsonResponse(w, 200, []byte(fmt.Sprintf("called /%s/test", Version)))
+	}))
+
 	s := &WebServer{
-		addr: ":" + DefaultServerPort,
+		server: &http.Server{
+			Addr:         addr,
+			Handler:      mux,
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		},
 	}
-	if port := os.Getenv("PORT"); port != "" {
-		s.addr = ":" + port
-	}
+
 	return s
 }
 
 // Run server process.
-func (s *WebServer) Run(ctx context.Context) error {
-
-	// POST: /api/<ver>/slack-callback
-	http.HandleFunc("/"+Version+"/test", makeHandlerFunc(ctx, SlackCallbackHandler))
-
-	// GET: /api/<ver>/test
-	http.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		httputil.WriteJsonResponse(w, 200, []byte(fmt.Sprintf("called /%s/test", Version)))
-	}))
-
-	return http.ListenAndServe(s.addr, nil)
+func (s *WebServer) Run() error {
+	return s.server.ListenAndServe()
 }

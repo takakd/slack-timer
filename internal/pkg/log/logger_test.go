@@ -9,7 +9,7 @@ import (
 
 func TestSetDefaultLogger(t *testing.T) {
 	l := GetLogger("")
-	SetDefaultLogger("")
+	SetDefaultLogger(l)
 	if reflect.TypeOf(l) != reflect.TypeOf(logger) {
 		t.Error(testutil.MakeTestMessageWithGotWant(reflect.TypeOf(logger), reflect.TypeOf(l)))
 	}

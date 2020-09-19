@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"proteinreminder/internal/app/adapter"
+	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/errorutil"
 	"proteinreminder/internal/pkg/log"
 )
@@ -17,13 +18,14 @@ func main() {
 		log.Info("exit server")
 	}()
 
-	server := adapter.NewWebServer()
+	ctx := context.Background()
+
+	server := adapter.NewWebServer(ctx, config.GetConfig(""))
 	if server == nil {
 		log.Error("failed to create server")
 	}
-	ctx := context.Background()
 
-	err := server.Run(ctx)
+	err := server.Run()
 	if err != nil {
 		log.Error(err)
 	}
