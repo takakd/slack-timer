@@ -1,8 +1,7 @@
-package adapter
+package slackcontroller
 
 import (
 	"bytes"
-	"context"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +9,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"context"
+	"net/url"
+	"github.com/stretchr/testify/assert"
+	"proteinreminder/internal/app/usecase"
+	"github.com/golang/mock/gomock"
 )
 
 //
@@ -219,10 +223,97 @@ func TestMakeErrorCallbackResponseBody(t *testing.T) {
 
 //
 func TestSlackCallbackHandler(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		SlackCallbackHandler(context.TODO(), w, r)
+	// Ref: https://golang.org/src/net/http/httptest/example_test.go#L38
+	//ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//		fmt.Fprintln(w, "Hello, client")
+	//	}))
+	//	defer ts.Close()
+	//
+	//	res, err := http.Get(ts.URL)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	greeting, err := ioutil.ReadAll(res.Body)
+	//	res.Body.Close()
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	fmt.Printf("%s", greeting)
+	//	// Output: Hello, client
+	//}
+
+	t.Run("wrong method", func(t *testing.T) {
+		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.TODO()
+			handler(ctx, nil, w, r)
+		})
+		w := testutil.HttpGetRequest(h, "/", url.Values{})
+		assert.Equal(t, 404, w.Result().StatusCode)
 	})
+
+	t.Run("invalid parameter", func(t *testing.T) {
+		//h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//	ctx := context.TODO()
+		//	ctrl := gomock.NewController(t)
+		//	m := usecase.NewMockProteinEventSaver(ctrl)
+		//	handler(ctx, m, w, r)
+		//})
+		//w := testutil.HttpGetRequest(handler, "/", url.Values{})
+		//assert.Equal(t, 404, w.Result().StatusCode)
+
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.TODO()
+			handler(ctx, nil, w, r)
+		})
+
+		params := url.Values{
+			"text": {""},
+		}
+		w := testutil.HttpFormPostRequest(handler, "/", strings.NewReader(params.Encode()))
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+
+		params = url.Values{
+			"text": {"abc"},
+		}
+		w = testutil.HttpFormPostRequest(handler, "/", strings.NewReader(params.Encode()))
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+
+		params = url.Values{
+			"text": {"set"},
+		}
+		w = testutil.HttpFormPostRequest(handler, "/", strings.NewReader(params.Encode()))
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+
+		params = url.Values{
+			"text": {"set a"},
+		}
+		w = testutil.HttpFormPostRequest(handler, "/", strings.NewReader(params.Encode()))
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+
+		params = url.Values{
+			"text": {"got 1"},
+		}
+		w = testutil.HttpFormPostRequest(handler, "/", strings.NewReader(params.Encode()))
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+	})
+
+	//	res, err := http.Get(ts.URL)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	greeting, err := ioutil.ReadAll(res.Body)
+	//	res.Body.Close()
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	fmt.Printf("%s", greeting)
+
+	//mux := http.NewServeMux()
+	//mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//	SlackCallbackHandler(context.TODO(), w, r)
+	//})
 
 	// valiadtor error
 	// usecase error

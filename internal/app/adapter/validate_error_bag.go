@@ -62,3 +62,11 @@ func (b *ValidateErrorBag) GetError(name string) (*ValidateError, bool) {
 	error, errorExists := b.errors[name]
 	return error, errorExists
 }
+
+func (b *ValidateErrorBag) GetErrors() []*ValidateError{
+	errors := make([]*ValidateError, 0, len(b.errors))
+	for _, v := range b.errors {
+		errors = append(errors, v)
+	}
+	return errors
+}

@@ -1,4 +1,4 @@
-package adapter
+package slackcontroller
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+	"proteinreminder/internal/app/adapter"
 )
 
 //
@@ -37,6 +38,10 @@ const (
 )
 
 type CommandSubType string
+
+type Request interface {
+	Validate() (bool, *adapter.ValidateErrorBag)
+}
 
 type SlackCallbackRequest struct {
 	request *http.Request
@@ -70,11 +75,11 @@ type SlackCallbackRequestParams struct {
 	TriggerId      string `json:"trigger_id"`
 }
 
-type Validator interface {
-	validate() (bool, *ValidateErrorBag)
-}
+//type Validator interface {
+//	validate() (bool, *adapter.ValidateErrorBag)
+//}
 
-func parseRequest(r *http.Request) (Validator, error) {
+func (c *SlackCallbackRequest)Validate(r *http.Request) (bool, *adapter.ValidateErrorBag) {
 	request := &SlackCallbackRequest{
 		request: r,
 		params:  SlackCallbackRequestParams{},
@@ -92,6 +97,10 @@ func parseRequest(r *http.Request) (Validator, error) {
 	}
 
 	request.subType = CommandSubType(m[1])
+	if request.subType != SubTypeGot && request.subType != SubTypeSet {
+		return nil, fmt.Errorf("invalid sub type")
+	}
+
 
 	var validator Validator
 	if request.subType == SubTypeGot {
@@ -103,6 +112,14 @@ func parseRequest(r *http.Request) (Validator, error) {
 			return nil, err
 		}
 	}
+
+		valid := true
+	bag := adapter.NewValidateErrorBag()
+	if r.params.UserId == "" {
+		valid = false
+		bag.SetError("user_id", "need user_id.", adapter.Empty)
+	}
+	return valid, bag
 
 	//hour, err := strconv.Atoi(m[2])
 	//if err != nil {
@@ -118,15 +135,15 @@ func parseRequest(r *http.Request) (Validator, error) {
 	return validator, nil
 }
 
-func (r *SlackCallbackRequest) validate() (bool, *ValidateErrorBag) {
-	valid := true
-	bag := NewValidateErrorBag()
-	if r.params.UserId == "" {
-		valid = false
-		bag.SetError("user_id", "need user_id.", Empty)
-	}
-	return valid, bag
-}
+//func (r *SlackCallbackRequest) validate() (bool, *adapter.ValidateErrorBag) {
+//	valid := true
+//	bag := adapter.NewValidateErrorBag()
+//	if r.params.UserId == "" {
+//		valid = false
+//		bag.SetError("user_id", "need user_id.", adapter.Empty)
+//	}
+//	return valid, bag
+//}
 
 type SlackCallbackGotRequest struct {
 	SlackCallbackRequest
@@ -138,7 +155,7 @@ func MakeSlackCallbackGotRequest(r *SlackCallbackRequest) *SlackCallbackGotReque
 	}
 }
 
-func (r *SlackCallbackGotRequest) validate() (bool, *ValidateErrorBag) {
+func (r *SlackCallbackGotRequest) validate() (bool, *adapter.ValidateErrorBag) {
 	valid, bag := r.SlackCallbackRequest.validate()
 	if !valid {
 		return valid, bag
@@ -174,7 +191,7 @@ func MakeSlackCallbackSetRequest(r *SlackCallbackRequest) (*SlackCallbackSetRequ
 	return req, nil
 }
 
-func (r *SlackCallbackSetRequest) validate() (bool, *ValidateErrorBag) {
+func (r *SlackCallbackSetRequest) validate() (bool, *adapter.ValidateErrorBag) {
 	valid, bag := r.SlackCallbackRequest.validate()
 	if !valid {
 		return valid, bag
@@ -205,8 +222,8 @@ func MakeErrorCallbackResponseBody(message string, code int) []byte {
 	return body
 }
 
-// POST handler.
-func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+//
+func handler(ctx context.Context, saver usecase.ProteinEventSaver, w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "404 not found", http.StatusNotFound)
 		return
@@ -220,8 +237,8 @@ func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	if ok, validateErrors := validator.validate(); !ok {
-		var firstError *ValidateError
-		for _, v := range validateErrors.errors {
+		var firstError *adapter.ValidateError
+		for _, v := range validateErrors.GetErrors() {
 			firstError = v
 			break
 		}
@@ -229,18 +246,13 @@ func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	saveProteinEvent, err := usecase.NewSaveProteinEvent(apprule.NewMongoDbRepository(config.GetConfig("")))
-	if err != nil {
-		http.Error(w, "500 internal server error", http.StatusInternalServerError)
-		return
-	}
 	var errCode usecase.SaveProteinEventError
 
 	switch req := validator.(type) {
 	case *SlackCallbackGotRequest:
-		errCode = saveProteinEvent.SaveTimeToDrink(ctx, req.params.UserId, req.datetime)
+		errCode = saver.SaveTimeToDrink(ctx, req.params.UserId, req.datetime)
 	case *SlackCallbackSetRequest:
-		errCode = saveProteinEvent.SaveIntervalSec(ctx, req.params.UserId, req.remindIntervalInMin)
+		errCode = saver.SaveIntervalSec(ctx, req.params.UserId, req.remindIntervalInMin)
 	}
 
 	if errCode != usecase.SaveProteinEventNoError {
@@ -264,4 +276,14 @@ func SlackCallbackHandler(ctx context.Context, w http.ResponseWriter, r *http.Re
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create response", SlackErrorCodeCreateResponse))
 	}
 	httputil.WriteJsonResponse(w, http.StatusOK, respBody)
+}
+
+// POST handler.
+func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	saver, err := usecase.NewSaveProteinEvent(apprule.NewPostgresRepository(config.GetConfig()))
+	if err != nil {
+		httputil.WriteJsonResponse(w, http.StatusInternalServerError, MakeErrorCallbackResponseBody("internal", SlackErrorCodeSavingProteinEvent1))
+		return
+	}
+	handler(ctx, saver, w, r)
 }

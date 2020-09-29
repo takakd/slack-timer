@@ -20,6 +20,11 @@ const (
 	SaveProteinEventErrorSave
 )
 
+type ProteinEventSaver interface {
+	SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) SaveProteinEventError
+	SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) SaveProteinEventError
+}
+
 type SaveProteinEvent struct {
 	repository apprule.Repository
 }
