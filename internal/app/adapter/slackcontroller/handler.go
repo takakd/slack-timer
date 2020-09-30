@@ -39,22 +39,9 @@ const (
 
 type CommandSubType string
 
-type Request interface {
-	Validate() (bool, *adapter.ValidateErrorBag)
-}
-
-type SlackCallbackRequest struct {
-	request *http.Request
-	params  SlackCallbackRequestParams
-
-	// The subtype of command is set after command.
-	// e.g. /protein <sub type>
-	// got: Mark the time when the protein was drunk.
-	// set: Set the interval of minutes to drink.
-	subType CommandSubType
-
-	// The time of entering a message on Slack.
-	datetime time.Time
+type Input interface {
+	Parse() (Request, error)
+	Request() *http.Request
 }
 
 // Parameters in Slack webhook post body.
@@ -75,129 +62,105 @@ type SlackCallbackRequestParams struct {
 	TriggerId      string `json:"trigger_id"`
 }
 
-//type Validator interface {
-//	validate() (bool, *adapter.ValidateErrorBag)
-//}
+type SlackCallbackRequest struct {
+	request *http.Request
+	params  SlackCallbackRequestParams
 
-func (c *SlackCallbackRequest)Validate(r *http.Request) (bool, *adapter.ValidateErrorBag) {
-	request := &SlackCallbackRequest{
-		request: r,
-		params:  SlackCallbackRequestParams{},
-	}
+	// The subtype of command is set after command.
+	// e.g. /protein <sub type>
+	// got: Mark the time when the protein was drunk.
+	// set: Set the interval of minutes to drink.
+	subType CommandSubType
+}
 
-	r.ParseForm()
-	if err := httputil.SetFormValueToStruct(r.Form, &request.params); err != nil {
+func (c *SlackCallbackRequest) Request() *http.Request {
+	return c.request
+}
+
+func (c *SlackCallbackRequest) Parse() (Request, error) {
+	c.request.ParseForm()
+	if err := httputil.SetFormValueToStruct(c.request.Form, &c.params); err != nil {
 		return nil, err
 	}
 
 	re := regexp.MustCompile(`([^\s]*)\s*`)
-	m := re.FindStringSubmatch(request.params.Text)
+	m := re.FindStringSubmatch(c.params.Text)
 	if m == nil {
 		return nil, fmt.Errorf("invalid Text format")
 	}
 
-	request.subType = CommandSubType(m[1])
-	if request.subType != SubTypeGot && request.subType != SubTypeSet {
+	c.subType = CommandSubType(m[1])
+	if c.subType != SubTypeGot && c.subType != SubTypeSet {
 		return nil, fmt.Errorf("invalid sub type")
 	}
 
-
-	var validator Validator
-	if request.subType == SubTypeGot {
-		validator = MakeSlackCallbackGotRequest(request)
-	} else if request.subType == SubTypeSet {
-		var err error
-		validator, err = MakeSlackCallbackSetRequest(request)
-		if err != nil {
-			return nil, err
+	var req Request
+	if c.subType == SubTypeGot {
+		req = &GotRequest{
+			params: c.params,
 		}
-	}
-
-		valid := true
-	bag := adapter.NewValidateErrorBag()
-	if r.params.UserId == "" {
-		valid = false
-		bag.SetError("user_id", "need user_id.", adapter.Empty)
-	}
-	return valid, bag
-
-	//hour, err := strconv.Atoi(m[2])
-	//if err != nil {
-	//	return err
-	//}
-	//minute, err := strconv.Atoi(m[3])
-	//if err != nil {
-	//	return err
-	//}
-	//t := time.Now()
-	//r.datetime = time.Date(t.Year(), t.Month(), t.Day(), hour, minute, 0, 0, time.UTC)
-
-	return validator, nil
-}
-
-//func (r *SlackCallbackRequest) validate() (bool, *adapter.ValidateErrorBag) {
-//	valid := true
-//	bag := adapter.NewValidateErrorBag()
-//	if r.params.UserId == "" {
-//		valid = false
-//		bag.SetError("user_id", "need user_id.", adapter.Empty)
-//	}
-//	return valid, bag
-//}
-
-type SlackCallbackGotRequest struct {
-	SlackCallbackRequest
-}
-
-func MakeSlackCallbackGotRequest(r *SlackCallbackRequest) *SlackCallbackGotRequest {
-	return &SlackCallbackGotRequest{
-		*r,
-	}
-}
-
-func (r *SlackCallbackGotRequest) validate() (bool, *adapter.ValidateErrorBag) {
-	valid, bag := r.SlackCallbackRequest.validate()
-	if !valid {
-		return valid, bag
-	}
-	// TOOD: check datetime
-	return true, nil
-}
-
-type SlackCallbackSetRequest struct {
-	SlackCallbackRequest
-
-	remindIntervalInMin time.Duration
-}
-
-func MakeSlackCallbackSetRequest(r *SlackCallbackRequest) (*SlackCallbackSetRequest, error) {
-	req := &SlackCallbackSetRequest{
-		SlackCallbackRequest: *r,
-	}
-
-	re := regexp.MustCompile(`(.*)\s+([0-9]+)`)
-	m := re.FindStringSubmatch(r.params.Text)
-	if m == nil {
-		return nil, fmt.Errorf("invalid Text format")
-	}
-
-	if minutes, err := strconv.Atoi(m[2]); err != nil {
-		// the process doesn't come here.
-		return nil, err
-	} else {
-		req.remindIntervalInMin = time.Duration(minutes)
+	} else if c.subType == SubTypeSet {
+		req = &SetRequest{
+			params: c.params,
+		}
 	}
 
 	return req, nil
 }
 
-func (r *SlackCallbackSetRequest) validate() (bool, *adapter.ValidateErrorBag) {
-	valid, bag := r.SlackCallbackRequest.validate()
-	if !valid {
-		return valid, bag
+type Request interface {
+	// TODO: リクエストごとの処理を実装する
+	// 共通処理はprivateメソッドで切り出す
+	Handler(ctx context.Context, w http.ResponseWriter)
+}
+
+type SetRequest struct {
+	params SlackCallbackRequestParams
+	// The time of entering a message on Slack.
+	datetime            time.Time
+	remindIntervalInMin time.Duration
+	saver usecase.ProteinEventSaver
+}
+
+type GotRequest struct {
+	params SlackCallbackRequestParams
+	// The time of entering a message on Slack.
+	datetime time.Time
+	saver usecase.ProteinEventSaver
+}
+
+func (gr *GotRequest) validate() (error, *adapter.ValidateErrorBag) {
+	// TODO
+	bag := adapter.NewValidateErrorBag()
+	return nil, bag
+}
+
+func (gr *GotRequest) Handler(ctx context.Context, w http.ResponseWriter) {
+	// TODO
+	return
+}
+
+func (sr *SetRequest) validate() (error, *adapter.ValidateErrorBag) {
+	// TODO
+	bag := adapter.NewValidateErrorBag()
+
+	re := regexp.MustCompile(`(.*)\s+([0-9]+)`)
+	m := re.FindStringSubmatch(sr.params.Text)
+	if m == nil {
+		return fmt.Errorf("invalid Text format"), bag
 	}
-	// TODO: check duration
-	return true, nil
+
+	if minutes, err := strconv.Atoi(m[2]); err != nil {
+		// the process doesn't come here.
+		return err, bag
+	} else {
+		sr.remindIntervalInMin = time.Duration(minutes)
+	}
+
+	return nil, bag
+}
+
+func (sr *SetRequest) Handler(ctx context.Context, w http.ResponseWriter) {
 }
 
 type SlackCallbackResponse struct {
@@ -223,67 +186,76 @@ func MakeErrorCallbackResponseBody(message string, code int) []byte {
 }
 
 //
-func handler(ctx context.Context, saver usecase.ProteinEventSaver, w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+func handler(ctx context.Context, saver usecase.ProteinEventSaver, w http.ResponseWriter, r Input) {
+	if r.Request().Method != "POST" {
 		http.Error(w, "404 not found", http.StatusNotFound)
 		return
 	}
 
-	validator, err := parseRequest(r)
+	req, err := r.Parse()
 	if err != nil {
 		log.Error("%v", err.Error())
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("parameter error", SlackErrorCodeParse))
 		return
 	}
 
-	if ok, validateErrors := validator.validate(); !ok {
-		var firstError *adapter.ValidateError
-		for _, v := range validateErrors.GetErrors() {
-			firstError = v
-			break
-		}
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody(firstError.Summary, SlackErrorCodeVaidate))
-		return
-	}
+	req.Handler(ctx, w)
+	return
 
-	var errCode usecase.SaveProteinEventError
+	//if err, validateErrors := validator.Validate(); err != nil {
+	//	var firstError *adapter.ValidateError
+	//	for _, v := range validateErrors.GetErrors() {
+	//		firstError = v
+	//		break
+	//	}
+	//	httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody(firstError.Summary, SlackErrorCodeVaidate))
+	//	return
+	//}
+	//
+	//return validator.Handle(ctx, w)
 
-	switch req := validator.(type) {
-	case *SlackCallbackGotRequest:
-		errCode = saver.SaveTimeToDrink(ctx, req.params.UserId, req.datetime)
-	case *SlackCallbackSetRequest:
-		errCode = saver.SaveIntervalSec(ctx, req.params.UserId, req.remindIntervalInMin)
-	}
-
-	if errCode != usecase.SaveProteinEventNoError {
-		if errCode == usecase.SaveProteinEventErrorFind {
-			httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to find event", SlackErrorCodeSavingProteinEvent1))
-		} else if errCode == usecase.SaveProteinEventErrorCreate {
-			httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create event", SlackErrorCodeSavingProteinEvent1))
-		} else if errCode == usecase.SaveProteinEventErrorSave {
-			httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to save event", SlackErrorCodeSavingProteinEvent1))
-		}
-		return
-	}
-
-	// Make response.
-	resp := &SlackCallbackResponse{
-		Message: "success",
-	}
-	respBody, err := json.Marshal(resp)
-	if err != nil {
-		log.Error("%v", err.Error())
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create response", SlackErrorCodeCreateResponse))
-	}
-	httputil.WriteJsonResponse(w, http.StatusOK, respBody)
+	//var errCode usecase.SaveProteinEventError
+	//
+	//switch req := validator.(type) {
+	//case *GotRequest:
+	//	errCode = saver.SaveTimeToDrink(ctx, req.params.UserId, req.datetime)
+	//case *SetRequest:
+	//	errCode = saver.SaveIntervalSec(ctx, req.params.UserId, req.remindIntervalInMin)
+	//}
+	//
+	//if errCode != usecase.SaveProteinEventNoError {
+	//	if errCode == usecase.SaveProteinEventErrorFind {
+	//		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to find event", SlackErrorCodeSavingProteinEvent1))
+	//	} else if errCode == usecase.SaveProteinEventErrorCreate {
+	//		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create event", SlackErrorCodeSavingProteinEvent1))
+	//	} else if errCode == usecase.SaveProteinEventErrorSave {
+	//		httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to save event", SlackErrorCodeSavingProteinEvent1))
+	//	}
+	//	return
+	//}
+	//
+	//// Make response.
+	//resp := &SlackCallbackResponse{
+	//	Message: "success",
+	//}
+	//respBody, err := json.Marshal(resp)
+	//if err != nil {
+	//	log.Error("%v", err.Error())
+	//	httputil.WriteJsonResponse(w, http.StatusBadRequest, MakeErrorCallbackResponseBody("failed to create response", SlackErrorCodeCreateResponse))
+	//}
+	//httputil.WriteJsonResponse(w, http.StatusOK, respBody)
 }
 
 // POST handler.
 func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	saver, err := usecase.NewSaveProteinEvent(apprule.NewPostgresRepository(config.GetConfig()))
-	if err != nil {
-		httputil.WriteJsonResponse(w, http.StatusInternalServerError, MakeErrorCallbackResponseBody("internal", SlackErrorCodeSavingProteinEvent1))
-		return
-	}
-	handler(ctx, saver, w, r)
+	// TODO: 各リクエスト内の処理で実装
+	//saver, err := usecase.NewSaveProteinEvent(apprule.NewPostgresRepository(config.GetConfig()))
+	//if err != nil {
+	//	httputil.WriteJsonResponse(w, http.StatusInternalServerError, MakeErrorCallbackResponseBody("internal", SlackErrorCodeSavingProteinEvent1))
+	//	return
+	//}
+
+	input := &SlackCallbackRequest{}
+
+	handler(ctx, saver, w, input)
 }
