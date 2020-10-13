@@ -1,9 +1,10 @@
-package adapter
+package webserver
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+	"proteinreminder/internal/app/adapter/slackcontroller"
 	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/httputil"
 	"proteinreminder/internal/pkg/log"
@@ -56,7 +57,7 @@ func NewWebServer(ctx context.Context, config config.Config) *WebServer {
 	mux := http.NewServeMux()
 
 	// POST: /api/<ver>/slack-callback
-	mux.HandleFunc(fmt.Sprintf("/%s/%s/slack-callback", ApiPrefixPath, Version), makeHandlerFunc(ctx, SlackCallbackHandler))
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/slack-callback", ApiPrefixPath, Version), makeHandlerFunc(ctx, slackcontroller.Handler))
 
 	// GET: /api/<ver>/test
 	mux.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {

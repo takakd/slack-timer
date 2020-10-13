@@ -13,16 +13,15 @@ import (
 type SaveProteinEventError int
 
 // Errors that this usecase returns.
-const (
-	SaveProteinEventNoError SaveProteinEventError = iota
-	SaveProteinEventErrorFind
-	SaveProteinEventErrorCreate
-	SaveProteinEventErrorSave
+var (
+	ErrFind   = errors.New("could not find")
+	ErrCreate = errors.New("failed to create event")
+	ErrSave   = errors.New("failed to save")
 )
 
 type ProteinEventSaver interface {
-	SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) SaveProteinEventError
-	SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) SaveProteinEventError
+	SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) error
+	SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) error
 }
 
 type SaveProteinEvent struct {
@@ -39,17 +38,17 @@ func NewSaveProteinEvent(repository apprule.Repository) (*SaveProteinEvent, erro
 }
 
 // Common processing.
-func (s *SaveProteinEvent) saveProteinEventValue(ctx context.Context, userId string, toDrink *time.Time, remindInterval *time.Duration) SaveProteinEventError {
+func (s *SaveProteinEvent) saveProteinEventValue(ctx context.Context, userId string, toDrink *time.Time, remindInterval *time.Duration) error {
 
 	event, err := s.repository.FindProteinEvent(ctx, userId)
 	if err != nil {
 		log.Error(err)
-		return SaveProteinEventErrorFind
+		return ErrFind
 	}
 
 	if event == nil {
 		if event, err = enterpriserule.NewProteinEvent(userId); err != nil {
-			return SaveProteinEventErrorCreate
+			return ErrCreate
 		}
 	}
 
@@ -61,18 +60,18 @@ func (s *SaveProteinEvent) saveProteinEventValue(ctx context.Context, userId str
 	}
 
 	if _, err = s.repository.SaveProteinEvent(ctx, []*enterpriserule.ProteinEvent{event}); err != nil {
-		return SaveProteinEventErrorSave
+		return ErrSave
 	}
 
-	return SaveProteinEventNoError
+	return nil
 }
 
 // Save the time for user to drink.
-func (s *SaveProteinEvent) SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) SaveProteinEventError {
+func (s *SaveProteinEvent) SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) error {
 	return s.saveProteinEventValue(ctx, userId, &timeToDrink, nil)
 }
 
 // Save the remind interval second for user.
-func (s *SaveProteinEvent) SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) SaveProteinEventError {
+func (s *SaveProteinEvent) SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) error {
 	return s.saveProteinEventValue(ctx, userId, nil, &minutes)
 }

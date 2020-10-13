@@ -29,7 +29,7 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 			Return(nil, nil)
 
 		s, _ := NewSaveProteinEvent(m)
-		if err := s.saveProteinEventValue(context.TODO(), userId, &now, nil); err != SaveProteinEventNoError {
+		if err := s.saveProteinEventValue(context.TODO(), userId, &now, nil); err != nil {
 			t.Errorf("failed to save")
 		}
 	})
@@ -49,7 +49,7 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 		s, _ := NewSaveProteinEvent(m)
 
 		now := time.Now()
-		if err := s.saveProteinEventValue(context.TODO(), event.UserId, &now, nil); err != SaveProteinEventNoError {
+		if err := s.saveProteinEventValue(context.TODO(), event.UserId, &now, nil); err != nil {
 			t.Errorf("failed to save")
 		}
 	})
@@ -71,7 +71,7 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 			Return(nil, nil)
 
 		s, _ := NewSaveProteinEvent(m)
-		if err := s.saveProteinEventValue(context.TODO(), userId, nil, &interval); err != SaveProteinEventNoError {
+		if err := s.saveProteinEventValue(context.TODO(), userId, nil, &interval); err != nil {
 			t.Errorf("failed to save")
 		}
 	})
@@ -88,8 +88,8 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 
 		s, _ := NewSaveProteinEvent(m)
 		dummy := time.Now()
-		if err := s.saveProteinEventValue(context.TODO(), userId, &dummy, nil); err != SaveProteinEventErrorCreate {
-			t.Error(testutil.MakeTestMessageWithGotWant(err, SaveProteinEventErrorCreate))
+		if err := s.saveProteinEventValue(context.TODO(), userId, &dummy, nil); err != ErrCreate {
+			t.Error(testutil.MakeTestMessageWithGotWant(err, ErrCreate))
 		}
 	})
 
@@ -105,8 +105,8 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 
 		s, _ := NewSaveProteinEvent(m)
 		dummy := time.Now()
-		if err := s.saveProteinEventValue(context.TODO(), userId, &dummy, nil); err != SaveProteinEventErrorFind {
-			t.Error(testutil.MakeTestMessageWithGotWant(err, SaveProteinEventErrorFind))
+		if err := s.saveProteinEventValue(context.TODO(), userId, &dummy, nil); err != ErrFind {
+			t.Error(testutil.MakeTestMessageWithGotWant(err, ErrFind))
 		}
 	})
 }
