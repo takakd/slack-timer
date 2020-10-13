@@ -1,5 +1,47 @@
 package slackcontroller
 
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+	"time"
+)
+
+func TestSetRequestHandler_validate(t *testing.T) {
+	cases := []struct {
+		name  string
+		text  string
+		min   time.Duration
+		valid bool
+	}{
+		{"OK", "set 10", 10, true},
+		{"OK", "set 1", 1, true},
+		{"NG", "set -1", 0, false},
+		{"NG", "set", 0, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			r := SetRequestHandler{
+				params: &SlackCallbackRequestParams{
+					UserId: "test",
+					Text: c.text,
+				},
+				datetime: time.Now(),
+			}
+			bag := r.validate()
+			_, exists := bag.GetError("interval")
+			assert.Equal(t, c.valid, !exists)
+			if c.valid {
+				assert.Equal(t, c.min, r.remindIntervalInMin)
+			}
+		})
+	}
+}
+
+func TestSetRequestHandler_Handler(t *testing.T) {
+	// TODO:
+
+}
+
 //
 //import (
 //	"bytes"

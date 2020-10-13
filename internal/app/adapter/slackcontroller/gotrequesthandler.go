@@ -18,7 +18,6 @@ type GotRequestHandler struct {
 	saver    usecase.ProteinEventSaver
 }
 
-//
 func (gr *GotRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
 	// Save protein event.
 	err := gr.saver.SaveTimeToDrink(ctx, gr.params.UserId, gr.datetime)

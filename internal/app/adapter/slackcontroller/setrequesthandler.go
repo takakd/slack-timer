@@ -4,9 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"proteinreminder/internal/app/adapter"
+	"proteinreminder/internal/app/adapter/validator"
 	"proteinreminder/internal/app/usecase"
 	"proteinreminder/internal/pkg/httputil"
 	"proteinreminder/internal/pkg/log"
@@ -25,30 +24,25 @@ type SetRequestHandler struct {
 	saver               usecase.ProteinEventSaver
 }
 
-//
-func (sr *SetRequestHandler) validate() (*adapter.ValidateErrorBag, error) {
-	bag := adapter.NewValidateErrorBag()
+func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
+	bag := validator.NewValidateErrorBag()
 
 	re := regexp.MustCompile(`(.*)\s+([0-9]+)`)
 	m := re.FindStringSubmatch(sr.params.Text)
 	if m == nil {
-		return nil, fmt.Errorf("invalid Text format")
+		bag.SetError("interval", "invalid format", errors.New("invalid format"))
+		return bag
 	}
 
-	if minutes, err := strconv.Atoi(m[2]); err != nil {
-		// the process doesn't come here.
-		return bag, err
-	} else {
-		sr.remindIntervalInMin = time.Duration(minutes)
-	}
+	minutes, _ := strconv.Atoi(m[2])
+	sr.remindIntervalInMin = time.Duration(minutes)
 
-	return bag, nil
+	return bag
 }
 
-//
 func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
-	if validateErrors, err := sr.validate(); err != nil {
-		var firstError *adapter.ValidateError
+	if validateErrors := sr.validate(); len(validateErrors.GetErrors()) > 0 {
+		var firstError *validator.ValidateError
 		for _, v := range validateErrors.GetErrors() {
 			firstError = v
 			break
