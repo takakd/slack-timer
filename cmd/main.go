@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"os"
-	"proteinreminder/internal/app/adapter"
 	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/errorutil"
 	"proteinreminder/internal/pkg/log"
+	"proteinreminder/internal/app/adapter/webserver"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 
 	ctx := context.Background()
 
-	server := adapter.NewWebServer(ctx, config.GetConfig(""))
+	server := webserver.NewWebServer(ctx, config.GetConfig(""))
 	if server == nil {
 		log.Error("failed to create server")
 	}
