@@ -13,9 +13,10 @@ import (
 // GotRequestHandler represents the API command "Got".
 type GotRequestHandler struct {
 	params *SlackCallbackRequestParams
-	// The time of entering a message on Slack.
+	// User entered time on Slack
 	datetime time.Time
-	saver    usecase.ProteinEventSaver
+	// Usecase to save entity
+	saver usecase.ProteinEventSaver
 }
 
 func (gr *GotRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
@@ -32,7 +33,6 @@ func (gr *GotRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 		return
 	}
 
-	// Response
 	resp := &SlackCallbackResponse{
 		Message: "success",
 	}

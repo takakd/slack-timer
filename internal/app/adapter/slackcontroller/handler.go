@@ -60,6 +60,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 		return nil, err
 	}
 
+	// e.g. set 10, got
 	re := regexp.MustCompile(`([^\s]*)\s*`)
 	m := re.FindStringSubmatch(params.Text)
 	if m == nil {
@@ -92,7 +93,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 	return req, nil
 }
 
-// Provides handlers for each request.
+// Provides handlers to each request.
 type RequestHandler interface {
 	Handler(ctx context.Context, w http.ResponseWriter)
 }
@@ -110,30 +111,6 @@ type ErrorSlackCallbackResponse struct {
 	Error   error  `json:"error"`
 }
 
-////
-//func (e *ErrorSlackCallbackResponse) UnmarshalJSON(bytes []byte) error {
-//	var data map[string]interface{}
-//	if err := json.Unmarshal(bytes, &data); err != nil {
-//		return err
-//	}
-//	e.Message = data["message"].(string)
-//	//e.Error = errors.New(data["error"].(string))
-//	return nil
-//}
-//
-////
-//func (e *ErrorSlackCallbackResponse) MarshalJSON() ([]byte, error) {
-//	fmt.Println("hoghoge")
-//	return json.Marshal(&struct {
-//		Message string `json:"message"`
-//		Error   string `json:"error"`
-//	}{
-//		Message: e.Message,
-//		Error:   e.Error.Error(),
-//	})
-//}
-
-//
 func makeErrorCallbackResponseBody(message string, err error) []byte {
 	resp := ErrorSlackCallbackResponse{
 		Message: message,
@@ -146,7 +123,7 @@ func makeErrorCallbackResponseBody(message string, err error) []byte {
 	return body
 }
 
-// Handler is set up on the server, and it's called by it.
+// Web server registers this to themselves and call.
 func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "404 not found", http.StatusNotFound)

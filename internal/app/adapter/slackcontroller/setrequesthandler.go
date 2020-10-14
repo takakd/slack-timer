@@ -8,7 +8,6 @@ import (
 	"proteinreminder/internal/app/adapter/validator"
 	"proteinreminder/internal/app/usecase"
 	"proteinreminder/internal/pkg/httputil"
-	"proteinreminder/internal/pkg/log"
 	"regexp"
 	"strconv"
 	"time"
@@ -17,16 +16,19 @@ import (
 // SetRequestHandler represents the API command "Set".
 type SetRequestHandler struct {
 	params *SlackCallbackRequestParams
-	// The time entered by the user.
+	// User entered time on Slack
 	datetime time.Time
-	// The time the user is notified next time.
+	// Time to notify user next
 	remindIntervalInMin time.Duration
-	saver               usecase.ProteinEventSaver
+	// Usecase to save entity
+	saver usecase.ProteinEventSaver
 }
 
+// Validate parameters.
 func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
+	// e.g. set 10
 	re := regexp.MustCompile(`(.*)\s+([0-9]+)`)
 	m := re.FindStringSubmatch(sr.params.Text)
 	if m == nil {
@@ -35,7 +37,7 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	}
 
 	minutes, _ := strconv.Atoi(m[2])
-	sr.remindIntervalInMin = time.Duration(minutes)
+	sr.remindIntervalInMin = time.Duration(minutes) * time.Minute
 
 	return bag
 }
@@ -51,6 +53,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 		return
 	}
 
+	// Save protein event.
 	err := sr.saver.SaveIntervalSec(ctx, sr.params.UserId, sr.remindIntervalInMin)
 	if errors.Is(err, usecase.ErrFind) {
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("failed to find event", ErrSaveEvent))
@@ -66,10 +69,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 	resp := &SlackCallbackResponse{
 		Message: "success",
 	}
-	respBody, err := json.Marshal(resp)
-	if err != nil {
-		log.Error("%v", err.Error())
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("failed to create response", ErrCreateResponse))
-	}
+	respBody, _ := json.Marshal(resp)
 	httputil.WriteJsonResponse(w, http.StatusOK, respBody)
+	return
 }
