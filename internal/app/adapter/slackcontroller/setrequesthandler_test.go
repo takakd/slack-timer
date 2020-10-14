@@ -4,6 +4,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+	"context"
+	"net/http/httptest"
+	"encoding/json"
+	"proteinreminder/internal/app/usecase"
+	"github.com/golang/mock/gomock"
+	"net/http"
+	"fmt"
 )
 
 func TestSetRequestHandler_validate(t *testing.T) {
@@ -23,7 +30,7 @@ func TestSetRequestHandler_validate(t *testing.T) {
 			r := SetRequestHandler{
 				params: &SlackCallbackRequestParams{
 					UserId: "test",
-					Text: c.text,
+					Text:   c.text,
 				},
 				datetime: time.Now(),
 			}
@@ -38,8 +45,82 @@ func TestSetRequestHandler_validate(t *testing.T) {
 }
 
 func TestSetRequestHandler_Handler(t *testing.T) {
-	// TODO:
+	// Validate error
+	t.Run("validate error", func(t *testing.T) {
+		r := SetRequestHandler{
+			params: &SlackCallbackRequestParams{
+				UserId: "test",
+				Text:   "",
+			},
+			datetime: time.Now(),
+		}
 
+		w := httptest.NewRecorder()
+		r.Handler(context.TODO(), w)
+		want, _ := json.Marshal(ErrorSlackCallbackResponse{
+			Message: "invalid format",
+			Error:   ErrInvalidParameters,
+		})
+		assert.Equal(t, w.Body.Bytes(), want)
+	})
+
+	// Protein save errors.
+	cases := []struct {
+		name string
+		err  error
+		msg  string
+	}{
+		{name: "save error: find", err: usecase.ErrFind, msg: "failed to find event"},
+		{name: "save error: create", err: usecase.ErrCreate, msg: "failed to create event"},
+		{name: "save error: save", err: usecase.ErrSave, msg: "failed to save event"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ctx := context.TODO()
+			userId := "test user"
+			interval := 120
+			ctrl := gomock.NewController(t)
+			saver := usecase.NewMockProteinEventSaver(ctrl)
+			saver.EXPECT().SaveTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(interval)).Return(c.err)
+
+			h := &SetRequestHandler{
+				saver: saver,
+				params: &SlackCallbackRequestParams{
+					UserId: userId,
+					Text:   fmt.Sprintf("set %d", interval),
+				},
+			}
+
+			w := httptest.NewRecorder()
+			h.Handler(context.TODO(), w)
+			assert.Equal(t, w.Code, http.StatusBadRequest)
+			assert.Equal(t, w.Body.Bytes(), makeErrorCallbackResponseBody(c.msg, c.err))
+		})
+	}
+
+	// Success
+	t.Run("success", func(t *testing.T) {
+		ctx := context.TODO()
+		userId := "test user"
+		interval := time.Duration(120)
+		ctrl := gomock.NewController(t)
+		saver := usecase.NewMockProteinEventSaver(ctrl)
+		saver.EXPECT().SaveTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(interval)).Return(nil)
+
+		h := &SetRequestHandler{
+			saver: saver,
+			params: &SlackCallbackRequestParams{
+				UserId: userId,
+				Text:   fmt.Sprintf("set %d", interval),
+			},
+		}
+
+		w := httptest.NewRecorder()
+		h.Handler(context.TODO(), w)
+		want, _ := json.Marshal(SlackCallbackResponse{Message: "success"})
+		assert.Equal(t, w.Code, http.StatusOK)
+		assert.Equal(t, w.Body.Bytes(), want)
+	})
 }
 
 //
