@@ -57,7 +57,7 @@ func NewWebServer(ctx context.Context, config config.Config) *WebServer {
 	mux := http.NewServeMux()
 
 	// POST: /api/<ver>/slack-callback
-	mux.HandleFunc(fmt.Sprintf("/%s/%s/slack-callback", ApiPrefixPath, Version), makeHandlerFunc(ctx, slackcontroller.Handler))
+	mux.HandleFunc(fmt.Sprintf("%s/%s/slack-callback", ApiPrefixPath, Version), makeHandlerFunc(ctx, slackcontroller.Handler))
 
 	// GET: /api/<ver>/test
 	mux.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
