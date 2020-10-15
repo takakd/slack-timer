@@ -132,7 +132,7 @@ func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	h, err := NewRequestHandler(r)
 	if err != nil {
-		log.Error("%v", err.Error())
+		log.Error(err.Error())
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest))
 		return
 	}
