@@ -71,11 +71,26 @@ func WriteJsonResponse(w http.ResponseWriter, httpStatusCode int, body []byte) e
 
 // Set FormValues to struct
 func SetFormValueToStruct(values url.Values, structPtr interface{}) error {
+	if len(values) == 0 {
+		// No values
+		return nil
+	}
+
+	if structPtr == nil {
+		return errors.New("http/SetFormValueToStruct: strctPtr is nil")
+	}
+
 	// Get the pointer of struct
 	ptr := reflect.ValueOf(structPtr)
+	if ptr.Type().Kind() != reflect.Ptr {
+		return errors.New("http/SetFormValueToStruct: strctPtr is not pointer")
+	}
 
 	// Get the value of struct
 	value := ptr.Elem()
+	if value.Type().Kind() != reflect.Struct {
+		return errors.New("http/SetFormValueToStruct: strctPtr is not struct pointer")
+	}
 
 	// Set value to struct field
 	valueType := value.Type()

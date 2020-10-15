@@ -9,6 +9,7 @@ import (
 	"proteinreminder/internal/pkg/testutil"
 	"strings"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRequestBody(t *testing.T) {
@@ -58,13 +59,11 @@ func TestGetResponseBody(t *testing.T) {
 	// ok case
 	req, _ := http.NewRequest(http.MethodGet, testServer.URL, nil)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
+
 	body, err := GetResponseBody(resp)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
+
 	if string(body) != "ok" {
 		t.Error(testutil.MakeTestMessageWithGotWant(string(body), "ok"))
 	}
@@ -72,13 +71,9 @@ func TestGetResponseBody(t *testing.T) {
 	// case: empty
 	req, _ = http.NewRequest(http.MethodPost, testServer.URL, nil)
 	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 	body, err = GetResponseBody(resp)
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 	if string(body) != "" {
 		t.Error(testutil.MakeTestMessageWithGotWant(string(body), ""))
 	}
@@ -87,15 +82,12 @@ func TestGetResponseBody(t *testing.T) {
 func TestNewErrorJsonResponse(t *testing.T) {
 	// case: ok
 	body, err := NewErrorJsonResponse("summary", "code", "detail")
-	if err != nil {
-		t.Errorf("failed. %v", err)
-	}
+	assert.NoError(t, err)
 
 	var response ErrorJsonResponse
 	err = json.Unmarshal(body, &response)
-	if err != nil {
-		t.Errorf("failed. %v", err)
-	}
+	assert.NoError(t, err)
+
 	if response.Sumary != "summary" {
 		t.Error(testutil.MakeTestMessageWithGotWant(response.Sumary, "summary"))
 	}
@@ -109,14 +101,11 @@ func TestNewErrorJsonResponse(t *testing.T) {
 	// case: empty
 	var empty string
 	body, err = NewErrorJsonResponse(empty, empty, empty)
-	if err != nil {
-		t.Errorf("failed. %v", err)
-	}
+	assert.NoError(t, err)
 
 	err = json.Unmarshal(body, &response)
-	if err != nil {
-		t.Errorf("failed. %v", err)
-	}
+	assert.NoError(t, err)
+
 	if response.Sumary != empty {
 		t.Error(testutil.MakeTestMessageWithGotWant(response.Sumary, empty))
 	}
@@ -139,9 +128,8 @@ func TestWriteErrorJsonResponse(t *testing.T) {
 
 	var response ErrorJsonResponse
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	if err != nil {
-		t.Errorf("failed. %v", err)
-	}
+	assert.NoError(t, err)
+
 	if response.Sumary != "summary" {
 		t.Error(testutil.MakeTestMessageWithGotWant(response.Sumary, "summary"))
 	}
@@ -159,17 +147,37 @@ type TestSetFormValueToStructStruct struct {
 }
 
 func TestSetFormValueToStruct(t *testing.T) {
-	formValues := url.Values{}
-	formValues.Set("test1", "test1_value")
-	formValues.Set("test2", "test2_value")
+	t.Run("NG: empty", func(t *testing.T) {
+		formValues := url.Values{}
 
-	got := &TestSetFormValueToStructStruct{}
-	err := SetFormValueToStruct(formValues, got)
-	if err != nil {
-		t.Error(err)
-	}
+		got := &TestSetFormValueToStructStruct{}
+		err := SetFormValueToStruct(formValues, got)
+		assert.NoError(t, err)
 
-	if got.Value1 != formValues.Get("test1") || got.Value2 != formValues.Get("test2") {
-		t.Error(testutil.MakeTestMessageWithGotWant(got, formValues))
-	}
+		assert.Equal(t, got, &TestSetFormValueToStructStruct{})
+	})
+
+	t.Run("NG: nil", func(t *testing.T) {
+		formValues := url.Values{}
+		formValues.Set("test1", "test1_value")
+		err := SetFormValueToStruct(formValues, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("OK", func(t *testing.T) {
+		formValues := url.Values{}
+		formValues.Set("test1", "test1_value")
+		formValues.Set("test2", "test2_value")
+
+		got := &TestSetFormValueToStructStruct{
+			Value1: "be overwrite",
+		}
+		err := SetFormValueToStruct(formValues, got)
+		assert.NoError(t, err)
+
+		assert.Equal(t, &TestSetFormValueToStructStruct{
+			Value1: "test1_value",
+			Value2: "test2_value",
+		}, got)
+	})
 }
