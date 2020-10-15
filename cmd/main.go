@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"os"
+	"proteinreminder/internal/app/adapter/webserver"
 	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/errorutil"
 	"proteinreminder/internal/pkg/log"
-	"proteinreminder/internal/app/adapter/webserver"
 )
 
 func main() {

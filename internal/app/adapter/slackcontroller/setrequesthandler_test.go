@@ -1,16 +1,16 @@
 package slackcontroller
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"proteinreminder/internal/app/usecase"
 	"testing"
 	"time"
-	"context"
-	"net/http/httptest"
-	"encoding/json"
-	"proteinreminder/internal/app/usecase"
-	"github.com/golang/mock/gomock"
-	"net/http"
-	"fmt"
 )
 
 func TestSetRequestHandler_validate(t *testing.T) {
@@ -38,7 +38,7 @@ func TestSetRequestHandler_validate(t *testing.T) {
 			_, exists := bag.GetError("interval")
 			assert.Equal(t, c.valid, !exists)
 			if c.valid {
-				assert.Equal(t, time.Duration(c.min) * time.Minute, r.remindIntervalInMin)
+				assert.Equal(t, time.Duration(c.min)*time.Minute, r.remindIntervalInMin)
 			}
 		})
 	}
@@ -122,4 +122,3 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 		assert.Equal(t, w.Body.Bytes(), want)
 	})
 }
-
