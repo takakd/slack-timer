@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,7 +10,6 @@ import (
 	"proteinreminder/internal/pkg/testutil"
 	"strings"
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRequestBody(t *testing.T) {

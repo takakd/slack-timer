@@ -77,19 +77,19 @@ func SetFormValueToStruct(values url.Values, structPtr interface{}) error {
 	}
 
 	if structPtr == nil {
-		return errors.New("http/SetFormValueToStruct: strctPtr is nil")
+		return errors.New("http/SetFormValueToStruct: structPtr is nil")
 	}
 
-	// Get the pointer of struct
+	// Get struct pointer
 	ptr := reflect.ValueOf(structPtr)
 	if ptr.Type().Kind() != reflect.Ptr {
-		return errors.New("http/SetFormValueToStruct: strctPtr is not pointer")
+		return errors.New("http/SetFormValueToStruct: structPtr is not pointer")
 	}
 
-	// Get the value of struct
+	// Get struct value
 	value := ptr.Elem()
 	if value.Type().Kind() != reflect.Struct {
-		return errors.New("http/SetFormValueToStruct: strctPtr is not struct pointer")
+		return errors.New("http/SetFormValueToStruct: structPtr is not struct pointer")
 	}
 
 	// Set value to struct field
