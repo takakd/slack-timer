@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 	"proteinreminder/internal/app/apprule"
 	"proteinreminder/internal/app/enterpriserule"
-	"proteinreminder/internal/pkg/testutil"
 	"testing"
 	"time"
 )
@@ -25,13 +25,11 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 		now := time.Now()
 		event, _ := enterpriserule.NewProteinEvent(userId)
 		event.UtcTimeToDrink = now
-		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Eq([]*enterpriserule.ProteinEvent{event})).
-			Return(nil, nil)
+		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Len(1)).Return(nil, nil)
 
 		s, _ := NewSaveProteinEvent(m)
-		if err := s.saveProteinEventValue(context.TODO(), userId, &now, nil); err != nil {
-			t.Errorf("failed to save")
-		}
+		err := s.saveProteinEventValue(context.TODO(), userId, 0)
+		assert.NoError(t, err)
 	})
 
 	t.Run("OK: update, to drink", func(t *testing.T) {
@@ -48,10 +46,8 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 
 		s, _ := NewSaveProteinEvent(m)
 
-		now := time.Now()
-		if err := s.saveProteinEventValue(context.TODO(), event.UserId, &now, nil); err != nil {
-			t.Errorf("failed to save")
-		}
+		err := s.saveProteinEventValue(context.TODO(), event.UserId, 0)
+		assert.NoError(t, err)
 	})
 
 	t.Run("OK: interval", func(t *testing.T) {
@@ -64,16 +60,15 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
 
-		interval := time.Duration(1)
+		interval := 1
 		event, _ := enterpriserule.NewProteinEvent(userId)
-		event.DrinkTimeIntervalSec = interval
-		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Eq([]*enterpriserule.ProteinEvent{event})).
+		event.DrinkTimeIntervalMin = interval
+		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Len(1)).
 			Return(nil, nil)
 
 		s, _ := NewSaveProteinEvent(m)
-		if err := s.saveProteinEventValue(context.TODO(), userId, nil, &interval); err != nil {
-			t.Errorf("failed to save")
-		}
+		err := s.saveProteinEventValue(context.TODO(), userId, interval)
+		assert.NoError(t, err)
 	})
 
 	t.Run("NG: new event", func(t *testing.T) {
@@ -87,10 +82,8 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 			Return(nil, nil)
 
 		s, _ := NewSaveProteinEvent(m)
-		dummy := time.Now()
-		if err := s.saveProteinEventValue(context.TODO(), userId, &dummy, nil); err != ErrCreate {
-			t.Error(testutil.MakeTestMessageWithGotWant(err, ErrCreate))
-		}
+		err := s.saveProteinEventValue(context.TODO(), userId, 0)
+		assert.True(t, errors.Is(err, ErrCreate))
 	})
 
 	t.Run("NG: find event", func(t *testing.T) {
@@ -104,9 +97,7 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 			Return(nil, errors.New("error"))
 
 		s, _ := NewSaveProteinEvent(m)
-		dummy := time.Now()
-		if err := s.saveProteinEventValue(context.TODO(), userId, &dummy, nil); err != ErrFind {
-			t.Error(testutil.MakeTestMessageWithGotWant(err, ErrFind))
-		}
+		err := s.saveProteinEventValue(context.TODO(), userId, 0)
+		assert.True(t, errors.Is(err, ErrFind))
 	})
 }

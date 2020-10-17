@@ -61,7 +61,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 	}
 
 	// e.g. set 10, got
-	re := regexp.MustCompile(`([^\s]*)\s*`)
+	re := regexp.MustCompile(`^([^\s]*)\s*$`)
 	m := re.FindStringSubmatch(params.Text)
 	if m == nil {
 		return nil, fmt.Errorf("invalid Text format")

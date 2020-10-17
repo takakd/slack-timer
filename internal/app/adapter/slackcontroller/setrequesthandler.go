@@ -26,7 +26,7 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
 	// e.g. set 10
-	re := regexp.MustCompile(`(.*)\s+([0-9]+)`)
+	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
 	m := re.FindStringSubmatch(sr.params.Text)
 	if m == nil {
 		bag.SetError("interval", "invalid format", errors.New("invalid format"))

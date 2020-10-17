@@ -41,16 +41,16 @@ fmt() {
 }
 
 run() {
-    docker_run
+#    docker_run
 
-    # Call if it's entered Ctrl+C
-    trap docker_cleanup SIGINT
+#    # Call if it's entered Ctrl+C
+#    trap docker_cleanup SIGINT
 
     echo Run go cmd.
     cd "${SCRIPT_DIR}/../cmd" || exit
     ${SCRIPT_DIR}/../cmd/main
 
-    docker_cleanup
+#    docker_cleanup
 }
 docker_run() {
     docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d

@@ -2,8 +2,8 @@ package enterpriserule
 
 import (
 	"github.com/pkg/errors"
-	"time"
 	"reflect"
+	"time"
 )
 
 // Holds the time to drink a protein and the interval of drinking.

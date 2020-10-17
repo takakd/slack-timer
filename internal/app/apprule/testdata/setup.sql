@@ -6,9 +6,5 @@
 CREATE TABLE IF NOT EXISTS test_protein_event (
     user_id character varying(9) PRIMARY KEY,
     utc_time_to_drink timestamp without time zone,
-    drink_time_interval_sec integer NOT NULL DEFAULT 0
+    drink_time_interval_min integer NOT NULL DEFAULT 0
 );
-
--- Indices -------------------------------------------------------
-
-CREATE UNIQUE INDEX IF NOT EXISTS test_protein_event_pkey ON test_protein_event(user_id text_ops);

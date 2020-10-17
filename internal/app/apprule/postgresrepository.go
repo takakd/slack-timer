@@ -44,6 +44,9 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", r.config.Get("POSTGRES_TBL_PROTEINEVENT", "")), userId); err != nil {
 		return nil, nil
 	}
+
+	event.UtcTimeToDrink = event.UtcTimeToDrink.UTC()
+
 	return
 }
 
@@ -63,7 +66,7 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 
 	results = make([]*enterpriserule.ProteinEvent, len(values))
 	for i := range values {
-		fmt.Println(values[i])
+		values[i].UtcTimeToDrink = values[i].UtcTimeToDrink.UTC()
 		results[i] = &values[i]
 	}
 	return

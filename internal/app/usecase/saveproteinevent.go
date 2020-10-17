@@ -52,15 +52,15 @@ func (s *SaveProteinEvent) saveProteinEventValue(ctx context.Context, userId str
 			log.Error(err)
 			return fmt.Errorf("new %v: %w", userId, ErrCreate)
 		}
-		event.UtcTimeToDrink = time.Now()
+		event.UtcTimeToDrink = time.Now().UTC()
 	}
 
 	if remindInterval != 0 {
 		event.DrinkTimeIntervalMin = remindInterval
+	} else {
+		// Set next notify time.
+		event.UtcTimeToDrink = event.UtcTimeToDrink.Add(time.Duration(event.DrinkTimeIntervalMin) * time.Minute)
 	}
-
-	// Set next notify time.
-	event.UtcTimeToDrink.Add(time.Duration(event.DrinkTimeIntervalMin) * time.Minute)
 
 	if _, err = s.repository.SaveProteinEvent(ctx, []*enterpriserule.ProteinEvent{event}); err != nil {
 		log.Error(err)

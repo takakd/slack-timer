@@ -163,7 +163,7 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		userId := "abc123"
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return("disable")
+		c.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return("disable")
 
 		repo := NewPostgresRepository(c)
 		event, err := repo.FindProteinEvent(ctx, userId)
@@ -183,12 +183,12 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
 			// For SaveProteinEvent
-			mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
+			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
 			// For FindProteinEvent
-			mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
+			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
 		)
 
 		testEvents := makePostgresTestEvents()
@@ -224,13 +224,13 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		dsn, tableName := getTestPostgresEnv(t)
 		mock := config.NewMockConfig(ctrl)
 		// For SaveProteinEvent
-		call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn)
-		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName).After(call)
-		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName).After(call)
+		call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn)
+		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName).After(call)
+		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName).After(call)
 		// For FindProteinEvent
 		for i := 0; i < len(testEvents); i++ {
-			call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn).After(call)
-			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName).After(call)
+			call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn).After(call)
+			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName).After(call)
 		}
 
 		ctx := context.TODO()
@@ -293,13 +293,13 @@ func TestPostgresRepository_FindProteinEventByTime(t *testing.T) {
 	mock := config.NewMockConfig(ctrl)
 	gomock.InOrder(
 		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
+		mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
+		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
 		// For FindProteinEventByTime
-		mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
+		mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
+		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
 	)
 
 	ctx := context.TODO()
@@ -343,9 +343,9 @@ func TestPostgresRepository_SaveProteinEvent(t *testing.T) {
 	mock := config.NewMockConfig(ctrl)
 	gomock.InOrder(
 		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("DATABASE_URL")).Return(dsn),
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
-		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT")).Return(tableName),
+		mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
+		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+		mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
 	)
 
 	ctx := context.TODO()

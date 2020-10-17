@@ -18,12 +18,12 @@ func TestSetDefaultLogger(t *testing.T) {
 func TestDebug(t *testing.T) {
 	cases := []struct {
 		name  string
-		level Level
+		level string
 		msg   string
 	}{
-		{"OK: debug", LevelDebug, "a b テスト"},
-		{"OK: info", LevelInfo, ""},
-		{"OK: error", LevelError, ""},
+		{"OK: debug", "debug", "a b テスト"},
+		{"OK: info", "info", ""},
+		{"OK: error", "error", ""},
 	}
 
 	for _, c := range cases {
@@ -50,12 +50,12 @@ func TestDebug(t *testing.T) {
 func TestInfo(t *testing.T) {
 	cases := []struct {
 		name  string
-		level Level
+		level string
 		msg   string
 	}{
-		{"OK: debug", LevelDebug, "a b テスト"},
-		{"OK: info", LevelInfo, "a b テスト"},
-		{"OK: error", LevelError, ""},
+		{"OK: debug", "debug", "a b テスト"},
+		{"OK: info", "info", "a b テスト"},
+		{"OK: error", "error", ""},
 	}
 
 	for _, c := range cases {
@@ -82,12 +82,12 @@ func TestInfo(t *testing.T) {
 func TestError(t *testing.T) {
 	cases := []struct {
 		name  string
-		level Level
+		level string
 		msg   string
 	}{
-		{"OK: debug", LevelDebug, "a b テスト"},
-		{"OK: info", LevelInfo, "a b テスト"},
-		{"OK: error", LevelError, "a b テスト"},
+		{"OK: debug", "debug", "a b テスト"},
+		{"OK: info", "info", "a b テスト"},
+		{"OK: error", "error", "a b テスト"},
 	}
 
 	for _, c := range cases {

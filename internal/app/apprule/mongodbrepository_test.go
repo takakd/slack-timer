@@ -145,7 +145,7 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		mongodbUri := "test mongo url"
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(mongodbUri)
+		c.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(mongodbUri)
 
 		repo := NewMongoDbRepository(c)
 		event, err := repo.FindProteinEvent(ctx, userId)
@@ -167,11 +167,11 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
 			// For SaveProteinEvent
-			mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl),
-			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 			// For FindProteinEvent
-			mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl),
-			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 		)
 
 		repo := NewMongoDbRepository(mock)
@@ -205,12 +205,12 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 
 		var call *gomock.Call
 		// For SaveProteinEvent
-		call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl)
-		call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol).After(call)
+		call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl)
+		call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
 		// For FindProteinEvent
 		for i := 0; i < len(testEvents); i++ {
-			call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl).After(call)
-			call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol).After(call)
+			call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl).After(call)
+			call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
 		}
 
 		ctx := context.TODO()
@@ -270,11 +270,11 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 	mock := config.NewMockConfig(ctrl)
 	gomock.InOrder(
 		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl),
-		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol),
+		mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 		// For FindProteinEventByTime
-		mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl),
-		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol),
+		mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 	)
 
 	repo := NewMongoDbRepository(mock)
@@ -313,8 +313,8 @@ func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
 	mock := config.NewMockConfig(ctrl)
 	gomock.InOrder(
 		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("MONGODB_URI")).Return(testDbUrl),
-		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION")).Return(testDbCol),
+		mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 	)
 
 	repo := NewMongoDbRepository(mock)

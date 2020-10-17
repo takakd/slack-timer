@@ -5,6 +5,14 @@ run:
 	@sh -c "sh '$(CURDIR)/scripts/local.sh' build"
 	@sh -c "sh '$(CURDIR)/scripts/local.sh' run"
 
+dbrun:
+	@echo "==> Starting DB on local..."
+	@sh -c "sh '$(CURDIR)/scripts/local.sh' docker:run"
+
+dbstop:
+	@echo "==> Starting DBon local..."
+	@sh -c "sh '$(CURDIR)/scripts/local.sh' docker:stop"
+
 test:
 	@echo "==> Testing..."
 	@sh -c "sh '$(CURDIR)/scripts/local.sh' test"

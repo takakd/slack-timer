@@ -53,7 +53,7 @@ func TestNewWebServer(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			m := config.NewMockConfig(ctrl)
 
-			m.EXPECT().Get(gomock.Eq("PORT")).Return(c.port)
+			m.EXPECT().Get(gomock.Eq("PORT"), gomock.Eq("8080")).Return(c.port)
 
 			ctx := context.TODO()
 
@@ -68,7 +68,7 @@ func TestWebServer_Run(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	m := config.NewMockConfig(ctrl)
 
-	m.EXPECT().Get(gomock.Eq("PORT")).Return("8080")
+	m.EXPECT().Get(gomock.Eq("PORT"), gomock.Eq("8080")).Return("8080")
 
 	ctx := context.TODO()
 

@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"proteinreminder/internal/app/usecase"
 	"testing"
-	"time"
 )
 
 func TestGotRequestHandler_Handler(t *testing.T) {
@@ -27,17 +26,15 @@ func TestGotRequestHandler_Handler(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.TODO()
 			userId := "test user"
-			timeTo := time.Now()
 			ctrl := gomock.NewController(t)
 			saver := usecase.NewMockProteinEventSaver(ctrl)
-			saver.EXPECT().SaveTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(timeTo)).Return(c.err)
+			saver.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId)).Return(c.err)
 
 			h := &GotRequestHandler{
 				saver: saver,
 				params: &SlackCallbackRequestParams{
 					UserId: userId,
 				},
-				datetime: timeTo,
 			}
 
 			w := httptest.NewRecorder()
@@ -51,17 +48,15 @@ func TestGotRequestHandler_Handler(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		ctx := context.TODO()
 		userId := "test user"
-		timeTo := time.Now()
 		ctrl := gomock.NewController(t)
 		saver := usecase.NewMockProteinEventSaver(ctrl)
-		saver.EXPECT().SaveTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(timeTo)).Return(nil)
+		saver.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId)).Return(nil)
 
 		h := &GotRequestHandler{
 			saver: saver,
 			params: &SlackCallbackRequestParams{
 				UserId: userId,
 			},
-			datetime: timeTo,
 		}
 
 		w := httptest.NewRecorder()

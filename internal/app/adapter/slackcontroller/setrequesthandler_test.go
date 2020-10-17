@@ -10,14 +10,13 @@ import (
 	"net/http/httptest"
 	"proteinreminder/internal/app/usecase"
 	"testing"
-	"time"
 )
 
 func TestSetRequestHandler_validate(t *testing.T) {
 	cases := []struct {
 		name  string
 		text  string
-		min   time.Duration
+		min   int
 		valid bool
 	}{
 		{"OK", "set 10", 10, true},
@@ -32,13 +31,12 @@ func TestSetRequestHandler_validate(t *testing.T) {
 					UserId: "test",
 					Text:   c.text,
 				},
-				datetime: time.Now(),
 			}
 			bag := r.validate()
 			_, exists := bag.GetError("interval")
 			assert.Equal(t, c.valid, !exists)
 			if c.valid {
-				assert.Equal(t, time.Duration(c.min)*time.Minute, r.remindIntervalInMin)
+				assert.Equal(t, c.min, r.remindIntervalInMin)
 			}
 		})
 	}
@@ -52,7 +50,6 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 				UserId: "test",
 				Text:   "",
 			},
-			datetime: time.Now(),
 		}
 
 		w := httptest.NewRecorder()
@@ -78,16 +75,16 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctx := context.TODO()
 			userId := "test user"
-			interval := time.Duration(120) * time.Minute
+			interval := 120
 			ctrl := gomock.NewController(t)
 			saver := usecase.NewMockProteinEventSaver(ctrl)
-			saver.EXPECT().SaveIntervalSec(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(interval)).Return(c.err)
+			saver.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(interval)).Return(c.err)
 
 			h := &SetRequestHandler{
 				saver: saver,
 				params: &SlackCallbackRequestParams{
 					UserId: userId,
-					Text:   fmt.Sprintf("set %v", interval.Minutes()),
+					Text:   fmt.Sprintf("set %v", interval),
 				},
 			}
 
@@ -102,16 +99,16 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		ctx := context.TODO()
 		userId := "test user"
-		interval := time.Duration(120) * time.Minute
+		interval := 120
 		ctrl := gomock.NewController(t)
 		saver := usecase.NewMockProteinEventSaver(ctrl)
-		saver.EXPECT().SaveIntervalSec(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(interval)).Return(nil)
+		saver.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(interval)).Return(nil)
 
 		h := &SetRequestHandler{
 			saver: saver,
 			params: &SlackCallbackRequestParams{
 				UserId: userId,
-				Text:   fmt.Sprintf("set %v", interval.Minutes()),
+				Text:   fmt.Sprintf("set %v", interval),
 			},
 		}
 
