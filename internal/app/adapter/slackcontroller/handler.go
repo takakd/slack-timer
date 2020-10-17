@@ -56,7 +56,7 @@ type SlackCallbackRequestParams struct {
 func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 	params := &SlackCallbackRequestParams{}
 	r.ParseForm()
-	if err := httputil.SetFormValueToStruct(r.Form, &params); err != nil {
+	if err := httputil.SetFormValueToStruct(r.Form, params); err != nil {
 		return nil, err
 	}
 
@@ -72,7 +72,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 		return nil, fmt.Errorf("invalid sub type")
 	}
 
-	saver, err := usecase.NewSaveProteinEvent(apprule.NewPostgresRepository(config.GetConfig("")))
+	saver, err := usecase.NewSaveProteinEvent(apprule.NewPostgresRepository(config.GetConfig("", "")))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create usecase NewSaveProteinEvent")
 	}

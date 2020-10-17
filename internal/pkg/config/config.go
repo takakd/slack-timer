@@ -7,16 +7,20 @@ import (
 	"proteinreminder/internal/pkg/fileutil"
 )
 
+const (
+	defaultConfig string = "env"
+)
+
 // Get config values used in the app.
 type Config interface {
-	Get(name string) string
+	Get(name string, defaultValue string) string
 }
 
 // Use this interface for managing config.
 var config Config
 
 func init() {
-	config = GetConfig("", envPath())
+	config = GetConfig("")
 }
 
 func envPath() string {
@@ -33,10 +37,21 @@ func envPath() string {
 }
 
 // Get config implementation.
+// Returns config corresponding to name and params.
+// Currently, name supports only "env".
 func GetConfig(name string, params ...interface{}) Config {
-	var c Config = nil
+
 	if name == "" {
+		name = defaultConfig
+	}
+
+	if name == defaultConfig {
 		var names []string
+		path := envPath()
+		if path != "" {
+			names = append(names, path)
+		}
+		// Receive .env path by params.
 		if params != nil {
 			for _, p := range params {
 				if name, ok := p.(string); ok && name != "" {
@@ -44,9 +59,10 @@ func GetConfig(name string, params ...interface{}) Config {
 				}
 			}
 		}
-		c = NewEnvConfig(names...)
+		return NewEnvConfig(names...)
 	}
-	return c
+
+	return nil
 }
 
 // Deprecated

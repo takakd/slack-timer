@@ -10,16 +10,13 @@ import (
 	"proteinreminder/internal/pkg/httputil"
 	"regexp"
 	"strconv"
-	"time"
 )
 
 // SetRequestHandler represents the API command "Set".
 type SetRequestHandler struct {
 	params *SlackCallbackRequestParams
-	// User entered time on Slack
-	datetime time.Time
 	// Time to notify user next
-	remindIntervalInMin time.Duration
+	remindIntervalInMin int
 	// Usecase to save entity
 	saver usecase.ProteinEventSaver
 }
@@ -37,7 +34,7 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	}
 
 	minutes, _ := strconv.Atoi(m[2])
-	sr.remindIntervalInMin = time.Duration(minutes) * time.Minute
+	sr.remindIntervalInMin = minutes
 
 	return bag
 }
@@ -54,7 +51,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 	}
 
 	// Save protein event.
-	err := sr.saver.SaveIntervalSec(ctx, sr.params.UserId, sr.remindIntervalInMin)
+	err := sr.saver.SaveIntervalMin(ctx, sr.params.UserId, sr.remindIntervalInMin)
 	if errors.Is(err, usecase.ErrFind) {
 		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("failed to find event", ErrSaveEvent))
 		return

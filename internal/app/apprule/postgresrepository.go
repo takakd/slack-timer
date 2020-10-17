@@ -33,7 +33,7 @@ func NewPostgresRepository(config config.Config) Repository {
 
 // Find protein event by user id.
 func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string) (event *enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL"))
+	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
 	}
@@ -41,7 +41,7 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 	defer db.Close()
 
 	event = &enterpriserule.ProteinEvent{}
-	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", r.config.Get("POSTGRES_TBL_PROTEINEVENT")), userId); err != nil {
+	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", r.config.Get("POSTGRES_TBL_PROTEINEVENT", "")), userId); err != nil {
 		return nil, nil
 	}
 	return
@@ -49,7 +49,7 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 
 // Find protein event from "from" to "to".
 func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL"))
+	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
 	}
@@ -57,7 +57,7 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 	defer db.Close()
 
 	values := []enterpriserule.ProteinEvent{}
-	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", r.config.Get("POSTGRES_TBL_PROTEINEVENT")), from, to); err != nil {
+	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", r.config.Get("POSTGRES_TBL_PROTEINEVENT", "")), from, to); err != nil {
 		return nil, nil
 	}
 
@@ -73,7 +73,7 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 //
 // Return error and the slice of ProteinEvent saved successfully.
 func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
-	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL"))
+	db, err := getPostgresDb(ctx, r.config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
 	}
@@ -92,11 +92,12 @@ func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*ent
 
 	for _, event := range events {
 		_, err = tx.NamedExecContext(ctx, fmt.Sprintf(`
-			INSERT INTO %s (user_id, utc_time_to_drink, drink_time_interval_sec)
-			VALUES (:user_id, :utc_time_to_drink, :drink_time_interval_sec)
+			INSERT INTO %s (user_id, utc_time_to_drink, drink_time_interval_min)
+			VALUES (:user_id, :utc_time_to_drink, :drink_time_interval_min)
 			ON CONFLICT (user_id) DO UPDATE
-			SET utc_time_to_drink = :utc_time_to_drink, drink_time_interval_sec = :drink_time_interval_sec
-		`, r.config.Get("POSTGRES_TBL_PROTEINEVENT")), event)
+			SET utc_time_to_drink = :utc_time_to_drink,
+				drink_time_interval_min = :drink_time_interval_min
+		`, r.config.Get("POSTGRES_TBL_PROTEINEVENT", "")), event)
 		if err != nil {
 			tx.Rollback()
 			return

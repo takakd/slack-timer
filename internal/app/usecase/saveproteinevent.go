@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"proteinreminder/internal/app/apprule"
 	"proteinreminder/internal/app/enterpriserule"
@@ -20,8 +21,8 @@ var (
 )
 
 type ProteinEventSaver interface {
-	SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) error
-	SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) error
+	UpdateTimeToDrink(ctx context.Context, userId string) error
+	SaveIntervalMin(ctx context.Context, userId string, minutes int) error
 }
 
 type SaveProteinEvent struct {
@@ -38,40 +39,43 @@ func NewSaveProteinEvent(repository apprule.Repository) (*SaveProteinEvent, erro
 }
 
 // Common processing.
-func (s *SaveProteinEvent) saveProteinEventValue(ctx context.Context, userId string, toDrink *time.Time, remindInterval *time.Duration) error {
+func (s *SaveProteinEvent) saveProteinEventValue(ctx context.Context, userId string, remindInterval int) error {
 
 	event, err := s.repository.FindProteinEvent(ctx, userId)
 	if err != nil {
 		log.Error(err)
-		return ErrFind
+		return fmt.Errorf("find %v: %w", userId, ErrFind)
 	}
 
 	if event == nil {
 		if event, err = enterpriserule.NewProteinEvent(userId); err != nil {
-			return ErrCreate
+			log.Error(err)
+			return fmt.Errorf("new %v: %w", userId, ErrCreate)
 		}
+		event.UtcTimeToDrink = time.Now()
 	}
 
-	if toDrink != nil {
-		event.UtcTimeToDrink = *toDrink
+	if remindInterval != 0 {
+		event.DrinkTimeIntervalMin = remindInterval
 	}
-	if remindInterval != nil {
-		event.DrinkTimeIntervalSec = *remindInterval
-	}
+
+	// Set next notify time.
+	event.UtcTimeToDrink.Add(time.Duration(event.DrinkTimeIntervalMin) * time.Minute)
 
 	if _, err = s.repository.SaveProteinEvent(ctx, []*enterpriserule.ProteinEvent{event}); err != nil {
-		return ErrSave
+		log.Error(err)
+		return fmt.Errorf("save %v: %w", userId, ErrSave)
 	}
 
 	return nil
 }
 
-// Save the time for user to drink.
-func (s *SaveProteinEvent) SaveTimeToDrink(ctx context.Context, userId string, timeToDrink time.Time) error {
-	return s.saveProteinEventValue(ctx, userId, &timeToDrink, nil)
+// Update the time for user to drink.
+func (s *SaveProteinEvent) UpdateTimeToDrink(ctx context.Context, userId string) error {
+	return s.saveProteinEventValue(ctx, userId, 0)
 }
 
 // Save the remind interval second for user.
-func (s *SaveProteinEvent) SaveIntervalSec(ctx context.Context, userId string, minutes time.Duration) error {
-	return s.saveProteinEventValue(ctx, userId, nil, &minutes)
+func (s *SaveProteinEvent) SaveIntervalMin(ctx context.Context, userId string, minutes int) error {
+	return s.saveProteinEventValue(ctx, userId, minutes)
 }

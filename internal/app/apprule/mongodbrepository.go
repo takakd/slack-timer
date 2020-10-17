@@ -84,7 +84,7 @@ func NewMongoDbRepository(config config.Config) Repository {
 
 // Find protein event by user id.
 func (r *MongoDbRepository) FindProteinEvent(ctx context.Context, userId string) (event *enterpriserule.ProteinEvent, err error) {
-	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI"))
+	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return
 	}
@@ -92,7 +92,7 @@ func (r *MongoDbRepository) FindProteinEvent(ctx context.Context, userId string)
 		return
 	})()
 
-	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION"))
+	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION", ""))
 
 	var value enterpriserule.ProteinEvent
 	filter := bson.M{"user_id": userId}
@@ -112,7 +112,7 @@ func (r *MongoDbRepository) FindProteinEvent(ctx context.Context, userId string)
 
 // Find protein event from "from" to "to".
 func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.ProteinEvent, err error) {
-	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI"))
+	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return
 	}
@@ -120,7 +120,7 @@ func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to
 		return
 	})()
 
-	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION"))
+	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION", ""))
 
 	// Find ProteinEvent which event_time is between "from" and "to".
 	filter := bson.D{
@@ -154,7 +154,7 @@ func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to
 //
 // Return error and the slice of ProteinEvent saved successfully.
 func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
-	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI"))
+	db, err := getMongoDb(ctx, r.config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*ente
 		return
 	})()
 
-	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION"))
+	collection := getMongoCollection(db, r.config.Get("MONGODB_COLLECTION", ""))
 
 	saved = make([]*enterpriserule.ProteinEvent, 0, len(events))
 	var filter bson.M

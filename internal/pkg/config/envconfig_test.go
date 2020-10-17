@@ -42,7 +42,7 @@ func TestEnvConfig_Get(t *testing.T) {
 			envPath := filepath.Join(filepath.Dir(filePath), "testdata/", c.env)
 			config := NewEnvConfig(envPath)
 
-			got := config.Get(c.key)
+			got := config.Get(c.key, "")
 			if c.want != got {
 				t.Error(testutil.MakeTestMessageWithGotWant(got, c.want))
 			}
@@ -57,7 +57,7 @@ func TestEnvConfig_Get(t *testing.T) {
 		envPath := filepath.Join(filepath.Dir(filePath), "testdata/.env.test")
 		config := NewEnvConfig(envPath)
 
-		got := config.Get("NAME3")
+		got := config.Get("NAME3", "")
 		if want != got {
 			t.Error(testutil.MakeTestMessageWithGotWant(got, want))
 		}
@@ -71,7 +71,7 @@ func TestEnvConfig_Get(t *testing.T) {
 		want := "changed"
 		os.Setenv("NAME1", want)
 
-		got := config.Get("NAME1")
+		got := config.Get("NAME1", "")
 		if want != got {
 			t.Error(testutil.MakeTestMessageWithGotWant(got, want))
 		}

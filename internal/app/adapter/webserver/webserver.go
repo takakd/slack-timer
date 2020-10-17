@@ -50,7 +50,7 @@ type WebServer struct {
 func NewWebServer(ctx context.Context, config config.Config) *WebServer {
 
 	addr := ":" + DefaultServerPort
-	if port := config.Get("PORT"); port != "" {
+	if port := config.Get("PORT", "8080"); port != "" {
 		addr = ":" + port
 	}
 

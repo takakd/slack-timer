@@ -33,7 +33,7 @@ func TestNewProteinEvent(t *testing.T) {
 
 func TestProteinEvent_Equal(t *testing.T) {
 	now := time.Now().UTC()
-	sec := time.Duration(10)
+	sec := 10
 	event := &ProteinEvent{
 		"id1",
 		now,

@@ -21,6 +21,10 @@ func NewEnvConfig(filepathList ...string) *EnvConfig {
 	return &EnvConfig{}
 }
 
-func (e *EnvConfig) Get(name string) string {
-	return os.Getenv(strings.ToUpper(name))
+func (e *EnvConfig) Get(name string, defaultValue string) string {
+	v := os.Getenv(strings.ToUpper(name))
+	if v == "" {
+		v = defaultValue
+	}
+	return v
 }
