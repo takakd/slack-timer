@@ -11,10 +11,8 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
-	"proteinreminder/internal/app/apprule"
-	"proteinreminder/internal/app/usecase"
-	"proteinreminder/internal/pkg/config"
-	"proteinreminder/internal/pkg/errorutil"
+	"proteinreminder/internal/app/driver/di"
+	"proteinreminder/internal/app/usecase/updateproteinevent"
 	"proteinreminder/internal/pkg/httputil"
 	"proteinreminder/internal/pkg/log"
 	"regexp"
@@ -61,7 +59,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 	}
 
 	// e.g. set 10, got
-	re := regexp.MustCompile(`^([^\s]*)\s*$`)
+	re := regexp.MustCompile(`^([^\s]*)\s*`)
 	m := re.FindStringSubmatch(params.Text)
 	if m == nil {
 		return nil, fmt.Errorf("invalid Text format")
@@ -72,21 +70,18 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 		return nil, fmt.Errorf("invalid sub type")
 	}
 
-	saver, err := usecase.NewSaveProteinEvent(apprule.NewPostgresRepository(config.GetConfig("", "")))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create usecase NewSaveProteinEvent")
-	}
+	usecase := di.Get("UpdateProteinEvent").(updateproteinevent.Usecase)
 
 	var req RequestHandler
 	if subType == CmdGot {
 		req = &GotRequestHandler{
-			params: params,
-			saver:  saver,
+			params:  params,
+			usecase: usecase,
 		}
 	} else if subType == CmdSet {
 		req = &SetRequestHandler{
-			params: params,
-			saver:  saver,
+			params:  params,
+			usecase: usecase,
 		}
 	}
 
@@ -108,19 +103,19 @@ type SlackCallbackResponse struct {
 type ErrorSlackCallbackResponse struct {
 	// Error brief.
 	Message string `json:"message"`
-	Error   error  `json:"error"`
+	Error   string `json:"error"`
 }
 
-func makeErrorCallbackResponseBody(message string, err error) []byte {
+func makeErrorCallbackResponseBody(message string, err error) ([]byte, error) {
 	resp := ErrorSlackCallbackResponse{
 		Message: message,
-		Error:   err,
+		Error:   err.Error(),
 	}
 	body, err := json.Marshal(resp)
 	if err != nil {
-		panic(errorutil.MakePanicMessage(err))
+		return nil, err
 	}
-	return body
+	return body, nil
 }
 
 // Web server registers this to themselves and call.
@@ -133,8 +128,13 @@ func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	h, err := NewRequestHandler(r)
 	if err != nil {
 		log.Error(err.Error())
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest))
+		body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
+		if err != nil {
+			body = []byte("internal error")
+		}
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, body)
 		return
 	}
+
 	h.Handler(ctx, w)
 }

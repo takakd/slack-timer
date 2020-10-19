@@ -1,10 +1,10 @@
 package fileutil
 
 import (
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"proteinreminder/internal/pkg/testutil"
 	"runtime"
 	"testing"
 )
@@ -15,17 +15,16 @@ func TestFileExists(t *testing.T) {
 	dir := filepath.Dir(filename)
 
 	testPath := filepath.Join(dir, "/tmp")
-	ioutil.WriteFile(testPath, []byte(""), 0644)
 
-	exists := FileExists(testPath)
-	if exists != true {
-		t.Errorf(testutil.MakeTestMessageWithGotWant(exists, true))
-	}
+	t.Run("ok", func(t *testing.T) {
+		ioutil.WriteFile(testPath, []byte(""), 0644)
+		exists := FileExists(testPath)
+		assert.True(t, exists)
+	})
 
-	os.Remove(testPath)
-
-	exists = FileExists(testPath)
-	if exists != false {
-		t.Errorf(testutil.MakeTestMessageWithGotWant(exists, false))
-	}
+	t.Run("ng", func(t *testing.T) {
+		os.Remove(testPath)
+		exists := FileExists(testPath)
+		assert.False(t, exists)
+	})
 }

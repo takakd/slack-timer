@@ -1,4 +1,4 @@
-package usecase
+package updateproteinevent
 
 import (
 	"context"
@@ -11,13 +11,14 @@ import (
 	"time"
 )
 
-func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
-	t.Run("OK: save new, to drink", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+func TestInteractor_saveProteinEventValue(t *testing.T) {
 
+	t.Run("ok:create", func(t *testing.T) {
 		ctx := context.TODO()
 		userId := "abc"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 		m := apprule.NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
@@ -27,30 +28,35 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 		event.UtcTimeToDrink = now
 		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Len(1)).Return(nil, nil)
 
-		s, _ := NewSaveProteinEvent(m)
-		err := s.saveProteinEventValue(context.TODO(), userId, 0)
-		assert.NoError(t, err)
+		interactor := &Interactor{
+			repository: m,
+		}
+
+		data := interactor.saveProteinEventValue(ctx, userId, 0)
+		assert.NoError(t, data.Result)
 	})
 
-	t.Run("OK: update, to drink", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
+	t.Run("ok:next notify", func(t *testing.T) {
 		ctx := context.TODO()
 		event, _ := enterpriserule.NewProteinEvent("abc")
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 		m := apprule.NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(event.UserId)).
 			Return(event, nil)
 		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Eq([]*enterpriserule.ProteinEvent{event})).
 			Return(nil, nil)
 
-		s, _ := NewSaveProteinEvent(m)
+		interactor := &Interactor{
+			repository: m,
+		}
 
-		err := s.saveProteinEventValue(context.TODO(), event.UserId, 0)
-		assert.NoError(t, err)
+		data := interactor.saveProteinEventValue(context.TODO(), event.UserId, 0)
+		assert.NoError(t, data.Result)
 	})
 
-	t.Run("OK: interval", func(t *testing.T) {
+	t.Run("ok:interval", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -66,38 +72,47 @@ func TestSaveProteinEvent_saveProteinEventValue(t *testing.T) {
 		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Len(1)).
 			Return(nil, nil)
 
-		s, _ := NewSaveProteinEvent(m)
-		err := s.saveProteinEventValue(context.TODO(), userId, interval)
-		assert.NoError(t, err)
+		interactor := &Interactor{
+			repository: m,
+		}
+
+		data := interactor.saveProteinEventValue(context.TODO(), userId, interval)
+		assert.NoError(t, data.Result)
 	})
 
-	t.Run("NG: new event", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
+	t.Run("ng:create", func(t *testing.T) {
 		ctx := context.TODO()
 		userId := ""
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 		m := apprule.NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
 
-		s, _ := NewSaveProteinEvent(m)
-		err := s.saveProteinEventValue(context.TODO(), userId, 0)
-		assert.True(t, errors.Is(err, ErrCreate))
+		interactor := &Interactor{
+			repository: m,
+		}
+
+		data := interactor.saveProteinEventValue(context.TODO(), userId, 0)
+		assert.True(t, errors.Is(data.Result, ErrCreate))
 	})
 
-	t.Run("NG: find event", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
+	t.Run("ng:update", func(t *testing.T) {
 		ctx := context.TODO()
 		userId := ""
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 		m := apprule.NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, errors.New("error"))
 
-		s, _ := NewSaveProteinEvent(m)
-		err := s.saveProteinEventValue(context.TODO(), userId, 0)
-		assert.True(t, errors.Is(err, ErrFind))
+		interactor := &Interactor{
+			repository: m,
+		}
+
+		data := interactor.saveProteinEventValue(context.TODO(), userId, 0)
+		assert.True(t, errors.Is(data.Result, ErrFind))
 	})
 }

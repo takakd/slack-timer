@@ -1,40 +1,26 @@
 package validator
 
 import (
-	"proteinreminder/internal/pkg/testutil"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-//
 func TestSet_SetGetError(t *testing.T) {
-	bag := NewValidateErrorBag()
+	t.Run("ok", func(t *testing.T) {
+		bag := NewValidateErrorBag()
 
-	bag.SetError("test", "test summary", ErrEmpty)
-	error, errorExists := bag.GetError("test")
-	if !errorExists {
-		t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	}
-	if error.Summary == "test summary " {
-		t.Error(testutil.MakeTestMessageWithGotWant(error.Summary, "test summary"))
-	}
-
-	bag.SetError("test", "summary changed", ErrEmpty)
-	error, _ = bag.GetError("test")
-	if error.Summary == "summary changed " {
-		t.Error(testutil.MakeTestMessageWithGotWant(error.Summary, "summary changed"))
-	}
+		bag.SetError("test", "test summary", ErrEmpty)
+		error, errorExists := bag.GetError("test")
+		assert.True(t, errorExists)
+		assert.Equal(t, "test summary", error.Summary)
+	})
 }
 
-//
 func TestSet_ContainsError(t *testing.T) {
-	bag := NewValidateErrorBag()
-
-	bag.SetError("test", "test summary", ErrEmpty)
-
-	if !bag.ContainsError("test", ErrEmpty) {
-		t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	}
-	if bag.ContainsError("not in", ErrEmpty) {
-		t.Error(testutil.MakeTestMessageWithGotWant(true, false))
-	}
+	t.Run("ok", func(t *testing.T) {
+		bag := NewValidateErrorBag()
+		bag.SetError("test", "test summary", ErrEmpty)
+		assert.True(t, bag.ContainsError("test", ErrEmpty))
+		assert.False(t, bag.ContainsError("not in", ErrEmpty))
+	})
 }

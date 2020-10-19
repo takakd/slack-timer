@@ -6,8 +6,9 @@ import (
 	"errors"
 	"net/http"
 	"proteinreminder/internal/app/adapter/validator"
-	"proteinreminder/internal/app/usecase"
+	"proteinreminder/internal/app/usecase/updateproteinevent"
 	"proteinreminder/internal/pkg/httputil"
+	"proteinreminder/internal/pkg/log"
 	"regexp"
 	"strconv"
 )
@@ -17,8 +18,7 @@ type SetRequestHandler struct {
 	params *SlackCallbackRequestParams
 	// Time to notify user next
 	remindIntervalInMin int
-	// Usecase to save entity
-	saver usecase.ProteinEventSaver
+	usecase             updateproteinevent.Usecase
 }
 
 // Validate parameters.
@@ -46,27 +46,55 @@ func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 			firstError = v
 			break
 		}
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody(firstError.Summary, ErrInvalidParameters))
+		body, err := makeErrorCallbackResponseBody(firstError.Summary, ErrInvalidParameters)
+		if err != nil {
+			log.Error(err)
+			httputil.WriteJsonResponse(w, http.StatusBadRequest, []byte("internal error"))
+		}
+
+		httputil.WriteJsonResponse(w, http.StatusBadRequest, body)
 		return
 	}
 
-	// Save protein event.
-	err := sr.saver.SaveIntervalMin(ctx, sr.params.UserId, sr.remindIntervalInMin)
-	if errors.Is(err, usecase.ErrFind) {
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("failed to find event", ErrSaveEvent))
-		return
-	} else if errors.Is(err, usecase.ErrCreate) {
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("failed to create event", ErrSaveEvent))
-		return
-	} else if errors.Is(err, usecase.ErrSave) {
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, makeErrorCallbackResponseBody("failed to save event", ErrSaveEvent))
-		return
+	outputPort := &SetRequestOutputPort{w: w}
+	sr.usecase.SaveIntervalMin(ctx, sr.params.UserId, sr.remindIntervalInMin, outputPort)
+	return
+}
+
+type SetRequestOutputPort struct {
+	w http.ResponseWriter
+}
+
+func (s *SetRequestOutputPort) Output(data *updateproteinevent.OutputData) {
+	err := data.Result
+	errRaised := false
+	if errors.Is(err, updateproteinevent.ErrFind) {
+		errRaised = true
+	} else if errors.Is(err, updateproteinevent.ErrCreate) {
+		errRaised = true
+	} else if errors.Is(err, updateproteinevent.ErrSave) {
+		errRaised = true
 	}
 
 	resp := &SlackCallbackResponse{
 		Message: "success",
 	}
-	respBody, _ := json.Marshal(resp)
-	httputil.WriteJsonResponse(w, http.StatusOK, respBody)
+	respBody, err := json.Marshal(resp)
+	if err != nil {
+		errRaised = true
+	}
+
+	if errRaised {
+		log.Error(err)
+		body, err := makeErrorCallbackResponseBody("failed to save event", ErrSaveEvent)
+		if err != nil {
+			log.Error(err)
+			body = []byte("internal error")
+		}
+		httputil.WriteJsonResponse(s.w, http.StatusBadRequest, body)
+		return
+	}
+
+	httputil.WriteJsonResponse(s.w, http.StatusOK, respBody)
 	return
 }

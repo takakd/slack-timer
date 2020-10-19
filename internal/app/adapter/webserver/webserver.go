@@ -47,7 +47,7 @@ type WebServer struct {
 	server *http.Server
 }
 
-func NewWebServer(ctx context.Context, config config.Config) *WebServer {
+func NewWebServer(ctx context.Context) *WebServer {
 
 	addr := ":" + DefaultServerPort
 	if port := config.Get("PORT", "8080"); port != "" {

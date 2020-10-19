@@ -3,6 +3,7 @@ package log
 import (
 	"bytes"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"proteinreminder/internal/pkg/testutil"
@@ -21,8 +22,8 @@ func TestStdoutLogger_Print(t *testing.T) {
 		name string
 		want string
 	}{
-		{name: "OK", want: "test log."},
-		{name: "NG", want: ""},
+		{name: "ok", want: "test log."},
+		{name: "ng", want: ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -49,9 +50,7 @@ func TestStdoutLogger_Print(t *testing.T) {
 			got := buf.String()
 
 			re := regexp.MustCompile(pattern)
-			if !re.MatchString(got) {
-				t.Error(testutil.MakeTestMessageWithGotWant(got, "regexp:"+pattern))
-			}
+			assert.True(t, re.MatchString(got))
 		})
 	}
 }

@@ -2,6 +2,7 @@
 package config
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"proteinreminder/internal/pkg/testutil"
@@ -13,16 +14,12 @@ func TestNewEnvConfig(t *testing.T) {
 	called := testutil.DoesTestCallPanic(func() {
 		NewEnvConfig()
 	})
-	if called {
-		t.Error("must not be called")
-	}
+	assert.False(t, called)
 
 	called = testutil.DoesTestCallPanic(func() {
 		NewEnvConfig("")
 	})
-	if !called {
-		t.Error("must be called")
-	}
+	assert.True(t, called)
 }
 
 func TestEnvConfig_Get(t *testing.T) {
@@ -32,8 +29,8 @@ func TestEnvConfig_Get(t *testing.T) {
 		key  string
 		want string
 	}{
-		{"OK: env1", ".env.test", "NAME1", "value1"},
-		{"OK: env2", ".env.test", "NAME2", ""},
+		{"ok:env1", ".env.test", "NAME1", "value1"},
+		{"ok:env2", ".env.test", "NAME2", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -43,13 +40,11 @@ func TestEnvConfig_Get(t *testing.T) {
 			config := NewEnvConfig(envPath)
 
 			got := config.Get(c.key, "")
-			if c.want != got {
-				t.Error(testutil.MakeTestMessageWithGotWant(got, c.want))
-			}
+			assert.Equal(t, c.want, got)
 		})
 	}
 
-	t.Run("OK: not effect os.env", func(t *testing.T) {
+	t.Run("ok:not effect os.env", func(t *testing.T) {
 		want := "not define in .env"
 		os.Setenv("NAME3", want)
 
@@ -58,12 +53,10 @@ func TestEnvConfig_Get(t *testing.T) {
 		config := NewEnvConfig(envPath)
 
 		got := config.Get("NAME3", "")
-		if want != got {
-			t.Error(testutil.MakeTestMessageWithGotWant(got, want))
-		}
+		assert.Equal(t, want, got)
 	})
 
-	t.Run("OK: overwrite", func(t *testing.T) {
+	t.Run("ok:overwrite", func(t *testing.T) {
 		_, filePath, _, _ := runtime.Caller(0)
 		envPath := filepath.Join(filepath.Dir(filePath), "testdata/.env.test")
 		config := NewEnvConfig(envPath)
@@ -72,8 +65,6 @@ func TestEnvConfig_Get(t *testing.T) {
 		os.Setenv("NAME1", want)
 
 		got := config.Get("NAME1", "")
-		if want != got {
-			t.Error(testutil.MakeTestMessageWithGotWant(got, want))
-		}
+		assert.Equal(t, want, got)
 	})
 }

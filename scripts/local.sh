@@ -54,6 +54,7 @@ run() {
 }
 docker_run() {
     docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
+    # TODO wait
 }
 docker_cleanup() {
     docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml down

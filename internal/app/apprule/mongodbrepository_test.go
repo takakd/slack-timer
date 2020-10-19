@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"os"
@@ -11,7 +13,6 @@ import (
 	"proteinreminder/internal/app/enterpriserule"
 	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/fileutil"
-	"proteinreminder/internal/pkg/testutil"
 	"runtime"
 	"testing"
 	"time"
@@ -35,10 +36,7 @@ func cleanupTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
 	url, colName := getTestMongoDbEnv()
 	ctx := context.TODO()
 	db, err := getMongoDb(ctx, url)
-	if err != nil {
-		t.Fatal("failed to cleanup test events")
-		return
-	}
+	require.NoError(t, err)
 	defer disconnectMongoDbClientFunc(ctx, db.Client(), func(e error) {
 		return
 	})
@@ -56,11 +54,8 @@ func cleanupTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
 			bson.A(ids),
 		}},
 	}}
-	ret, err := col.DeleteMany(ctx, filter)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(ret)
+	_, err = col.DeleteMany(ctx, filter)
+	assert.NoError(t, err)
 }
 
 func doesSkipMongoDbRepositoryTest(t *testing.T) bool {
@@ -98,8 +93,8 @@ func Test_getMongoDb(t *testing.T) {
 		dbOk, collectionOk bool
 		mongoUri           string
 	}{
-		{name: "OK", dbOk: true, collectionOk: true, mongoUri: testDbUrl},
-		{name: "NG", dbOk: false, collectionOk: false, mongoUri: "disabled uri"},
+		{name: "ok", dbOk: true, collectionOk: true, mongoUri: testDbUrl},
+		{name: "ng", dbOk: false, collectionOk: false, mongoUri: "disabled uri"},
 	}
 
 	ctx := context.TODO()
@@ -109,21 +104,15 @@ func Test_getMongoDb(t *testing.T) {
 			var client *mongo.Client
 			defer func() {
 				if client != nil {
-					if disCnnErr := client.Disconnect(ctx); disCnnErr != nil {
-						t.Error(disCnnErr)
-					}
+					assert.NoError(t, client.Disconnect(ctx))
 				}
 			}()
 
 			db, err := getMongoDb(ctx, c.mongoUri)
-			if c.dbOk && err != nil {
-				t.Error("should be able to connect")
-				return
+			if c.dbOk {
+				assert.NoError(t, err)
 			} else if !c.dbOk {
-				if err == nil {
-					t.Error("should not connect")
-				}
-				return
+				assert.Error(t, err)
 			}
 
 			client = db.Client()
@@ -136,7 +125,7 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		return
 	}
 
-	t.Run("NG: GetDb", func(t *testing.T) {
+	t.Run("ng:GetDb", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -146,18 +135,15 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 
 		c := config.NewMockConfig(ctrl)
 		c.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(mongodbUri)
+		config.SetConfig(c)
 
-		repo := NewMongoDbRepository(c)
+		repo := NewMongoDbRepository()
 		event, err := repo.FindProteinEvent(ctx, userId)
-		if event != nil {
-			t.Error("event must be nil")
-		}
-		if err == nil {
-			t.Error("error must be not nil")
-		}
+		assert.NotNil(t, event)
+		assert.NoError(t, err)
 	})
 
-	t.Run("NG: not found", func(t *testing.T) {
+	t.Run("ng:not found", func(t *testing.T) {
 		testEvents := makeTestEvents()
 		testDbUrl, testDbCol := getTestMongoDbEnv()
 
@@ -173,28 +159,22 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
 			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 		)
+		config.SetConfig(mock)
 
-		repo := NewMongoDbRepository(mock)
+		repo := NewMongoDbRepository()
 		_, err := repo.SaveProteinEvent(context.TODO(), testEvents)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		assert.NoError(t, err)
 
 		ctx := context.TODO()
 		userId := "nonexistent id"
 		event, err := repo.FindProteinEvent(ctx, userId)
-		if event != nil {
-			t.Error("event must be nil")
-		}
-		if err != nil {
-			t.Error("error must be nil")
-		}
+		assert.NotNil(t, event)
+		assert.NoError(t, err)
 
 		cleanupTestEvents(t, testEvents)
 	})
 
-	t.Run("OK", func(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
 		testEvents := makeTestEvents()
 		testDbUrl, testDbCol := getTestMongoDbEnv()
 
@@ -213,24 +193,18 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 			call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
 		}
 
+		config.SetConfig(mock)
+
 		ctx := context.TODO()
 
-		repo := NewMongoDbRepository(mock)
+		repo := NewMongoDbRepository()
 		_, err := repo.SaveProteinEvent(ctx, testEvents)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		assert.NoError(t, err)
 
 		for _, event := range testEvents {
 			got, err := repo.FindProteinEvent(ctx, event.UserId)
-			if err != nil {
-				t.Error(err)
-			}
-
-			if !got.Equal(event) {
-				t.Error(testutil.MakeTestMessageWithGotWant(got, event))
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, event, got)
 		}
 
 		cleanupTestEvents(t, testEvents)
@@ -242,60 +216,62 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 		return
 	}
 
-	now := time.Now().UTC()
-	events := []*enterpriserule.ProteinEvent{
-		{
-			"tid1", now, 2,
-		},
-		{
-			"tid2", now, 2,
-		},
-		{
-			"tid3", now, 2,
-		},
-	}
+	t.Run("ok", func(t *testing.T) {
+		now := time.Now().UTC()
+		events := []*enterpriserule.ProteinEvent{
+			{
+				"tid1", now, 2,
+			},
+			{
+				"tid2", now, 2,
+			},
+			{
+				"tid3", now, 2,
+			},
+		}
 
-	from := time.Now().UTC()
-	to := from.AddDate(0, 0, 1)
+		from := time.Now().UTC()
+		to := from.AddDate(0, 0, 1)
 
-	events[0].UtcTimeToDrink = from
-	events[1].UtcTimeToDrink = to
-	events[2].UtcTimeToDrink = to.AddDate(0, 0, 1)
+		events[0].UtcTimeToDrink = from
+		events[1].UtcTimeToDrink = to
+		events[2].UtcTimeToDrink = to.AddDate(0, 0, 1)
 
-	testDbUrl, testDbCol := getTestMongoDbEnv()
+		testDbUrl, testDbCol := getTestMongoDbEnv()
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	mock := config.NewMockConfig(ctrl)
-	gomock.InOrder(
-		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
-		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
-		// For FindProteinEventByTime
-		mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
-		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
-	)
+		mock := config.NewMockConfig(ctrl)
+		gomock.InOrder(
+			// For SaveProteinEvent
+			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
+			// For FindProteinEventByTime
+			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
+		)
 
-	repo := NewMongoDbRepository(mock)
-	ctx := context.TODO()
-	_, err := repo.SaveProteinEvent(ctx, events)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+		config.SetConfig(mock)
 
-	got, err := repo.FindProteinEventByTime(ctx, from, to)
-	if err != nil {
-		t.Error(err)
-	}
-	wants := events[:2]
-	if len(got) != 2 || !wants[0].Equal(got[0]) || !wants[1].Equal(got[1]) {
-		t.Error(testutil.MakeTestMessageWithGotWant(got[0], wants[0]))
-		t.Error(testutil.MakeTestMessageWithGotWant(got[1], wants[1]))
-	}
+		repo := NewMongoDbRepository()
+		ctx := context.TODO()
+		_, err := repo.SaveProteinEvent(ctx, events)
+		assert.NoError(t, err)
 
-	cleanupTestEvents(t, events)
+		got, err := repo.FindProteinEventByTime(ctx, from, to)
+		assert.NoError(t, err)
+
+		wants := events[:2]
+		// TODO: check
+		assert.Equal(t, wants, got)
+		//if len(got) != 2 || !wants[0].Equal(got[0]) || !wants[1].Equal(got[1]) {
+		//	t.Error(testutil.MakeTestMessageWithGotWant(got[0], wants[0]))
+		//	t.Error(testutil.MakeTestMessageWithGotWant(got[1], wants[1]))
+		//}
+
+		cleanupTestEvents(t, events)
+	})
 }
 
 func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
@@ -303,35 +279,38 @@ func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
 		return
 	}
 
-	testEvents := makeTestEvents()
+	t.Run("ok", func(t *testing.T) {
+		testEvents := makeTestEvents()
 
-	testDbUrl, testDbCol := getTestMongoDbEnv()
+		testDbUrl, testDbCol := getTestMongoDbEnv()
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	mock := config.NewMockConfig(ctrl)
-	gomock.InOrder(
-		// For SaveProteinEvent
-		mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
-		mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
-	)
+		mock := config.NewMockConfig(ctrl)
+		gomock.InOrder(
+			// For SaveProteinEvent
+			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
+			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
+		)
 
-	repo := NewMongoDbRepository(mock)
+		config.SetConfig(mock)
 
-	ctx := context.TODO()
+		repo := NewMongoDbRepository()
 
-	savedEvents, err := repo.SaveProteinEvent(ctx, testEvents)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+		ctx := context.TODO()
 
-	for i, savedEvent := range savedEvents {
-		if !testEvents[i].Equal(savedEvent) {
-			t.Error(testutil.MakeTestMessageWithGotWant(savedEvent, testEvents[i]))
+		savedEvents, err := repo.SaveProteinEvent(ctx, testEvents)
+		assert.NoError(t, err)
+
+		for i, savedEvent := range savedEvents {
+			// TODO: check
+			assert.Equal(t, testEvents[i], savedEvent)
+			//if !testEvents[i].Equal(savedEvent) {
+			//	t.Error(testutil.MakeTestMessageWithGotWant(savedEvent, testEvents[i]))
+			//}
 		}
-	}
 
-	cleanupTestEvents(t, testEvents)
+		cleanupTestEvents(t, testEvents)
+	})
 }

@@ -1,22 +1,21 @@
 package errorutil
 
 import (
+	"github.com/stretchr/testify/assert"
 	"proteinreminder/internal/pkg/testutil"
 	"testing"
 )
 
 func TestMakePanicMessage(t *testing.T) {
-	// OK case
-	s := MakePanicMessage("Hi")
-	if s != "PANIC: Hi" {
-		t.Errorf("got: %s, want: %s", s, "PANIC: Hi")
-	}
-
-	// Error case
-	ok := testutil.DoesTestCallPanic(func() {
-		MakePanicMessage(nil)
+	t.Run("ok", func(t *testing.T) {
+		s := MakePanicMessage("Hi")
+		assert.Equal(t, s, "PANIC: Hi")
 	})
-	if !ok {
-		t.Errorf("failed.")
-	}
+
+	t.Run("ng", func(t *testing.T) {
+		ok := testutil.DoesTestCallPanic(func() {
+			MakePanicMessage(nil)
+		})
+		assert.True(t, ok)
+	})
 }

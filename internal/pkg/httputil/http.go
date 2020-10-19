@@ -36,7 +36,7 @@ func GetResponseBody(resp *http.Response) ([]byte, error) {
 }
 
 type ErrorJsonResponse struct {
-	Sumary    string `json:"summary"`
+	Summary   string `json:"summary"`
 	ErrorCode string `json:"error_code"`
 	Detail    string `json:"detail"`
 }
@@ -44,7 +44,7 @@ type ErrorJsonResponse struct {
 // Create error response in json format.
 func NewErrorJsonResponse(summary string, errorCode string, detail string) ([]byte, error) {
 	response := &ErrorJsonResponse{
-		Sumary:    summary,
+		Summary:   summary,
 		ErrorCode: errorCode,
 		Detail:    detail,
 	}

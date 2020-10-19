@@ -17,6 +17,10 @@ test:
 	@echo "==> Testing..."
 	@sh -c "sh '$(CURDIR)/scripts/local.sh' test"
 
+testnocache:
+	@echo "==> Testing..."
+	@sh -c "sh '$(CURDIR)/scripts/local.sh' test nocache"
+
 fmt:
 	@echo "==> Formatting go sources..."
 	@sh -c "sh '$(CURDIR)/scripts/local.sh' fmt"

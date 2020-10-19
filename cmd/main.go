@@ -19,14 +19,14 @@ func main() {
 	}()
 
 	ctx := context.Background()
-	conf := config.GetConfig("")
-	log.SetLevel(conf.Get("LOG_LEVEL", "debug"))
+	log.SetLevel(config.Get("LOG_LEVEL", "debug"))
 
-	server := webserver.NewWebServer(ctx, conf)
+	server := webserver.NewWebServer(ctx)
 	if server == nil {
 		log.Error("failed to create server")
 	}
 
+	// Start web server.
 	err := server.Run()
 	if err != nil {
 		log.Error(err)
