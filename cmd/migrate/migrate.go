@@ -20,8 +20,6 @@ import (
 	"time"
 )
 
-var conf = config.GetConfig("")
-
 // Create empty migration file.
 // File name is {UNIX_TIMESTAMP}_name.sql
 func createMigrationFile(name string) error {
@@ -29,7 +27,7 @@ func createMigrationFile(name string) error {
 		return errors.New("name is empty")
 	}
 
-	dir := conf.Get("MIGRATION_DIR", "")
+	dir := config.Get("MIGRATION_DIR", "")
 
 	var err error
 	if err != nil {
@@ -56,7 +54,7 @@ Commands:
 
 // Main
 func main() {
-	dir := conf.Get("MIGRATION_DIR", "")
+	dir := config.Get("MIGRATION_DIR", "")
 	if dir == "" {
 		log.Error(fmt.Sprintf("migrate: must be set MIGRATION_DIR in environment variables MIGRATION_DIR=%s\n", dir))
 		os.Exit(1)
@@ -75,7 +73,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	url := conf.Get("DATABASE_URL", "")
+	url := config.Get("DATABASE_URL", "")
 	if url == "" {
 		log.Error(fmt.Sprintf("migrate: must be set DATABASE_URL in environment variables DATABASE_URL=%s\n", url))
 		os.Exit(1)

@@ -34,7 +34,11 @@ func TestNewRequestHandler(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			m := di.NewMockDI(ctrl)
-			m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Return(&updateproteinevent.Interactor{})
+			if c.name == "nil" {
+				m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).MinTimes(0)
+			} else {
+				m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Return(&updateproteinevent.Interactor{})
+			}
 			di.SetDi(m)
 
 			req, err := NewRequestHandler(httpReq)
@@ -83,7 +87,7 @@ func TestHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Return(&updateproteinevent.Interactor{})
+		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Times(0)
 		di.SetDi(m)
 
 		w := httptest.NewRecorder()
@@ -103,7 +107,7 @@ func TestHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Return(&updateproteinevent.Interactor{})
+		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Times(0)
 		di.SetDi(m)
 
 		w := httptest.NewRecorder()
