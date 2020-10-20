@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"proteinreminder/internal/app/apprule"
 	"proteinreminder/internal/app/enterpriserule"
 	"testing"
 	"time"
@@ -19,7 +18,7 @@ func TestInteractor_saveProteinEventValue(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		m := apprule.NewMockRepository(ctrl)
+		m := NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
 
@@ -42,7 +41,7 @@ func TestInteractor_saveProteinEventValue(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		m := apprule.NewMockRepository(ctrl)
+		m := NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(event.UserId)).
 			Return(event, nil)
 		m.EXPECT().SaveProteinEvent(gomock.Eq(ctx), gomock.Eq([]*enterpriserule.ProteinEvent{event})).
@@ -62,7 +61,7 @@ func TestInteractor_saveProteinEventValue(t *testing.T) {
 
 		ctx := context.TODO()
 		userId := "abc"
-		m := apprule.NewMockRepository(ctrl)
+		m := NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
 
@@ -86,7 +85,7 @@ func TestInteractor_saveProteinEventValue(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		m := apprule.NewMockRepository(ctrl)
+		m := NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
 
@@ -104,7 +103,7 @@ func TestInteractor_saveProteinEventValue(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		m := apprule.NewMockRepository(ctrl)
+		m := NewMockRepository(ctrl)
 		m.EXPECT().FindProteinEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, errors.New("error"))
 

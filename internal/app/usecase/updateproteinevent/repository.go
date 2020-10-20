@@ -1,4 +1,4 @@
-package apprule
+package updateproteinevent
 
 import (
 	"context"

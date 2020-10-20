@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
-	"proteinreminder/internal/app/apprule"
 	"proteinreminder/internal/app/driver/di"
 	"proteinreminder/internal/app/enterpriserule"
 	"proteinreminder/internal/pkg/log"
@@ -40,13 +39,13 @@ type OutputPort interface {
 }
 
 type Interactor struct {
-	repository apprule.Repository
+	repository Repository
 	outputPort OutputPort
 }
 
 func NewUsecase() Usecase {
 	return &Interactor{
-		repository: di.Get("Repository").(apprule.Repository),
+		repository: di.Get("Repository").(Repository),
 		outputPort: di.Get("UpdateProteinEventOutputPort").(OutputPort),
 	}
 }

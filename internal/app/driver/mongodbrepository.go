@@ -1,4 +1,4 @@
-package apprule
+package driver
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"net/url"
 	"proteinreminder/internal/app/enterpriserule"
+	"proteinreminder/internal/app/usecase/updateproteinevent"
 	"proteinreminder/internal/pkg/config"
 	"strings"
 	"time"
@@ -75,7 +76,7 @@ func disconnectMongoDbClientFunc(ctx context.Context, client *mongo.Client, f fu
 	return
 }
 
-func NewMongoDbRepository() Repository {
+func NewMongoDbRepository() updateproteinevent.Repository {
 	return &MongoDbRepository{}
 }
 

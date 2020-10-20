@@ -1,8 +1,9 @@
-package apprule
+package driver
 
 import (
 	"context"
 	"fmt"
+	"github.com/golang/mock/gomock"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,12 +11,11 @@ import (
 	"os"
 	"path/filepath"
 	"proteinreminder/internal/app/enterpriserule"
+	"proteinreminder/internal/pkg/config"
 	"proteinreminder/internal/pkg/fileutil"
 	"runtime"
 	"testing"
 	"time"
-	"github.com/golang/mock/gomock"
-	"proteinreminder/internal/pkg/config"
 )
 
 func execTestPostgresSql(t *testing.T, sqlFileName string) {

@@ -1,4 +1,4 @@
-package apprule
+package driver
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"proteinreminder/internal/app/enterpriserule"
+	"proteinreminder/internal/app/usecase/updateproteinevent"
 	"proteinreminder/internal/pkg/config"
 	"time"
 )
@@ -24,7 +25,7 @@ func getPostgresDb(ctx context.Context, dsn string) (db *sqlx.DB, err error) {
 	return
 }
 
-func NewPostgresRepository() Repository {
+func NewPostgresRepository() updateproteinevent.Repository {
 	return &PostgresRepository{}
 }
 
