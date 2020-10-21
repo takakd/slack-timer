@@ -1,8 +1,8 @@
-// Package slackcontroller provides the slack callback handler.
+// Package slackcontroller provides the slack Event API callback handler.
 // 		Routes
-//			POST /slack-callback
+//			POST /api/{ver}/slack-callback
 // Library exists: https://github.com/slack-go/slack
-// Ref: https://api.slack.com/interactivity/slash-commands
+// Ref.: https://api.slack.com/events-api#the-events-api__receiving-events
 package slackcontroller
 
 import (
@@ -11,14 +11,11 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
-	"proteinreminder/internal/app/driver/di"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
 	"proteinreminder/internal/pkg/httputil"
 	"proteinreminder/internal/pkg/log"
-	"regexp"
 )
 
-// Errors.
+// Errors
 var (
 	ErrInvalidRequest    = errors.New("invalid request")
 	ErrInvalidParameters = errors.New("invalid parameters")
@@ -32,8 +29,31 @@ const (
 	CmdSet = "set"
 )
 
-// Parameters in Slack webhook post body.
-// Ref: https://api.slack.com/interactivity/slash-commands
+// URL verification callback data
+type SlackUrlVerificationCallbackData struct {
+	Token     string `json:"token"`
+	Challenge string `json:"challenge"`
+	Type      string `json:"type"`
+}
+
+// JSON to be sent
+// Defined what app needs
+type SlackCallbackData struct {
+	Token     string             `json:"token"`
+	TeamId    string             `json:"team_id"`
+	Event     SlackCallbackEvent `json:"event"`
+	Type      string             `json:"type"`
+	EventTime int                `json:"event_time"`
+}
+
+type SlackCallbackEvent struct {
+	Type    string `json:"type"`
+	EventTs string `json:"event_ts"`
+	User    string `json:"user"`
+	Ts      string `json:"ts"`
+	Item    string `json:"item"`
+}
+
 type SlackCallbackRequestParams struct {
 	Token          string `json:"token"`
 	TeamId         string `json:"team_id"`
@@ -52,40 +72,56 @@ type SlackCallbackRequestParams struct {
 
 //
 func NewRequestHandler(r *http.Request) (RequestHandler, error) {
-	params := &SlackCallbackRequestParams{}
-	r.ParseForm()
-	if err := httputil.SetFormValueToStruct(r.Form, params); err != nil {
+	body, err := httputil.GetRequestBody(r)
+	if err != nil {
 		return nil, err
 	}
 
-	// e.g. set 10, got
-	re := regexp.MustCompile(`^([^\s]*)\s*`)
-	m := re.FindStringSubmatch(params.Text)
-	if m == nil {
-		return nil, fmt.Errorf("invalid Text format")
+	data := SlackCallbackData{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
 	}
 
-	subType := m[1]
-	if subType != CmdGot && subType != CmdSet {
-		return nil, fmt.Errorf("invalid sub type")
+	var supportEvent bool
+	supportEvent = supportEvent || data.Event.Type == "message"
+	if !supportEvent {
+		return nil, fmt.Errorf("invalid event type, type=%s", data.Event.Type)
 	}
 
-	usecase := di.Get("UpdateProteinEvent").(updateproteinevent.Usecase)
+	log.Debug("data")
+	log.Debug(data)
 
-	var req RequestHandler
-	if subType == CmdGot {
-		req = &GotRequestHandler{
-			params:  params,
-			usecase: usecase,
-		}
-	} else if subType == CmdSet {
-		req = &SetRequestHandler{
-			params:  params,
-			usecase: usecase,
-		}
-	}
+	return nil, nil
 
-	return req, nil
+	//// e.g. set 10, got
+	//re := regexp.MustCompile(`^([^\s]*)\s*`)
+	//m := re.FindStringSubmatch(params.Text)
+	//if m == nil {
+	//	return nil, fmt.Errorf("invalid Text format")
+	//}
+	//
+	//subType := m[1]
+	//if subType != CmdGot && subType != CmdSet {
+	//	return nil, fmt.Errorf("invalid sub type")
+	//}
+	//
+	//usecase := di.Get("UpdateProteinEvent").(updateproteinevent.Usecase)
+	//
+	//var req RequestHandler
+	//if subType == CmdGot {
+	//	req = &GotRequestHandler{
+	//		params:  params,
+	//		usecase: usecase,
+	//	}
+	//} else if subType == CmdSet {
+	//	req = &SetRequestHandler{
+	//		params:  params,
+	//		usecase: usecase,
+	//	}
+	//}
+	//
+	//return req, nil
 }
 
 // Provides handlers to each request.
@@ -125,16 +161,47 @@ func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h, err := NewRequestHandler(r)
+	// TODO: Test
+	body, err := httputil.GetRequestBody(r)
 	if err != nil {
-		log.Error(err.Error())
-		body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
-		if err != nil {
-			body = []byte("internal error")
-		}
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, body)
+		makeErrorCallbackResponseBody("get body error", err)
+	}
+
+	verify := SlackUrlVerificationCallbackData{}
+	err = json.Unmarshal(body, &verify)
+	if err != nil {
+		makeErrorCallbackResponseBody("unmarshal error", err)
+	}
+	if verify.Challenge != "" {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(verify.Challenge))
 		return
 	}
 
-	h.Handler(ctx, w)
+	data := SlackCallbackData{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		makeErrorCallbackResponseBody("unmarshal error", err)
+	}
+
+	log.Debug("data")
+	log.Debug(data)
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write(body)
+
+	//h, err := NewRequestHandler(r)
+	//if err != nil {
+	//	log.Error(err.Error())
+	//	body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
+	//	if err != nil {
+	//		body = []byte("internal error")
+	//	}
+	//	httputil.WriteJsonResponse(w, http.StatusBadRequest, body)
+	//	return
+	//}
+	//
+	//h.Handler(ctx, w)
 }
