@@ -51,19 +51,21 @@ func NewErrorJsonResponse(summary string, errorCode string, detail string) ([]by
 	return json.Marshal(response)
 }
 
-// Write error response to http.ResponseWriter.
-func WriteErrorJsonResponse(w http.ResponseWriter, httpStatusCode int, summary, errorCode, detail string) error {
+// Write error response data to http.ResponseWriter.
+func WriteErrorJsonResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, summary, errorCode, detail string) error {
 	body, err := NewErrorJsonResponse(summary, errorCode, detail)
 	if err != nil {
 		return err
 	}
-	return WriteJsonResponse(w, httpStatusCode, body)
+	return WriteJsonResponse(w, headers, httpStatusCode, body)
 }
 
-// Write error response to http.ResponseWriter.
-func WriteJsonResponse(w http.ResponseWriter, httpStatusCode int, body []byte) error {
-	// NOTE: Need to call w.Header first.
+// Write response data to http.ResponseWriter.
+func WriteJsonResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, body []byte) error {
 	w.Header().Set("Content-Type", "application/json")
+	for k, v := range headers {
+		w.Header().Set(k, v)
+	}
 	w.WriteHeader(httpStatusCode)
 	w.Write(body)
 	return nil

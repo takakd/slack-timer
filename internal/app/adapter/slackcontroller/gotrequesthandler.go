@@ -53,10 +53,10 @@ func (g *GotRequestOutputPort) Output(data *updateproteinevent.OutputData) {
 			log.Error(err)
 			body = []byte("internal error")
 		}
-		httputil.WriteJsonResponse(g.w, http.StatusBadRequest, body)
+		writeErrorCallbackResponse(g.w, body)
 		return
 	}
 
-	httputil.WriteJsonResponse(g.w, http.StatusOK, respBody)
+	httputil.WriteJsonResponse(g.w, nil, http.StatusOK, respBody)
 	return
 }

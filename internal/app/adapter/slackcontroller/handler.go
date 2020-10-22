@@ -160,6 +160,14 @@ func makeErrorCallbackResponseBody(message string, err error) ([]byte, error) {
 	return body, nil
 }
 
+func writeErrorCallbackResponse(w http.ResponseWriter, body []byte) {
+	httputil.WriteJsonResponse(w, map[string]string{
+		// Prevent auto retry.
+		// Ref.: https://api.slack.com/events-api#the-events-api__field-guide__error-handling__graceful-retries__turning-retries-off
+		"X-Slack-No-Retry": "1",
+	}, http.StatusBadRequest, body)
+}
+
 // Web server registers this to themselves and call.
 func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
@@ -174,7 +182,7 @@ func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			body = []byte("internal error")
 		}
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, body)
+		writeErrorCallbackResponse(w, body)
 		return
 	}
 

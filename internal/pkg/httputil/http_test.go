@@ -105,7 +105,7 @@ func TestNewErrorJsonResponse(t *testing.T) {
 func TestWriteErrorJsonResponse(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		handler := func(w http.ResponseWriter, r *http.Request) {
-			WriteErrorJsonResponse(w, http.StatusInternalServerError, "summary", "code", "detail")
+			WriteErrorJsonResponse(w, nil, http.StatusInternalServerError, "summary", "code", "detail")
 		}
 
 		w := httptest.NewRecorder()

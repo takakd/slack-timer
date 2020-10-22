@@ -49,10 +49,10 @@ func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 		body, err := makeErrorCallbackResponseBody(firstError.Summary, ErrInvalidParameters)
 		if err != nil {
 			log.Error(err)
-			httputil.WriteJsonResponse(w, http.StatusBadRequest, []byte("internal error"))
+			writeErrorCallbackResponse(w, []byte("internal error"))
 		}
 
-		httputil.WriteJsonResponse(w, http.StatusBadRequest, body)
+		writeErrorCallbackResponse(w, body)
 		return
 	}
 
@@ -91,10 +91,10 @@ func (s *SetRequestOutputPort) Output(data *updateproteinevent.OutputData) {
 			log.Error(err)
 			body = []byte("internal error")
 		}
-		httputil.WriteJsonResponse(s.w, http.StatusBadRequest, body)
+		writeErrorCallbackResponse(s.w, body)
 		return
 	}
 
-	httputil.WriteJsonResponse(s.w, http.StatusOK, respBody)
+	httputil.WriteJsonResponse(s.w, nil, http.StatusOK, respBody)
 	return
 }

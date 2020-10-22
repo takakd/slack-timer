@@ -61,7 +61,7 @@ func NewWebServer(ctx context.Context) *WebServer {
 
 	// GET: /api/<ver>/test
 	mux.HandleFunc(ApiPrefixPath+"/"+Version+"/test", makeHandlerFunc(ctx, func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		httputil.WriteJsonResponse(w, 200, []byte(fmt.Sprintf("called /%s/test", Version)))
+		httputil.WriteJsonResponse(w, nil, http.StatusOK, []byte(fmt.Sprintf("called /%s/test", Version)))
 	}))
 
 	s := &WebServer{
