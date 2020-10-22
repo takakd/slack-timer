@@ -12,14 +12,14 @@ import (
 
 // GotRequestHandler represents the API command "Got".
 type GotRequestHandler struct {
-	params  *SlackCallbackRequestParams
-	usecase updateproteinevent.Usecase
+	messageEvent *MessageEvent
+	usecase      updateproteinevent.Usecase
 }
 
 func (gr *GotRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
 	outputPort := &GotRequestOutputPort{w: w}
 	// Update time to drink.
-	gr.usecase.UpdateTimeToDrink(ctx, gr.params.UserId, outputPort)
+	gr.usecase.UpdateTimeToDrink(ctx, gr.messageEvent.User, outputPort)
 	return
 }
 

@@ -15,7 +15,7 @@ import (
 
 // SetRequestHandler represents the API command "Set".
 type SetRequestHandler struct {
-	params *SlackCallbackRequestParams
+	messageEvent *MessageEvent
 	// Time to notify user next
 	remindIntervalInMin int
 	usecase             updateproteinevent.Usecase
@@ -27,7 +27,7 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 
 	// e.g. set 10
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
-	m := re.FindStringSubmatch(sr.params.Text)
+	m := re.FindStringSubmatch(sr.messageEvent.Text)
 	if m == nil {
 		bag.SetError("interval", "invalid format", errors.New("invalid format"))
 		return bag
@@ -57,7 +57,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context, w http.ResponseWriter)
 	}
 
 	outputPort := &SetRequestOutputPort{w: w}
-	sr.usecase.SaveIntervalMin(ctx, sr.params.UserId, sr.remindIntervalInMin, outputPort)
+	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.remindIntervalInMin, outputPort)
 	return
 }
 

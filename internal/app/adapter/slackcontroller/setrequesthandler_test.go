@@ -12,19 +12,21 @@ import (
 )
 
 func TestSetRequestHandler_Handler(t *testing.T) {
-	params := &SlackCallbackRequestParams{
-		UserId: "test",
+	data := &EventCallbackData{
+		MessageEvent: MessageEvent{
+			User: "test",
+		},
 	}
 	ctx := context.TODO()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mu := updateproteinevent.NewMockUsecase(ctrl)
-	mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(params.UserId), gomock.Any())
+	mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Any())
 
 	h := GotRequestHandler{
-		params:  params,
-		usecase: mu,
+		messageEvent: &data.MessageEvent,
+		usecase:      mu,
 	}
 	h.Handler(ctx, httptest.NewRecorder())
 }
@@ -44,9 +46,9 @@ func TestSetRequestHandler_validate(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			r := SetRequestHandler{
-				params: &SlackCallbackRequestParams{
-					UserId: "test",
-					Text:   c.text,
+				messageEvent: &MessageEvent{
+					User: "test",
+					Text: c.text,
 				},
 			}
 			bag := r.validate()

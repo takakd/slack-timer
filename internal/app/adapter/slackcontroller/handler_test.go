@@ -1,11 +1,14 @@
 package slackcontroller
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"proteinreminder/internal/app/driver/di"
@@ -26,10 +29,17 @@ func TestNewRequestHandler(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			// https://golang.org/src/net/http/request_test.go
-			body := strings.NewReader(`text=` + c.text)
-			httpReq := httptest.NewRequest(http.MethodPost, "/", body)
-			httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			data := EventCallbackData{
+				MessageEvent: MessageEvent{
+					Type: "message",
+					User: "test user",
+					Text: c.text,
+				},
+			}
+			body, err := json.Marshal(data)
+			require.NoError(t, err)
+			httpReq := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
+			httpReq.Header.Set("Content-Type", "application/json")
 
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -50,11 +60,11 @@ func TestNewRequestHandler(t *testing.T) {
 			if c.subType == CmdGot {
 				h, match := req.(*GotRequestHandler)
 				assert.True(t, match)
-				assert.Equal(t, h.params.Text, c.text)
+				assert.Equal(t, h.messageEvent.Text, c.text)
 			} else if c.subType == CmdSet {
 				h, match := req.(*SetRequestHandler)
 				assert.True(t, match)
-				assert.Equal(t, h.params.Text, c.text)
+				assert.Equal(t, h.messageEvent.Text, c.text)
 			} else {
 				assert.Nil(t, req)
 			}
@@ -82,7 +92,7 @@ func TestHandler(t *testing.T) {
 	t.Run("wrong method", func(t *testing.T) {
 		body := strings.NewReader("")
 		httpReq := httptest.NewRequest(http.MethodGet, "/", body)
-		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		httpReq.Header.Set("Content-Type", "application/json")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -102,7 +112,7 @@ func TestHandler(t *testing.T) {
 
 		body := strings.NewReader("")
 		httpReq := httptest.NewRequest(http.MethodPost, "/", body)
-		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		httpReq.Header.Set("Content-Type", "application/json")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -123,8 +133,16 @@ func TestHandler(t *testing.T) {
 		ctx := context.TODO()
 		userId := "abc"
 
-		body := strings.NewReader(`text=got&user_id=` + userId)
-		httpReq := httptest.NewRequest(http.MethodPost, "/", body)
+		data := EventCallbackData{
+			MessageEvent: MessageEvent{
+				Type: "message",
+				User: userId,
+				Text: "got",
+			},
+		}
+		body, err := json.Marshal(data)
+		require.NoError(t, err)
+		httpReq := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
 		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		ctrl := gomock.NewController(t)

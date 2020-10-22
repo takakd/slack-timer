@@ -11,21 +11,23 @@ import (
 	"testing"
 )
 
-func TestTestGotRequestHandler_Handler(t *testing.T) {
+func TestGotRequestHandler_Handler(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
-		params := &SlackCallbackRequestParams{
-			UserId: "test",
+		data := &EventCallbackData{
+			MessageEvent: MessageEvent{
+				User: "test",
+			},
 		}
 		ctx := context.TODO()
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mu := updateproteinevent.NewMockUsecase(ctrl)
-		mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(params.UserId), gomock.Any())
+		mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Any())
 
 		h := GotRequestHandler{
-			params:  params,
-			usecase: mu,
+			messageEvent: &data.MessageEvent,
+			usecase:      mu,
 		}
 		h.Handler(ctx, httptest.NewRecorder())
 	})
