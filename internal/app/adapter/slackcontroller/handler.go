@@ -70,6 +70,8 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 		return nil, err
 	}
 
+	log.Info(body)
+
 	// URL Verification callback
 	urlVerification := UrlVerificationEventCallbackData{}
 	err = json.Unmarshal(body, &urlVerification)
