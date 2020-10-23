@@ -1,7 +1,5 @@
 package di
 
-import "proteinreminder/internal/pkg/config"
-
 var (
 	di DI
 )
@@ -18,20 +16,4 @@ func Get(name string) interface{} {
 
 func SetDi(d DI) {
 	di = d
-}
-
-func setDi() {
-	// Set DI interface per environment.
-	switch appEnv := config.Get("APP_ENV", "dev"); appEnv {
-	case "production":
-		SetDi(nil)
-	case "test":
-		SetDi(&TestDi{})
-	default:
-		SetDi(nil)
-	}
-}
-
-func init() {
-	setDi()
 }

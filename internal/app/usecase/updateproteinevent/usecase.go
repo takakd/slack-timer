@@ -40,13 +40,13 @@ type OutputPort interface {
 
 type Interactor struct {
 	repository Repository
-	outputPort OutputPort
+	//outputPort OutputPort
 }
 
 func NewUsecase() Usecase {
 	return &Interactor{
 		repository: di.Get("Repository").(Repository),
-		outputPort: di.Get("UpdateProteinEventOutputPort").(OutputPort),
+		//outputPort: di.Get("UpdateProteinEventOutputPort").(OutputPort),
 	}
 }
 
@@ -93,8 +93,8 @@ func (s *Interactor) UpdateTimeToDrink(ctx context.Context, userId string, overW
 	data := s.saveProteinEventValue(ctx, userId, 0)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)
-	} else {
-		s.outputPort.Output(data)
+		//} else {
+		//	s.outputPort.Output(data)
 	}
 }
 
@@ -103,7 +103,7 @@ func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, minutes
 	data := s.saveProteinEventValue(ctx, userId, minutes)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)
-	} else {
-		s.outputPort.Output(data)
+		//} else {
+		//	s.outputPort.Output(data)
 	}
 }
