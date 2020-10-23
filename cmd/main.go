@@ -14,7 +14,7 @@ import (
 
 func setDi() {
 	env := config.Get("APP_ENV", "development")
-	log.Info(fmt.Sprintf("set di env=%f", env))
+	log.Info(fmt.Sprintf("set di env=%s", env))
 	if env == "production" {
 		di.SetDi(&container.Production{})
 	} else if env == "development" {
