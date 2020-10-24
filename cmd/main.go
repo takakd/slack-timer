@@ -31,10 +31,13 @@ func setDi() {
 
 func setConfig() {
 	configType := os.Getenv("APP_CONFIG_TYPE")
+	if configType == "" {
+		configType = "env"
+	}
 
 	log.Info(fmt.Sprintf("set config type=%s", configType))
 
-	if configType == "" {
+	if configType == "env" {
 		// Get .env path
 		appDir, err := fileutil.GetAppDir()
 		if err != nil {
