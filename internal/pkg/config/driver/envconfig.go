@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"os"
-	"proteinreminder/internal/pkg/errorutil"
+	"slacktimer/internal/pkg/errorutil"
 	"strings"
 )
 

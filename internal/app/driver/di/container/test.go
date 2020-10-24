@@ -2,7 +2,7 @@ package container
 
 import (
 	"fmt"
-	"proteinreminder/internal/pkg/log"
+	"slacktimer/internal/pkg/log"
 )
 
 type Test struct {

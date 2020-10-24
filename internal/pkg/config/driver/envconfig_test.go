@@ -5,8 +5,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
-	"proteinreminder/internal/pkg/testutil"
 	"runtime"
+	"slacktimer/internal/pkg/testutil"
 	"testing"
 )
 

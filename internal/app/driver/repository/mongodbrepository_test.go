@@ -10,16 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 	"path/filepath"
-	"proteinreminder/internal/app/enterpriserule"
-	"proteinreminder/internal/pkg/config"
-	"proteinreminder/internal/pkg/fileutil"
 	"runtime"
+	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/fileutil"
 	"testing"
 	"time"
 )
 
-func makeTestEvents() []*enterpriserule.ProteinEvent {
-	return []*enterpriserule.ProteinEvent{
+func makeTestEvents() []*enterpriserule.TimerEvent {
+	return []*enterpriserule.TimerEvent{
 		{
 			"id1", time.Now().UTC(), 0,
 		},
@@ -29,7 +29,7 @@ func makeTestEvents() []*enterpriserule.ProteinEvent {
 	}
 }
 
-func cleanupTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
+func cleanupTestEvents(t *testing.T, events []*enterpriserule.TimerEvent) {
 	if len(events) == 0 {
 		return
 	}
@@ -120,7 +120,7 @@ func Test_getMongoDb(t *testing.T) {
 	}
 }
 
-func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
+func TestMongoDbRepository_FindTimerEvent(t *testing.T) {
 	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
@@ -138,7 +138,7 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		repo := NewMongoDbRepository()
-		event, err := repo.FindProteinEvent(ctx, userId)
+		event, err := repo.FindTimerEvent(ctx, userId)
 		assert.NotNil(t, event)
 		assert.NoError(t, err)
 	})
@@ -152,22 +152,22 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
-			// For SaveProteinEvent
+			// For SaveTimerEvent
 			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
 			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
-			// For FindProteinEvent
+			// For FindTimerEvent
 			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
 			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 		)
 		config.SetConfig(mock)
 
 		repo := NewMongoDbRepository()
-		_, err := repo.SaveProteinEvent(context.TODO(), testEvents)
+		_, err := repo.SaveTimerEvent(context.TODO(), testEvents)
 		assert.NoError(t, err)
 
 		ctx := context.TODO()
 		userId := "nonexistent id"
-		event, err := repo.FindProteinEvent(ctx, userId)
+		event, err := repo.FindTimerEvent(ctx, userId)
 		assert.NotNil(t, event)
 		assert.NoError(t, err)
 
@@ -184,10 +184,10 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		mock := config.NewMockConfig(ctrl)
 
 		var call *gomock.Call
-		// For SaveProteinEvent
+		// For SaveTimerEvent
 		call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl)
 		call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
-		// For FindProteinEvent
+		// For FindTimerEvent
 		for i := 0; i < len(testEvents); i++ {
 			call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl).After(call)
 			call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
@@ -198,11 +198,11 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 		ctx := context.TODO()
 
 		repo := NewMongoDbRepository()
-		_, err := repo.SaveProteinEvent(ctx, testEvents)
+		_, err := repo.SaveTimerEvent(ctx, testEvents)
 		assert.NoError(t, err)
 
 		for _, event := range testEvents {
-			got, err := repo.FindProteinEvent(ctx, event.UserId)
+			got, err := repo.FindTimerEvent(ctx, event.UserId)
 			assert.NoError(t, err)
 			assert.Equal(t, event, got)
 		}
@@ -211,14 +211,14 @@ func TestMongoDbRepository_FindProteinEvent(t *testing.T) {
 	})
 }
 
-func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
+func TestMongoDbRepository_FindTimerEventByTime(t *testing.T) {
 	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
 
 	t.Run("ok", func(t *testing.T) {
 		now := time.Now().UTC()
-		events := []*enterpriserule.ProteinEvent{
+		events := []*enterpriserule.TimerEvent{
 			{
 				"tid1", now, 2,
 			},
@@ -244,10 +244,10 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
-			// For SaveProteinEvent
+			// For SaveTimerEvent
 			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
 			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
-			// For FindProteinEventByTime
+			// For FindTimerEventByTime
 			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
 			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 		)
@@ -256,10 +256,10 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 
 		repo := NewMongoDbRepository()
 		ctx := context.TODO()
-		_, err := repo.SaveProteinEvent(ctx, events)
+		_, err := repo.SaveTimerEvent(ctx, events)
 		assert.NoError(t, err)
 
-		got, err := repo.FindProteinEventByTime(ctx, from, to)
+		got, err := repo.FindTimerEventByTime(ctx, from, to)
 		assert.NoError(t, err)
 
 		wants := events[:2]
@@ -274,7 +274,7 @@ func TestMongoDbRepository_FindProteinEventByTime(t *testing.T) {
 	})
 }
 
-func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
+func TestMongoDbRepository_SaveTimerEvent(t *testing.T) {
 	if doesSkipMongoDbRepositoryTest(t) {
 		return
 	}
@@ -289,7 +289,7 @@ func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
 
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
-			// For SaveProteinEvent
+			// For SaveTimerEvent
 			mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl),
 			mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol),
 		)
@@ -300,7 +300,7 @@ func TestMongoDbRepository_SaveProteinEvent(t *testing.T) {
 
 		ctx := context.TODO()
 
-		savedEvents, err := repo.SaveProteinEvent(ctx, testEvents)
+		savedEvents, err := repo.SaveTimerEvent(ctx, testEvents)
 		assert.NoError(t, err)
 
 		for i, savedEvent := range savedEvents {

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
+	"slacktimer/internal/app/usecase/updatetimerevent"
 	"testing"
 )
 
@@ -21,7 +21,7 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mu := updateproteinevent.NewMockUsecase(ctrl)
+	mu := updatetimerevent.NewMockUsecase(ctrl)
 	mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Any())
 
 	h := GotRequestHandler{
@@ -67,13 +67,13 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 		err  error
 		msg  string
 	}{
-		{name: "ng:find", err: updateproteinevent.ErrFind, msg: "failed to find event"},
-		{name: "ng:create", err: updateproteinevent.ErrCreate, msg: "failed to create event"},
-		{name: "ng:save", err: updateproteinevent.ErrSave, msg: "failed to save event"},
+		{name: "ng:find", err: updatetimerevent.ErrFind, msg: "failed to find event"},
+		{name: "ng:create", err: updatetimerevent.ErrCreate, msg: "failed to create event"},
+		{name: "ng:save", err: updatetimerevent.ErrSave, msg: "failed to save event"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			data := &updateproteinevent.OutputData{
+			data := &updatetimerevent.OutputData{
 				Result: c.err,
 			}
 
@@ -92,7 +92,7 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 	}
 
 	t.Run("ok", func(t *testing.T) {
-		data := &updateproteinevent.OutputData{
+		data := &updatetimerevent.OutputData{
 			Result: nil,
 		}
 

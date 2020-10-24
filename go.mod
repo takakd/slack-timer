@@ -1,4 +1,4 @@
-module proteinreminder
+module slacktimer
 
 go 1.14
 

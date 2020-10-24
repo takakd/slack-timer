@@ -2,7 +2,7 @@ package validator
 
 import (
 	"github.com/pkg/errors"
-	"proteinreminder/internal/pkg/collection"
+	"slacktimer/internal/pkg/collection"
 )
 
 // Defined Error Type

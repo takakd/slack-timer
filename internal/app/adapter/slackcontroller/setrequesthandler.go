@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"proteinreminder/internal/app/adapter/validator"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
-	"proteinreminder/internal/pkg/httputil"
-	"proteinreminder/internal/pkg/log"
 	"regexp"
+	"slacktimer/internal/app/adapter/validator"
+	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/pkg/httputil"
+	"slacktimer/internal/pkg/log"
 	"strconv"
 )
 
@@ -18,7 +18,7 @@ type SetRequestHandler struct {
 	messageEvent *MessageEvent
 	// Time to notify user next
 	remindIntervalInMin int
-	usecase             updateproteinevent.Usecase
+	usecase             updatetimerevent.Usecase
 }
 
 // Validate parameters.
@@ -65,14 +65,14 @@ type SetRequestOutputPort struct {
 	w http.ResponseWriter
 }
 
-func (s *SetRequestOutputPort) Output(data *updateproteinevent.OutputData) {
+func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 	err := data.Result
 	errRaised := false
-	if errors.Is(err, updateproteinevent.ErrFind) {
+	if errors.Is(err, updatetimerevent.ErrFind) {
 		errRaised = true
-	} else if errors.Is(err, updateproteinevent.ErrCreate) {
+	} else if errors.Is(err, updatetimerevent.ErrCreate) {
 		errRaised = true
-	} else if errors.Is(err, updateproteinevent.ErrSave) {
+	} else if errors.Is(err, updatetimerevent.ErrSave) {
 		errRaised = true
 	}
 

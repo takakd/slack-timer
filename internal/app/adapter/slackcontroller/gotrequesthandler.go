@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
-	"proteinreminder/internal/pkg/httputil"
-	"proteinreminder/internal/pkg/log"
+	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/pkg/httputil"
+	"slacktimer/internal/pkg/log"
 )
 
 // GotRequestHandler represents the API command "Got".
 type GotRequestHandler struct {
 	messageEvent *MessageEvent
-	usecase      updateproteinevent.Usecase
+	usecase      updatetimerevent.Usecase
 }
 
 func (gr *GotRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
@@ -27,14 +27,14 @@ type GotRequestOutputPort struct {
 	w http.ResponseWriter
 }
 
-func (g *GotRequestOutputPort) Output(data *updateproteinevent.OutputData) {
+func (g *GotRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 	err := data.Result
 	errRaised := false
-	if errors.Is(err, updateproteinevent.ErrFind) {
+	if errors.Is(err, updatetimerevent.ErrFind) {
 		errRaised = true
-	} else if errors.Is(err, updateproteinevent.ErrCreate) {
+	} else if errors.Is(err, updatetimerevent.ErrCreate) {
 		errRaised = true
-	} else if errors.Is(err, updateproteinevent.ErrSave) {
+	} else if errors.Is(err, updatetimerevent.ErrSave) {
 		errRaised = true
 	}
 

@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-protein-mongodb
+  name: app-mongodb
   namespace: default
   labels:
-    app: protein
+    app: slacktimer
 spec:
   replicas: 1
   selector:

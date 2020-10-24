@@ -1,12 +1,12 @@
-package updateproteinevent
+package updatetimerevent
 
 import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
-	"proteinreminder/internal/app/driver/di"
-	"proteinreminder/internal/app/enterpriserule"
-	"proteinreminder/internal/pkg/log"
+	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/pkg/log"
 	"time"
 )
 
@@ -31,7 +31,7 @@ type Usecase interface {
 
 type OutputData struct {
 	Result     error
-	SavedEvent *enterpriserule.ProteinEvent
+	SavedEvent *enterpriserule.TimerEvent
 }
 
 type OutputPort interface {
@@ -46,16 +46,16 @@ type Interactor struct {
 func NewUsecase() Usecase {
 	return &Interactor{
 		repository: di.Get("Repository").(Repository),
-		//outputPort: di.Get("UpdateProteinEventOutputPort").(OutputPort),
+		//outputPort: di.Get("UpdateTimerEventOutputPort").(OutputPort),
 	}
 }
 
 // Common processing.
-func (s *Interactor) saveProteinEventValue(ctx context.Context, userId string, remindInterval int) *OutputData {
+func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, remindInterval int) *OutputData {
 
 	outputData := &OutputData{}
 
-	event, err := s.repository.FindProteinEvent(ctx, userId)
+	event, err := s.repository.FindTimerEvent(ctx, userId)
 	if err != nil {
 		log.Error(err)
 		outputData.Result = fmt.Errorf("find %v: %w", userId, ErrFind)
@@ -63,7 +63,7 @@ func (s *Interactor) saveProteinEventValue(ctx context.Context, userId string, r
 	}
 
 	if event == nil {
-		if event, err = enterpriserule.NewProteinEvent(userId); err != nil {
+		if event, err = enterpriserule.NewTimerEvent(userId); err != nil {
 			log.Error(err)
 			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
 			return outputData
@@ -78,7 +78,7 @@ func (s *Interactor) saveProteinEventValue(ctx context.Context, userId string, r
 		event.UtcTimeToDrink = event.UtcTimeToDrink.Add(time.Duration(event.DrinkTimeIntervalMin) * time.Minute)
 	}
 
-	if _, err = s.repository.SaveProteinEvent(ctx, []*enterpriserule.ProteinEvent{event}); err != nil {
+	if _, err = s.repository.SaveTimerEvent(ctx, []*enterpriserule.TimerEvent{event}); err != nil {
 		log.Error(err)
 		outputData.Result = fmt.Errorf("save %v: %w", userId, ErrSave)
 		return outputData
@@ -90,7 +90,7 @@ func (s *Interactor) saveProteinEventValue(ctx context.Context, userId string, r
 
 // Update the time for user to drink.
 func (s *Interactor) UpdateTimeToDrink(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
-	data := s.saveProteinEventValue(ctx, userId, 0)
+	data := s.saveTimerEventValue(ctx, userId, 0)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)
 		//} else {
@@ -100,7 +100,7 @@ func (s *Interactor) UpdateTimeToDrink(ctx context.Context, userId string, overW
 
 // Save the remind interval second for user.
 func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, minutes int, overWriteOutputPort OutputPort) {
-	data := s.saveProteinEventValue(ctx, userId, minutes)
+	data := s.saveTimerEventValue(ctx, userId, minutes)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)
 		//} else {

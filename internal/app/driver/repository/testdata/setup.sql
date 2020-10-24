@@ -3,7 +3,7 @@
 
 -- Table Definition ----------------------------------------------
 
-CREATE TABLE IF NOT EXISTS test_protein_event (
+CREATE TABLE IF NOT EXISTS test_timer_event (
     user_id character varying(9) PRIMARY KEY,
     utc_time_to_drink timestamp without time zone,
     drink_time_interval_min integer NOT NULL DEFAULT 0
