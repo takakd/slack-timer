@@ -22,7 +22,9 @@ if [[ "$1" = "help" ]]; then
 fi
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
-ENV_FILE=${SCRIPT_DIR}/../configs/.env
+if [[ "$ENV_FILE" == "" ]]; then
+    ENV_FILE=${SCRIPT_DIR}/../configs/.env
+fi
 
 if [[ -e "$ENV_FILE" ]]; then
     source "$ENV_FILE"

@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"proteinreminder/internal/app/adapter/webserver"
 	"proteinreminder/internal/app/driver/di"
 	"proteinreminder/internal/app/driver/di/container"
 	"proteinreminder/internal/pkg/config"
+	"proteinreminder/internal/pkg/config/driver"
 	"proteinreminder/internal/pkg/errorutil"
+	"proteinreminder/internal/pkg/fileutil"
 	"proteinreminder/internal/pkg/log"
 )
 
@@ -24,6 +27,22 @@ func setDi() {
 	}
 }
 
+func setConfig() {
+	configType := os.Getenv("APP_CONFIG_TYPE")
+	if configType == "" {
+		// Get .env path
+		appDir, err := fileutil.GetAppDir()
+		if err != nil {
+			panic(errorutil.MakePanicMessage("need app directory path."))
+		}
+		path := filepath.Join(appDir, ".env")
+		if fileutil.FileExists(path) {
+			names := []string{path}
+			config.SetConfig(driver.NewEnvConfig(names...))
+		}
+	}
+}
+
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -33,10 +52,12 @@ func main() {
 		log.Info("exit server")
 	}()
 
-	ctx := context.Background()
-	log.SetLevel(config.Get("LOG_LEVEL", "debug"))
+	setConfig()
 
 	setDi()
+
+	ctx := context.Background()
+	log.SetLevel(config.Get("LOG_LEVEL", "debug"))
 
 	server := webserver.NewWebServer(ctx)
 	if server == nil {

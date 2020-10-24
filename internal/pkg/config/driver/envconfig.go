@@ -1,5 +1,5 @@
 // Deprecated
-package config
+package driver
 
 import (
 	"fmt"

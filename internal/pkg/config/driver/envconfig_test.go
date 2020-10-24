@@ -1,5 +1,5 @@
 // Deprecated
-package config
+package driver
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -36,7 +36,7 @@ func TestEnvConfig_Get(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			_, filePath, _, _ := runtime.Caller(0)
 			// e.g. $(pwd)/testdata/.env.test
-			envPath := filepath.Join(filepath.Dir(filePath), "testdata/", c.env)
+			envPath := filepath.Join(filepath.Dir(filePath), "../testdata/", c.env)
 			config := NewEnvConfig(envPath)
 
 			got := config.Get(c.key, "")
@@ -49,7 +49,7 @@ func TestEnvConfig_Get(t *testing.T) {
 		os.Setenv("NAME3", want)
 
 		_, filePath, _, _ := runtime.Caller(0)
-		envPath := filepath.Join(filepath.Dir(filePath), "testdata/.env.test")
+		envPath := filepath.Join(filepath.Dir(filePath), "../testdata/.env.test")
 		config := NewEnvConfig(envPath)
 
 		got := config.Get("NAME3", "")
@@ -58,7 +58,7 @@ func TestEnvConfig_Get(t *testing.T) {
 
 	t.Run("ok:overwrite", func(t *testing.T) {
 		_, filePath, _, _ := runtime.Caller(0)
-		envPath := filepath.Join(filepath.Dir(filePath), "testdata/.env.test")
+		envPath := filepath.Join(filepath.Dir(filePath), "../testdata/.env.test")
 		config := NewEnvConfig(envPath)
 
 		want := "changed"

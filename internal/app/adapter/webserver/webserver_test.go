@@ -82,7 +82,7 @@ func TestWebServer_Run(t *testing.T) {
 		run := make(chan bool)
 		go func() {
 			err := s.Run()
-			assert.Equal(t, err, http.ErrServerClosed)
+			assert.Equal(t, http.ErrServerClosed, err)
 			run <- true
 
 		}()

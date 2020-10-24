@@ -88,7 +88,7 @@ func getTestPostgresEnv(t *testing.T) (dsn, tableName string) {
 	// NOTE: Also use commandline argument
 	_, filePath, _, _ := runtime.Caller(0)
 	// e.g. internal/configs/.env.test
-	envPath := filepath.Join(filepath.Dir(filePath), "../../../configs/.env.test")
+	envPath := filepath.Join(filepath.Dir(filePath), "../../../../configs/.env.test")
 	if fileutil.FileExists(envPath) {
 		godotenv.Load(envPath)
 	}

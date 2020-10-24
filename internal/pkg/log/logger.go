@@ -26,7 +26,7 @@ var logLevel Level
 
 func init() {
 	logger = GetLogger("")
-	logLevel = LevelInfo
+	logLevel = LevelDebug
 }
 
 // Get logger implementation.
