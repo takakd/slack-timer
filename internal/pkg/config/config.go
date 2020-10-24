@@ -15,7 +15,7 @@ type Config interface {
 // Get config value.
 func Get(name string, defaultValue string) string {
 	if config == nil {
-		log.Debug("config is null")
+		log.Error("config is null")
 		return ""
 	}
 	return config.Get(name, defaultValue)

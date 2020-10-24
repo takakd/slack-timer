@@ -17,7 +17,9 @@ import (
 
 func setDi() {
 	env := config.Get("APP_ENV", "development")
+
 	log.Info(fmt.Sprintf("set di env=%s", env))
+
 	if env == "production" {
 		di.SetDi(&container.Production{})
 	} else if env == "development" {
@@ -29,6 +31,9 @@ func setDi() {
 
 func setConfig() {
 	configType := os.Getenv("APP_CONFIG_TYPE")
+
+	log.Info(fmt.Sprintf("set config type=%s", configType))
+
 	if configType == "" {
 		// Get .env path
 		appDir, err := fileutil.GetAppDir()
