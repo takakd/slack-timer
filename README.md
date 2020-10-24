@@ -12,7 +12,7 @@ Simple timer on Slack, which notifies on periodically.
 &nbsp;&nbsp;![Badge-Rhs](https://img.shields.io/badge/Badge-Rhs-orange?style=flat)
 &nbsp;&nbsp;![Badge-Rhs](https://img.shields.io/badge/Badge-Rhs-orange?style=flat)
 &nbsp;&nbsp; -->
-![CircleCI](https://circleci.com/gh/takakd/protein-reminder.svg?style=shield&circle-token=195739304092ae914a95802605704f56171b0627)
+![CircleCI](https://circleci.com/gh/takakd/slack-timer.svg?style=shield&circle-token=195739304092ae914a95802605704f56171b0627)
 &nbsp;
 ![License-MIT](https://img.shields.io/badge/License-MIT-informational?style=flat)
 
