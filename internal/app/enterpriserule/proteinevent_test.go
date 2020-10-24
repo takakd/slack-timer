@@ -1,31 +1,28 @@
 package enterpriserule
 
 import (
-	"proteinreminder/internal/pkg/testutil"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestNewProteinEvent(t *testing.T) {
 	cases := []struct {
-		name string
-		in   string
-		out  *ProteinEvent
+		name   string
+		userId string
+		want   *ProteinEvent
 	}{
-		{name: "OK", in: "id1234", out: &ProteinEvent{UserId: "id1234"}},
-		{name: "NG", in: "", out: nil},
+		{name: "ok", userId: "id1234", want: &ProteinEvent{UserId: "id1234"}},
+		{name: "ng", userId: "", want: nil},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, _ := NewProteinEvent(c.in)
-			if c.out == nil {
-				if got != nil {
-					t.Error(testutil.MakeTestMessageWithGotWant(got, c.out))
-				}
+			got, err := NewProteinEvent(c.userId)
+			assert.Equal(t, c.want, got)
+			if err != nil {
+				assert.Nil(t, c.want)
 			} else {
-				if !got.Equal(c.out) {
-					t.Error(testutil.MakeTestMessageWithGotWant(got, c.out))
-				}
+				assert.NotNil(t, c.want)
 			}
 		})
 	}
@@ -33,7 +30,7 @@ func TestNewProteinEvent(t *testing.T) {
 
 func TestProteinEvent_Equal(t *testing.T) {
 	now := time.Now().UTC()
-	sec := time.Duration(10)
+	sec := 10
 	event := &ProteinEvent{
 		"id1",
 		now,
@@ -45,17 +42,19 @@ func TestProteinEvent_Equal(t *testing.T) {
 		rhs    *ProteinEvent
 		result bool
 	}{
-		{name: "OK", lhs: event, rhs: event, result: true},
-		{name: "NG:nil", lhs: event, rhs: nil, result: false},
-		{name: "NG:user_id", lhs: event, rhs: &ProteinEvent{"id2", now, sec}, result: false},
-		{name: "NG:utc_time_to_drink", lhs: event, rhs: &ProteinEvent{"id1", now.Add(time.Second * 1), sec}, result: false},
-		{name: "NG:drink_time_interval_sec", lhs: event, rhs: &ProteinEvent{"id1", now, sec + 1}, result: false},
+		{name: "ok", lhs: event, rhs: event, result: true},
+		{name: "ng:nil", lhs: event, rhs: nil, result: false},
+		{name: "ng:user_id", lhs: event, rhs: &ProteinEvent{"id2", now, sec}, result: false},
+		{name: "ng:utc_time_to_drink", lhs: event, rhs: &ProteinEvent{"id1", now.Add(time.Second * 1), sec}, result: false},
+		{name: "ng:drink_time_interval_sec", lhs: event, rhs: &ProteinEvent{"id1", now, sec + 1}, result: false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if c.lhs.Equal(c.rhs) != c.result {
-				t.Error(testutil.MakeTestMessageWithGotWant(c.lhs, c.rhs))
-			}
+			// TODO
+			assert.Equal(t, c.lhs.Equal(c.rhs), c.result)
+			//if c.lhs.Equal(c.rhs) != c.result {
+			//	t.Error(testutil.MakeTestMessageWithGotWant(c.lhs, c.rhs))
+			//}
 		})
 	}
 }

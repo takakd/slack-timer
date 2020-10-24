@@ -1,30 +1,24 @@
 package collection
 
 import (
-	"proteinreminder/internal/pkg/testutil"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSet(t *testing.T) {
-	s := NewSet()
+	t.Run("ok", func(t *testing.T) {
+		s := NewSet()
 
-	s.Set("test")
-	if !s.Contains("test") {
-		t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	}
+		s.Set("test")
+		assert.True(t, s.Contains("test"))
 
-	s.Remove("test")
-	if s.Contains("test") {
-		t.Error(testutil.MakeTestMessageWithGotWant(true, false))
-	}
+		s.Remove("test")
+		assert.False(t, s.Contains("test"))
 
-	s.Set(1)
-	if !s.Contains(1) {
-		t.Error(testutil.MakeTestMessageWithGotWant(false, true))
-	}
+		s.Set(1)
+		assert.True(t, s.Contains(1))
 
-	s.Remove(1)
-	if s.Contains(1) {
-		t.Error(testutil.MakeTestMessageWithGotWant(true, false))
-	}
+		s.Remove(1)
+		assert.False(t, s.Contains(1))
+	})
 }

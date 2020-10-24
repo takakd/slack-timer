@@ -26,7 +26,7 @@ var logLevel Level
 
 func init() {
 	logger = GetLogger("")
-	logLevel = LevelInfo
+	logLevel = LevelDebug
 }
 
 // Get logger implementation.
@@ -44,8 +44,15 @@ func SetDefaultLogger(l Logger) {
 }
 
 // Set logging level.
-func SetLevel(level Level) {
-	logLevel = level
+func SetLevel(level string) {
+	switch level {
+	case "error":
+		logLevel = LevelError
+	case "info":
+		logLevel = LevelInfo
+	case "debug":
+		logLevel = LevelDebug
+	}
 }
 
 // Output log.

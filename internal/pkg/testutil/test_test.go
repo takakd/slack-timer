@@ -1,14 +1,13 @@
 package testutil
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestMakeTestMessageWithGotWant(t *testing.T) {
 	s := MakeTestMessageWithGotWant("Hi", "Hello")
-	if s != "got: Hi, want: Hello" {
-		t.Errorf("got: %s, want: got: Hi, want: Hello", s)
-	}
+	assert.Equal(t, "got: Hi, want: Hello", s)
 }
 
 func TestIsTestCallPanic(t *testing.T) {
@@ -18,7 +17,5 @@ func TestIsTestCallPanic(t *testing.T) {
 			panic("Hi, panic.")
 		}
 	})
-	if !isCalled {
-		t.Errorf("failed.")
-	}
+	assert.True(t, isCalled)
 }

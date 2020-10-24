@@ -31,6 +31,9 @@ exit 1
 build() {
     cd "${SCRIPT_DIR}/../cmd" || exit
     go build -p 2 -v -x -mod vendor main.go
+
+    cd "${SCRIPT_DIR}/../cmd/migrate" || exit
+    go build -p 2 -v -x -mod vendor migrate.go
 }
 
 fmt() {
@@ -38,19 +41,21 @@ fmt() {
 }
 
 run() {
-    docker_run
+#    docker_run
 
-    # Call if it's entered Ctrl+C
-    trap docker_cleanup SIGINT
+#    # Call if it's entered Ctrl+C
+#    trap docker_cleanup SIGINT
 
     echo Run go cmd.
     cd "${SCRIPT_DIR}/../cmd" || exit
     ${SCRIPT_DIR}/../cmd/main
 
-    docker_cleanup
+#    docker_cleanup
 }
 docker_run() {
     docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
+    # wait for DB is up
+    sleep 2
 }
 docker_cleanup() {
     docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml down

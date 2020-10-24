@@ -20,13 +20,24 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/davecgh/go-spew/spew
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
+# github.com/golang-migrate/migrate/v4 v4.13.0
+## explicit
+github.com/golang-migrate/migrate/v4
+github.com/golang-migrate/migrate/v4/database
+github.com/golang-migrate/migrate/v4/database/postgres
+github.com/golang-migrate/migrate/v4/internal/url
+github.com/golang-migrate/migrate/v4/source
+github.com/golang-migrate/migrate/v4/source/file
+github.com/golang-migrate/migrate/v4/source/httpfs
 # github.com/golang/mock v1.4.4
 ## explicit
 github.com/golang/mock/gomock
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
-# github.com/google/go-cmp v0.5.1
-## explicit
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v1.1.0
+github.com/hashicorp/go-multierror
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/jmoiron/sqlx v1.2.0
@@ -47,8 +58,6 @@ github.com/klauspost/compress/zstd/internal/xxhash
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
-# github.com/mattn/go-sqlite3 v1.10.0
-## explicit
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
@@ -61,7 +70,6 @@ github.com/stretchr/testify/require
 # github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 github.com/xdg/scram
 # github.com/xdg/stringprep v1.0.0
-## explicit
 github.com/xdg/stringprep
 # go.mongodb.org/mongo-driver v1.4.0
 ## explicit
@@ -98,18 +106,13 @@ go.mongodb.org/mongo-driver/x/mongo/driver/topology
 go.mongodb.org/mongo-driver/x/mongo/driver/uuid
 go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage
 # golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
-## explicit
 golang.org/x/crypto/ocsp
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.0.0-20200707034311-ab3426394381
-## explicit
 # golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/text v0.3.3
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # gopkg.in/yaml.v2 v2.2.7
-## explicit
 gopkg.in/yaml.v2

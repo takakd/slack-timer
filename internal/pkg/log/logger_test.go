@@ -2,28 +2,28 @@ package log
 
 import (
 	"github.com/golang/mock/gomock"
-	"proteinreminder/internal/pkg/testutil"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 )
 
 func TestSetDefaultLogger(t *testing.T) {
-	l := GetLogger("")
-	SetDefaultLogger(l)
-	if reflect.TypeOf(l) != reflect.TypeOf(logger) {
-		t.Error(testutil.MakeTestMessageWithGotWant(reflect.TypeOf(logger), reflect.TypeOf(l)))
-	}
+	t.Run("ok", func(t *testing.T) {
+		l := GetLogger("")
+		SetDefaultLogger(l)
+		assert.Equal(t, reflect.TypeOf(l), reflect.TypeOf(logger))
+	})
 }
 
 func TestDebug(t *testing.T) {
 	cases := []struct {
 		name  string
-		level Level
+		level string
 		msg   string
 	}{
-		{"OK: debug", LevelDebug, "a b テスト"},
-		{"OK: info", LevelInfo, ""},
-		{"OK: error", LevelError, ""},
+		{"ok:debug", "debug", "a b テスト"},
+		{"ok:info", "info", ""},
+		{"ok:error", "error", ""},
 	}
 
 	for _, c := range cases {
@@ -50,12 +50,12 @@ func TestDebug(t *testing.T) {
 func TestInfo(t *testing.T) {
 	cases := []struct {
 		name  string
-		level Level
+		level string
 		msg   string
 	}{
-		{"OK: debug", LevelDebug, "a b テスト"},
-		{"OK: info", LevelInfo, "a b テスト"},
-		{"OK: error", LevelError, ""},
+		{"ok:debug", "debug", "a b テスト"},
+		{"ok:info", "info", "a b テスト"},
+		{"ok:error", "error", ""},
 	}
 
 	for _, c := range cases {
@@ -82,12 +82,12 @@ func TestInfo(t *testing.T) {
 func TestError(t *testing.T) {
 	cases := []struct {
 		name  string
-		level Level
+		level string
 		msg   string
 	}{
-		{"OK: debug", LevelDebug, "a b テスト"},
-		{"OK: info", LevelInfo, "a b テスト"},
-		{"OK: error", LevelError, "a b テスト"},
+		{"ok:debug", "debug", "a b テスト"},
+		{"ok:info", "info", "a b テスト"},
+		{"ok:error", "error", "a b テスト"},
 	}
 
 	for _, c := range cases {

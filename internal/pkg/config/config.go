@@ -1,59 +1,27 @@
-// Deprecated
 package config
 
-import (
-	"path/filepath"
-	"proteinreminder/internal/pkg/errorutil"
-	"proteinreminder/internal/pkg/fileutil"
+import "proteinreminder/internal/pkg/log"
+
+var (
+	// Use this interface for managing config.
+	config Config
 )
 
 // Get config values used in the app.
 type Config interface {
-	Get(name string) string
+	Get(name string, defaultValue string) string
 }
 
-// Use this interface for managing config.
-var config Config
-
-func init() {
-	config = GetConfig("", envPath())
-}
-
-func envPath() string {
-	var err error
-	appDir, err := fileutil.GetAppDir()
-	if err != nil {
-		panic(errorutil.MakePanicMessage("need app directory path."))
+// Get config value.
+func Get(name string, defaultValue string) string {
+	if config == nil {
+		log.Error("config is null")
+		return ""
 	}
-	path := filepath.Join(appDir, ".env")
-	if !fileutil.FileExists(path) {
-		path = ""
-	}
-	return path
+	return config.Get(name, defaultValue)
 }
 
-// Get config implementation.
-func GetConfig(name string, params ...interface{}) Config {
-	var c Config = nil
-	if name == "" {
-		var names []string
-		if params != nil {
-			for _, p := range params {
-				if name, ok := p.(string); ok && name != "" {
-					names = append(names, name)
-				}
-			}
-		}
-		c = NewEnvConfig(names...)
-	}
-	return c
+// Set config used "config.Get".
+func SetConfig(c Config) {
+	config = c
 }
-
-// Deprecated
-///*
-//Get config value.
-//This is utility function.
-// */
-//func Get(name string) string {
-//	return config.Get(name)
-//}
