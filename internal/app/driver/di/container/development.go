@@ -1,8 +1,8 @@
 package container
 
 import (
-	"proteinreminder/internal/app/driver/repository"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
+	"slacktimer/internal/app/driver/repository"
+	"slacktimer/internal/app/usecase/updatetimerevent"
 )
 
 type Development struct {
@@ -12,11 +12,11 @@ type Development struct {
 func (d *Development) Get(name string) interface{} {
 	var c interface{}
 
-	if name == "UpdateProteinEvent" {
-		c = updateproteinevent.NewUsecase()
+	if name == "UpdateTimerEvent" {
+		c = updatetimerevent.NewUsecase()
 	} else if name == "Repository" {
 		c = repository.NewPostgresRepository()
-	} else if name == "UpdateProteinEventOutputPort" {
+	} else if name == "UpdateTimerEventOutputPort" {
 
 	}
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"proteinreminder/internal/app/adapter/slackcontroller"
-	"proteinreminder/internal/pkg/config"
-	"proteinreminder/internal/pkg/httputil"
-	"proteinreminder/internal/pkg/log"
+	"slacktimer/internal/app/adapter/slackcontroller"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/httputil"
+	"slacktimer/internal/pkg/log"
 	"time"
 )
 

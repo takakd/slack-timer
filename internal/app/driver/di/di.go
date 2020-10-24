@@ -1,6 +1,6 @@
 package di
 
-import "proteinreminder/internal/pkg/log"
+import "slacktimer/internal/pkg/log"
 
 var (
 	di DI

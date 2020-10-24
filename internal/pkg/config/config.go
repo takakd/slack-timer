@@ -1,6 +1,6 @@
 package config
 
-import "proteinreminder/internal/pkg/log"
+import "slacktimer/internal/pkg/log"
 
 var (
 	// Use this interface for managing config.

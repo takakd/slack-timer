@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"proteinreminder/internal/app/enterpriserule"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
-	"proteinreminder/internal/pkg/config"
+	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/pkg/config"
 	"time"
 )
 
@@ -25,12 +25,12 @@ func getPostgresDb(ctx context.Context, dsn string) (db *sqlx.DB, err error) {
 	return
 }
 
-func NewPostgresRepository() updateproteinevent.Repository {
+func NewPostgresRepository() updatetimerevent.Repository {
 	return &PostgresRepository{}
 }
 
-// Find protein event by user id.
-func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string) (event *enterpriserule.ProteinEvent, err error) {
+// Find timer event by user id.
+func (r *PostgresRepository) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
 	db, err := getPostgresDb(ctx, config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
@@ -38,8 +38,8 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 
 	defer db.Close()
 
-	event = &enterpriserule.ProteinEvent{}
-	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", config.Get("POSTGRES_TBL_PROTEINEVENT", "")), userId); err != nil {
+	event = &enterpriserule.TimerEvent{}
+	if err = db.GetContext(ctx, event, fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1", config.Get("POSTGRES_TBL_TIMEREVENT", "")), userId); err != nil {
 		return nil, nil
 	}
 
@@ -48,8 +48,8 @@ func (r *PostgresRepository) FindProteinEvent(ctx context.Context, userId string
 	return
 }
 
-// Find protein event from "from" to "to".
-func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.ProteinEvent, err error) {
+// Find timer event from "from" to "to".
+func (r *PostgresRepository) FindTimerEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.TimerEvent, err error) {
 	db, err := getPostgresDb(ctx, config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
@@ -57,12 +57,12 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 
 	defer db.Close()
 
-	values := []enterpriserule.ProteinEvent{}
-	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", config.Get("POSTGRES_TBL_PROTEINEVENT", "")), from, to); err != nil {
+	values := []enterpriserule.TimerEvent{}
+	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", config.Get("POSTGRES_TBL_TIMEREVENT", "")), from, to); err != nil {
 		return nil, nil
 	}
 
-	results = make([]*enterpriserule.ProteinEvent, len(values))
+	results = make([]*enterpriserule.TimerEvent, len(values))
 	for i := range values {
 		values[i].UtcTimeToDrink = values[i].UtcTimeToDrink.UTC()
 		results[i] = &values[i]
@@ -70,10 +70,10 @@ func (r *PostgresRepository) FindProteinEventByTime(ctx context.Context, from, t
 	return
 }
 
-// Save ProteinEvent to DB.
+// Save TimerEvent to DB.
 //
-// Return error and the slice of ProteinEvent saved successfully.
-func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
+// Return error and the slice of TimerEvent saved successfully.
+func (r *PostgresRepository) SaveTimerEvent(ctx context.Context, events []*enterpriserule.TimerEvent) (saved []*enterpriserule.TimerEvent, err error) {
 	db, err := getPostgresDb(ctx, config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
@@ -91,7 +91,7 @@ func (r *PostgresRepository) SaveProteinEvent(ctx context.Context, events []*ent
 		}
 	}()
 
-	table := config.Get("POSTGRES_TBL_PROTEINEVENT", "")
+	table := config.Get("POSTGRES_TBL_TIMEREVENT", "")
 	for _, event := range events {
 		_, err = tx.NamedExecContext(ctx, fmt.Sprintf(`
 			INSERT INTO %s (user_id, utc_time_to_drink, drink_time_interval_min)

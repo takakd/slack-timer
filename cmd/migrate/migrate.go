@@ -15,8 +15,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"os"
-	"proteinreminder/internal/pkg/config"
-	"proteinreminder/internal/pkg/log"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/log"
 	"strconv"
 	"time"
 )

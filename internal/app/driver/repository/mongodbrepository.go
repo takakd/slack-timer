@@ -8,9 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"net/url"
-	"proteinreminder/internal/app/enterpriserule"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
-	"proteinreminder/internal/pkg/config"
+	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/pkg/config"
 	"strings"
 	"time"
 )
@@ -76,12 +76,12 @@ func disconnectMongoDbClientFunc(ctx context.Context, client *mongo.Client, f fu
 	return
 }
 
-func NewMongoDbRepository() updateproteinevent.Repository {
+func NewMongoDbRepository() updatetimerevent.Repository {
 	return &MongoDbRepository{}
 }
 
-// Find protein event by user id.
-func (r *MongoDbRepository) FindProteinEvent(ctx context.Context, userId string) (event *enterpriserule.ProteinEvent, err error) {
+// Find timer event by user id.
+func (r *MongoDbRepository) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
 	db, err := getMongoDb(ctx, config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return
@@ -92,7 +92,7 @@ func (r *MongoDbRepository) FindProteinEvent(ctx context.Context, userId string)
 
 	collection := getMongoCollection(db, config.Get("MONGODB_COLLECTION", ""))
 
-	var value enterpriserule.ProteinEvent
+	var value enterpriserule.TimerEvent
 	filter := bson.M{"user_id": userId}
 	result := collection.FindOne(ctx, filter)
 	notFound := result.Err() == mongo.ErrNoDocuments
@@ -108,8 +108,8 @@ func (r *MongoDbRepository) FindProteinEvent(ctx context.Context, userId string)
 	return
 }
 
-// Find protein event from "from" to "to".
-func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.ProteinEvent, err error) {
+// Find timer event from "from" to "to".
+func (r *MongoDbRepository) FindTimerEventByTime(ctx context.Context, from, to time.Time) (results []*enterpriserule.TimerEvent, err error) {
 	db, err := getMongoDb(ctx, config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return
@@ -120,7 +120,7 @@ func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to
 
 	collection := getMongoCollection(db, config.Get("MONGODB_COLLECTION", ""))
 
-	// Find ProteinEvent which event_time is between "from" and "to".
+	// Find TimerEvent which event_time is between "from" and "to".
 	filter := bson.D{
 		{"utc_time_to_drink", bson.D{{"$gte", from}}},
 		{"utc_time_to_drink", bson.D{{"$lte", to}}},
@@ -133,7 +133,7 @@ func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to
 	defer cur.Close(ctx)
 	// Iterating the finding results.
 	for cur.Next(ctx) {
-		var elm enterpriserule.ProteinEvent
+		var elm enterpriserule.TimerEvent
 		err = cur.Decode(&elm)
 		if err != nil {
 			return
@@ -148,10 +148,10 @@ func (r *MongoDbRepository) FindProteinEventByTime(ctx context.Context, from, to
 	return
 }
 
-// Save ProteinEvent to DB.
+// Save TimerEvent to DB.
 //
-// Return error and the slice of ProteinEvent saved successfully.
-func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*enterpriserule.ProteinEvent) (saved []*enterpriserule.ProteinEvent, err error) {
+// Return error and the slice of TimerEvent saved successfully.
+func (r *MongoDbRepository) SaveTimerEvent(ctx context.Context, events []*enterpriserule.TimerEvent) (saved []*enterpriserule.TimerEvent, err error) {
 	db, err := getMongoDb(ctx, config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func (r *MongoDbRepository) SaveProteinEvent(ctx context.Context, events []*ente
 
 	collection := getMongoCollection(db, config.Get("MONGODB_COLLECTION", ""))
 
-	saved = make([]*enterpriserule.ProteinEvent, 0, len(events))
+	saved = make([]*enterpriserule.TimerEvent, 0, len(events))
 	var filter bson.M
 	opts := options.Update().SetUpsert(true)
 	for _, event := range events {

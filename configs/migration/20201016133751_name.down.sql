@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS protein_event;
+DROP TABLE IF EXISTS timer_event;

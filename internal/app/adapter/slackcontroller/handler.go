@@ -11,18 +11,18 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
-	"proteinreminder/internal/app/driver/di"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
-	"proteinreminder/internal/pkg/httputil"
-	"proteinreminder/internal/pkg/log"
 	"regexp"
+	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/pkg/httputil"
+	"slacktimer/internal/pkg/log"
 )
 
 // Errors
 var (
 	ErrInvalidRequest    = errors.New("invalid request")
 	ErrInvalidParameters = errors.New("invalid parameters")
-	ErrSaveEvent         = errors.New("failed to save protein event")
+	ErrSaveEvent         = errors.New("failed to save timer event")
 	ErrCreateResponse    = errors.New("failed to create response")
 )
 
@@ -110,7 +110,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 		return nil, fmt.Errorf("invalid sub type")
 	}
 
-	usecase := di.Get("UpdateProteinEvent").(updateproteinevent.Usecase)
+	usecase := di.Get("UpdateTimerEvent").(updatetimerevent.Usecase)
 
 	var req RequestHandler
 	if subType == CmdGot {

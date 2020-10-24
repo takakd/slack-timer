@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"proteinreminder/internal/app/adapter/webserver"
-	"proteinreminder/internal/app/driver/di"
-	"proteinreminder/internal/app/driver/di/container"
-	"proteinreminder/internal/pkg/config"
-	"proteinreminder/internal/pkg/config/driver"
-	"proteinreminder/internal/pkg/errorutil"
-	"proteinreminder/internal/pkg/fileutil"
-	"proteinreminder/internal/pkg/log"
+	"slacktimer/internal/app/adapter/webserver"
+	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/driver/di/container"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/config/driver"
+	"slacktimer/internal/pkg/errorutil"
+	"slacktimer/internal/pkg/fileutil"
+	"slacktimer/internal/pkg/log"
 )
 
 func setDi() {

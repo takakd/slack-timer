@@ -10,10 +10,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"proteinreminder/internal/app/enterpriserule"
-	"proteinreminder/internal/pkg/config"
-	"proteinreminder/internal/pkg/fileutil"
 	"runtime"
+	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/fileutil"
 	"testing"
 	"time"
 )
@@ -45,8 +45,8 @@ func cleanupPostgresTestDb(t *testing.T) {
 	execTestPostgresSql(t, "testdata/cleanup.sql")
 }
 
-func makePostgresTestEvents() []*enterpriserule.ProteinEvent {
-	return []*enterpriserule.ProteinEvent{
+func makePostgresTestEvents() []*enterpriserule.TimerEvent {
+	return []*enterpriserule.TimerEvent{
 		{
 			"id1", time.Now().UTC(), 0,
 		},
@@ -56,7 +56,7 @@ func makePostgresTestEvents() []*enterpriserule.ProteinEvent {
 	}
 }
 
-func cleanupPostgresTestEvents(t *testing.T, events []*enterpriserule.ProteinEvent) {
+func cleanupPostgresTestEvents(t *testing.T, events []*enterpriserule.TimerEvent) {
 	if len(events) == 0 {
 		return
 	}
@@ -93,7 +93,7 @@ func getTestPostgresEnv(t *testing.T) (dsn, tableName string) {
 		godotenv.Load(envPath)
 	}
 	dsn = os.Getenv("DATABASE_URL")
-	tableName = os.Getenv("POSTGRES_TBL_PROTEINEVENT")
+	tableName = os.Getenv("POSTGRES_TBL_TIMEREVENT")
 	return
 }
 
@@ -135,7 +135,7 @@ func Test_getPostgresDb(t *testing.T) {
 	}
 }
 
-func TestPostgresRepository_FindProteinEvent(t *testing.T) {
+func TestPostgresRepository_FindTimerEvent(t *testing.T) {
 	if doesSkipPostgresRepositoryTest(t) {
 		return
 	}
@@ -156,7 +156,7 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		repo := NewPostgresRepository()
-		event, err := repo.FindProteinEvent(ctx, userId)
+		event, err := repo.FindTimerEvent(ctx, userId)
 		assert.Nil(t, event)
 		assert.Error(t, err)
 	})
@@ -169,23 +169,23 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		defer ctrl.Finish()
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
-			// For SaveProteinEvent
+			// For SaveTimerEvent
 			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
-			// For FindProteinEvent
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName),
+			// For FindTimerEvent
 			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName),
 		)
 
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		_, err := repo.SaveProteinEvent(context.TODO(), testEvents)
+		_, err := repo.SaveTimerEvent(context.TODO(), testEvents)
 		assert.NoError(t, err)
 
 		ctx := context.TODO()
 		userId := "nonexistent id"
-		event, err := repo.FindProteinEvent(ctx, userId)
+		event, err := repo.FindTimerEvent(ctx, userId)
 		assert.Nil(t, event)
 		assert.NoError(t, err)
 
@@ -201,23 +201,23 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		mock := config.NewMockConfig(ctrl)
-		// For SaveProteinEvent
+		// For SaveTimerEvent
 		var call *gomock.Call
 		call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn)
-		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName).After(call)
-		// For FindProteinEvent
+		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName).After(call)
+		// For FindTimerEvent
 		for i := 0; i < len(testEvents); i++ {
 			call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn).After(call)
-			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName).After(call)
+			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName).After(call)
 		}
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		_, err := repo.SaveProteinEvent(ctx, testEvents)
+		_, err := repo.SaveTimerEvent(ctx, testEvents)
 		assert.NoError(t, err)
 
 		for _, event := range testEvents {
-			got, err := repo.FindProteinEvent(ctx, event.UserId)
+			got, err := repo.FindTimerEvent(ctx, event.UserId)
 			assert.NoError(t, err)
 			assert.Equal(t, event, got)
 		}
@@ -226,7 +226,7 @@ func TestPostgresRepository_FindProteinEvent(t *testing.T) {
 	})
 }
 
-func TestPostgresRepository_FindProteinEventByTime(t *testing.T) {
+func TestPostgresRepository_FindTimerEventByTime(t *testing.T) {
 	if doesSkipPostgresRepositoryTest(t) {
 		return
 	}
@@ -240,7 +240,7 @@ func TestPostgresRepository_FindProteinEventByTime(t *testing.T) {
 		dsn, tableName := getTestPostgresEnv(t)
 
 		now := time.Now().UTC()
-		events := []*enterpriserule.ProteinEvent{
+		events := []*enterpriserule.TimerEvent{
 			{
 				"tid1", now, 2,
 			},
@@ -263,20 +263,20 @@ func TestPostgresRepository_FindProteinEventByTime(t *testing.T) {
 
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
-			// For SaveProteinEvent
+			// For SaveTimerEvent
 			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
-			// For FindProteinEventByTime
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName),
+			// For FindTimerEventByTime
 			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName),
 		)
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		_, err := repo.SaveProteinEvent(ctx, events)
+		_, err := repo.SaveTimerEvent(ctx, events)
 		require.NoError(t, err)
 
-		got, err := repo.FindProteinEventByTime(ctx, from, to)
+		got, err := repo.FindTimerEventByTime(ctx, from, to)
 		assert.NoError(t, err)
 
 		wants := events[:2]
@@ -286,7 +286,7 @@ func TestPostgresRepository_FindProteinEventByTime(t *testing.T) {
 	})
 }
 
-func TestPostgresRepository_SaveProteinEvent(t *testing.T) {
+func TestPostgresRepository_SaveTimerEvent(t *testing.T) {
 	if doesSkipPostgresRepositoryTest(t) {
 		return
 	}
@@ -305,14 +305,14 @@ func TestPostgresRepository_SaveProteinEvent(t *testing.T) {
 		defer ctrl.Finish()
 		mock := config.NewMockConfig(ctrl)
 		gomock.InOrder(
-			// For SaveProteinEvent
+			// For SaveTimerEvent
 			mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn),
-			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_PROTEINEVENT"), gomock.Eq("")).Return(tableName),
+			mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName),
 		)
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		savedEvents, err := repo.SaveProteinEvent(ctx, testEvents)
+		savedEvents, err := repo.SaveTimerEvent(ctx, testEvents)
 		assert.NoError(t, err)
 		assert.Equal(t, testEvents, savedEvents)
 

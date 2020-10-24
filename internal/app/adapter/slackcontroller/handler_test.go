@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"proteinreminder/internal/app/driver/di"
-	"proteinreminder/internal/app/usecase/updateproteinevent"
+	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/usecase/updatetimerevent"
 	"strings"
 	"testing"
 )
@@ -45,9 +45,9 @@ func TestNewRequestHandler(t *testing.T) {
 			defer ctrl.Finish()
 			m := di.NewMockDI(ctrl)
 			if c.name == "nil" {
-				m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).MinTimes(0)
+				m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).MinTimes(0)
 			} else {
-				m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Return(&updateproteinevent.Interactor{})
+				m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(&updatetimerevent.Interactor{})
 			}
 			di.SetDi(m)
 
@@ -97,7 +97,7 @@ func TestHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Times(0)
+		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Times(0)
 		di.SetDi(m)
 
 		w := httptest.NewRecorder()
@@ -117,7 +117,7 @@ func TestHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Times(0)
+		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Times(0)
 		di.SetDi(m)
 
 		w := httptest.NewRecorder()
@@ -147,10 +147,10 @@ func TestHandler(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mu := updateproteinevent.NewMockUsecase(ctrl)
+		mu := updatetimerevent.NewMockUsecase(ctrl)
 		mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Any())
 		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateProteinEvent")).Return(mu)
+		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(mu)
 		di.SetDi(m)
 
 		w := httptest.NewRecorder()

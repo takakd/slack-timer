@@ -2,7 +2,7 @@ package errorutil
 
 import (
 	"github.com/stretchr/testify/assert"
-	"proteinreminder/internal/pkg/testutil"
+	"slacktimer/internal/pkg/testutil"
 	"testing"
 )
 
