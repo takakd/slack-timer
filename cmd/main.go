@@ -35,11 +35,12 @@ func setConfig() {
 		if err != nil {
 			panic(errorutil.MakePanicMessage("need app directory path."))
 		}
+		names := make([]string, 0)
 		path := filepath.Join(appDir, ".env")
 		if fileutil.FileExists(path) {
-			names := []string{path}
-			config.SetConfig(driver.NewEnvConfig(names...))
+			names = append(names, path)
 		}
+		config.SetConfig(driver.NewEnvConfig(names...))
 	}
 }
 
