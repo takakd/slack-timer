@@ -26,7 +26,9 @@
 
 # Binary
 /cmd/main
+/cmd/migrate
 
+# README
 !vendor/README.md
 
 # ignore env
@@ -36,4 +38,5 @@
 scripts/working*
 
 # app
+cmd/migrate.go
 deployments/local/tmp

@@ -1,3 +1,4 @@
+// Deprecated
 // https://pkg.go.dev/github.com/golang-migrate/migrate/v4
 // e.g CLI
 // $ migrate -source ${MIGRATION_DIR} -database ${DATABASE_URL} up
