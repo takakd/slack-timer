@@ -1,11 +1,11 @@
-# Protein Reminder
+# [WIP] Slack Timer
 
-Send a reminde when the time to get proteins.
+Simple timer on Slack, which notifies on periodically.
 
+![Timer](website/peter-yost-I9jJXmNkXR4-unsplash.jpg?raw=true)
 
-![Protein](https://github.com/takakd/protein-reminder/blob/master/website/ctrl-a-meal-replacement-03e4RajfFAE-unsplash.jpg?raw=true)
+<span>Photo by <a href="https://unsplash.com/@odysseus_?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Peter Yost</a> on <a href="https://unsplash.com/s/photos/stopwatch?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
 
-<span>Photo by <a href="https://unsplash.com/@drinkctrl?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">CTRL - A Meal Replacement</a> on <a href="https://unsplash.com/s/photos/protein?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
 
 <!-- ![GitHub Actions](https://img.shields.io/github/workflow/status/takakd/sandbox/echo)
 &nbsp;&nbsp;![GitHub Actions](https://img.shields.io/github/workflow/status/takakd/sandbox/echo)
