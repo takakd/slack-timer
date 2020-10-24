@@ -30,10 +30,12 @@ exit 1
 
 build() {
     cd "${SCRIPT_DIR}/../cmd" || exit
-    go build -p 2 -v -x -mod vendor main.go
+    #go build -p 2 -v -x -mod vendor main.go
+    go build -p 2 -v -x main.go
 
     cd "${SCRIPT_DIR}/../cmd/migrate" || exit
-    go build -p 2 -v -x -mod vendor migrate.go
+    #go build -p 2 -v -x -mod vendor migrate.go
+    go build -p 2 -v -x migrate.go
 }
 
 fmt() {
