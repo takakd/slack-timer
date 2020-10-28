@@ -28,7 +28,6 @@ var (
 
 // Command types entered by users.
 const (
-	CmdGot = "got"
 	CmdSet = "set"
 )
 
@@ -98,7 +97,7 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 		return nil, fmt.Errorf("invalid event type, type=%s", data.MessageEvent.Type)
 	}
 
-	// e.g. set 10, got
+	// e.g. set 10
 	re := regexp.MustCompile(`^([^\s]*)\s*`)
 	m := re.FindStringSubmatch(data.MessageEvent.Text)
 	if m == nil {
@@ -106,25 +105,16 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 	}
 
 	subType := m[1]
-	if subType != CmdGot && subType != CmdSet {
+	if subType != CmdSet {
 		return nil, fmt.Errorf("invalid sub type")
 	}
 
 	usecase := di.Get("UpdateTimerEvent").(updatetimerevent.Usecase)
 
-	var req RequestHandler
-	if subType == CmdGot {
-		log.Info(fmt.Sprintf("got event text=%s", data.MessageEvent.Text))
-		req = &GotRequestHandler{
-			messageEvent: &data.MessageEvent,
-			usecase:      usecase,
-		}
-	} else if subType == CmdSet {
-		log.Info(fmt.Sprintf("set event text=%s", data.MessageEvent.Text))
-		req = &SetRequestHandler{
-			messageEvent: &data.MessageEvent,
-			usecase:      usecase,
-		}
+	log.Info(fmt.Sprintf("set event text=%s", data.MessageEvent.Text))
+	req := &SetRequestHandler{
+		messageEvent: &data.MessageEvent,
+		usecase:      usecase,
 	}
 
 	return req, nil

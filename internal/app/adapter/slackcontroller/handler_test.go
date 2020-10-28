@@ -24,7 +24,6 @@ func TestNewRequestHandler(t *testing.T) {
 		subType string
 	}{
 		{"set", "set 1", CmdSet},
-		{"got", "got", CmdGot},
 		{"nil", "invalid", ""},
 	}
 	for _, c := range cases {
@@ -57,11 +56,7 @@ func TestNewRequestHandler(t *testing.T) {
 				assert.NotNil(t, req)
 			}
 
-			if c.subType == CmdGot {
-				h, match := req.(*GotRequestHandler)
-				assert.True(t, match)
-				assert.Equal(t, h.messageEvent.Text, c.text)
-			} else if c.subType == CmdSet {
+			if c.subType == CmdSet {
 				h, match := req.(*SetRequestHandler)
 				assert.True(t, match)
 				assert.Equal(t, h.messageEvent.Text, c.text)
@@ -82,10 +77,6 @@ func TestMakeErrorCallbackResponseBody(t *testing.T) {
 		assert.NoError(t, gotErr)
 		assert.Equal(t, []byte(want), gotB)
 	})
-}
-
-func TestSlackCallbackSetRequest_validate(t *testing.T) {
-	t.Log("TestSlackCallbackGotRequest_validate covers this test.")
 }
 
 func TestHandler(t *testing.T) {
@@ -137,7 +128,7 @@ func TestHandler(t *testing.T) {
 			MessageEvent: MessageEvent{
 				Type: "message",
 				User: userId,
-				Text: "got",
+				Text: "set 10",
 			},
 		}
 		body, err := json.Marshal(data)
@@ -148,7 +139,7 @@ func TestHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mu := updatetimerevent.NewMockUsecase(ctrl)
-		mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Any())
+		mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(10), gomock.Any())
 		m := di.NewMockDI(ctrl)
 		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(mu)
 		di.SetDi(m)

@@ -14,7 +14,9 @@ import (
 func TestSetRequestHandler_Handler(t *testing.T) {
 	data := &EventCallbackData{
 		MessageEvent: MessageEvent{
+			Type: "message",
 			User: "test",
+			Text: "set 10",
 		},
 	}
 	ctx := context.TODO()
@@ -22,9 +24,9 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mu := updatetimerevent.NewMockUsecase(ctrl)
-	mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Any())
+	mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Eq(10), gomock.Any())
 
-	h := GotRequestHandler{
+	h := SetRequestHandler{
 		messageEvent: &data.MessageEvent,
 		usecase:      mu,
 	}
