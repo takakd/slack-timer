@@ -43,7 +43,7 @@ func (r *PostgresRepository) FindTimerEvent(ctx context.Context, userId string) 
 		return nil, nil
 	}
 
-	event.UtcTimeToDrink = event.UtcTimeToDrink.UTC()
+	event.NotificationTime = event.NotificationTime.UTC()
 
 	return
 }
@@ -58,13 +58,13 @@ func (r *PostgresRepository) FindTimerEventByTime(ctx context.Context, from, to 
 	defer db.Close()
 
 	values := []enterpriserule.TimerEvent{}
-	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= utc_time_to_drink AND utc_time_to_drink <= $2", config.Get("POSTGRES_TBL_TIMEREVENT", "")), from, to); err != nil {
+	if err = db.SelectContext(ctx, &values, fmt.Sprintf("SELECT * FROM %s WHERE $1 <= notification_time_utc AND notification_time_utc <= $2", config.Get("POSTGRES_TBL_TIMEREVENT", "")), from, to); err != nil {
 		return nil, nil
 	}
 
 	results = make([]*enterpriserule.TimerEvent, len(values))
 	for i := range values {
-		values[i].UtcTimeToDrink = values[i].UtcTimeToDrink.UTC()
+		values[i].NotificationTime = values[i].NotificationTime.UTC()
 		results[i] = &values[i]
 	}
 	return
@@ -94,11 +94,11 @@ func (r *PostgresRepository) SaveTimerEvent(ctx context.Context, events []*enter
 	table := config.Get("POSTGRES_TBL_TIMEREVENT", "")
 	for _, event := range events {
 		_, err = tx.NamedExecContext(ctx, fmt.Sprintf(`
-			INSERT INTO %s (user_id, utc_time_to_drink, drink_time_interval_min)
-			VALUES (:user_id, :utc_time_to_drink, :drink_time_interval_min)
+			INSERT INTO %s (user_id, notification_time_utc, interval_min)
+			VALUES (:user_id, :notification_time_utc, :interval_min)
 			ON CONFLICT (user_id) DO UPDATE
-			SET utc_time_to_drink = :utc_time_to_drink,
-				drink_time_interval_min = :drink_time_interval_min
+			SET notification_time_utc = :notification_time_utc,
+				interval_min = :interval_min 
 		`, table), event)
 		if err != nil {
 			tx.Rollback()

@@ -8,9 +8,9 @@ import (
 
 // Holds the time to drink a timer event and the interval of drinking.
 type TimerEvent struct {
-	UserId               string    `db:"user_id" bson:"user_id"`
-	UtcTimeToDrink       time.Time `db:"utc_time_to_drink" bson:"utc_time_to_drink"`
-	DrinkTimeIntervalMin int       `db:"drink_time_interval_min" bson:"drink_time_interval_min"`
+	UserId           string    `db:"user_id" bson:"user_id"`
+	NotificationTime time.Time `db:"notification_time_utc" bson:"notification_time_utc"`
+	IntervalMin      int       `db:"interval_min" bson:"interval_min"`
 }
 
 func NewTimerEvent(userId string) (*TimerEvent, error) {

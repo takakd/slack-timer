@@ -68,14 +68,14 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, rem
 			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
 			return outputData
 		}
-		event.UtcTimeToDrink = time.Now().UTC()
+		event.NotificationTime = time.Now().UTC()
 	}
 
 	if remindInterval != 0 {
-		event.DrinkTimeIntervalMin = remindInterval
+		event.IntervalMin = remindInterval
 	} else {
 		// Set next notify time.
-		event.UtcTimeToDrink = event.UtcTimeToDrink.Add(time.Duration(event.DrinkTimeIntervalMin) * time.Minute)
+		event.NotificationTime = event.NotificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
 	}
 
 	if _, err = s.repository.SaveTimerEvent(ctx, []*enterpriserule.TimerEvent{event}); err != nil {

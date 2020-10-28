@@ -254,9 +254,9 @@ func TestPostgresRepository_FindTimerEventByTime(t *testing.T) {
 
 		from := now.UTC()
 		to := from.AddDate(0, 0, 1)
-		events[0].UtcTimeToDrink = from
-		events[1].UtcTimeToDrink = to
-		events[2].UtcTimeToDrink = to.AddDate(0, 0, 1)
+		events[0].NotificationTime = from
+		events[1].NotificationTime = to
+		events[2].NotificationTime = to.AddDate(0, 0, 1)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()

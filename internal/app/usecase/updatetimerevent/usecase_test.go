@@ -24,7 +24,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 		now := time.Now()
 		event, _ := enterpriserule.NewTimerEvent(userId)
-		event.UtcTimeToDrink = now
+		event.NotificationTime = now
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Len(1)).Return(nil, nil)
 
 		interactor := &Interactor{
@@ -67,7 +67,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 		interval := 1
 		event, _ := enterpriserule.NewTimerEvent(userId)
-		event.DrinkTimeIntervalMin = interval
+		event.IntervalMin = interval
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Len(1)).
 			Return(nil, nil)
 

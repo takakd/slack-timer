@@ -5,6 +5,6 @@
 
 CREATE TABLE IF NOT EXISTS test_timer_event (
     user_id character varying(9) PRIMARY KEY,
-    utc_time_to_drink timestamp without time zone,
-    drink_time_interval_min integer NOT NULL DEFAULT 0
+    notification_time_utc timestamp without time zone,
+    interval_min integer NOT NULL DEFAULT 0
 );
