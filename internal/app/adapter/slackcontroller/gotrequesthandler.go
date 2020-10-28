@@ -19,7 +19,7 @@ type GotRequestHandler struct {
 func (gr *GotRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
 	outputPort := &GotRequestOutputPort{w: w}
 	// Update time to drink.
-	gr.usecase.UpdateTimeToDrink(ctx, gr.messageEvent.User, outputPort)
+	gr.usecase.UpdateNotificationTime(ctx, gr.messageEvent.User, outputPort)
 	return
 }
 

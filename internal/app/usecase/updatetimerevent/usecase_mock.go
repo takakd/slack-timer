@@ -33,16 +33,16 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 	return m.recorder
 }
 
-// UpdateTimeToDrink mocks base method
-func (m *MockUsecase) UpdateTimeToDrink(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
+// UpdateNotificationTime mocks base method
+func (m *MockUsecase) UpdateNotificationTime(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateTimeToDrink", ctx, userId, overWriteOutputPort)
+	m.ctrl.Call(m, "UpdateNotificationTime", ctx, userId, overWriteOutputPort)
 }
 
-// UpdateTimeToDrink indicates an expected call of UpdateTimeToDrink
-func (mr *MockUsecaseMockRecorder) UpdateTimeToDrink(ctx, userId, overWriteOutputPort interface{}) *gomock.Call {
+// UpdateNotificationTime indicates an expected call of UpdateNotificationTime
+func (mr *MockUsecaseMockRecorder) UpdateNotificationTime(ctx, userId, overWriteOutputPort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTimeToDrink", reflect.TypeOf((*MockUsecase)(nil).UpdateTimeToDrink), ctx, userId, overWriteOutputPort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockUsecase)(nil).UpdateNotificationTime), ctx, userId, overWriteOutputPort)
 }
 
 // SaveIntervalMin mocks base method

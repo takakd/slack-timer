@@ -21,7 +21,7 @@ type Usecase interface {
 	// Update next notification time.
 	// Pass OutputPort interface if overwrite presenter implementation.
 	//		e.g. HTTPResponse that needs http.ResponseWrite
-	UpdateTimeToDrink(ctx context.Context, userId string, overWriteOutputPort OutputPort)
+	UpdateNotificationTime(ctx context.Context, userId string, overWriteOutputPort OutputPort)
 
 	// Save notification interval minutes.
 	// Pass OutputPort interface if overwrite presenter implementation.
@@ -88,8 +88,8 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, rem
 	return outputData
 }
 
-// Update the time for user to drink.
-func (s *Interactor) UpdateTimeToDrink(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
+// Update notification time.
+func (s *Interactor) UpdateNotificationTime(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
 	data := s.saveTimerEventValue(ctx, userId, 0)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)

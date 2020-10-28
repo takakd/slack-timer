@@ -22,7 +22,7 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mu := updatetimerevent.NewMockUsecase(ctrl)
-	mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Any())
+	mu.EXPECT().UpdateNotificationTime(gomock.Eq(ctx), gomock.Eq(data.MessageEvent.User), gomock.Any())
 
 	h := GotRequestHandler{
 		messageEvent: &data.MessageEvent,

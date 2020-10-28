@@ -148,7 +148,7 @@ func TestHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mu := updatetimerevent.NewMockUsecase(ctrl)
-		mu.EXPECT().UpdateTimeToDrink(gomock.Eq(ctx), gomock.Eq(userId), gomock.Any())
+		mu.EXPECT().UpdateNotificationTime(gomock.Eq(ctx), gomock.Eq(userId), gomock.Any())
 		m := di.NewMockDI(ctrl)
 		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(mu)
 		di.SetDi(m)
