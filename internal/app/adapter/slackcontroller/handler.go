@@ -1,20 +1,15 @@
 // Package slackcontroller provides the slack Event API callback handler.
-// 		Routes
-//			POST /api/{ver}/slack-callback
-// Library exists: https://github.com/slack-go/slack
-// Ref.: https://api.slack.com/events-api#the-events-api__receiving-events
+// Ref: https://api.slack.com/events-api#the-events-api__receiving-events
 package slackcontroller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
 	"regexp"
 	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/httputil"
 	"slacktimer/internal/pkg/log"
 )
 
@@ -31,18 +26,6 @@ const (
 	CmdSet = "set"
 )
 
-// URL Verification Event callback data
-// Ref. https://api.slack.com/events/url_verification
-type UrlVerificationEventCallbackData struct {
-	Token     string `json:"token"`
-	Challenge string `json:"challenge"`
-	Type      string `json:"type"`
-}
-
-func (d *UrlVerificationEventCallbackData) doesMatchType() bool {
-	return d.Type == "url_verification"
-}
-
 // JSON to be sent
 // Defined what app needs
 type EventCallbackData struct {
@@ -52,6 +35,14 @@ type EventCallbackData struct {
 	MessageEvent MessageEvent `json:"event"`
 	Type         string       `json:"type"`
 	EventTime    int          `json:"event_time"`
+
+	// This field is only included in URL Verification Event.
+	// Ref: https://api.slack.com/events/url_verification
+	Challenge string `json:"challenge"`
+}
+
+func (e *EventCallbackData) isVerificationEvent() bool {
+	return e.Type == "url_verification"
 }
 
 type MessageEvent struct {
@@ -62,35 +53,22 @@ type MessageEvent struct {
 	Text    string `json:"text"`
 }
 
-//
-func NewRequestHandler(r *http.Request) (RequestHandler, error) {
-	body, err := httputil.GetRequestBody(r)
-	if err != nil {
-		return nil, err
-	}
+type EventCallbackResponse struct {
+	Message    string `json:"message"`
+	StatusCode int    `json:"status"`
+	Detail     string `json:"detail"`
+}
 
-	log.Info(body)
-
+func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 	// URL Verification callback
-	urlVerification := UrlVerificationEventCallbackData{}
-	err = json.Unmarshal(body, &urlVerification)
-	if err != nil {
-		return nil, err
-	}
-	if urlVerification.doesMatchType() {
+	if data.isVerificationEvent() {
 		log.Info("url verification event")
 		return &UrlVerificationRequestHandler{
-			Data: &urlVerification,
+			Data: data,
 		}, nil
 	}
 
 	// Normal Event callback
-	data := EventCallbackData{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		return nil, err
-	}
-
 	var supportEvent bool
 	supportEvent = supportEvent || data.MessageEvent.Type == "message"
 	if !supportEvent {
@@ -122,59 +100,57 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 
 // Provides handlers to each request.
 type RequestHandler interface {
-	Handler(ctx context.Context, w http.ResponseWriter)
+	Handler(ctx context.Context) EventCallbackResponse
 }
 
-// Represents this API response.
-type SlackCallbackResponse struct {
-	Message string `json:"message"`
-}
-
-// Represents this API error response.
-// Ref: https://developer.github.com/v3/
-type ErrorSlackCallbackResponse struct {
-	// Error brief.
-	Message string `json:"message"`
-	Error   string `json:"error"`
-}
-
-func makeErrorCallbackResponseBody(message string, err error) ([]byte, error) {
-	resp := ErrorSlackCallbackResponse{
-		Message: message,
-		Error:   err.Error(),
+func makeErrorCallbackResponse(message string, err error) *EventCallbackResponse {
+	resp := &EventCallbackResponse{
+		Message:    message,
+		StatusCode: http.StatusInternalServerError,
 	}
-	body, err := json.Marshal(resp)
 	if err != nil {
-		return nil, err
+		resp.Detail = err.Error()
 	}
-	return body, nil
+	return resp
 }
 
-func writeErrorCallbackResponse(w http.ResponseWriter, body []byte) {
-	httputil.WriteJsonResponse(w, map[string]string{
-		// Prevent auto retry.
-		// Ref.: https://api.slack.com/events-api#the-events-api__field-guide__error-handling__graceful-retries__turning-retries-off
-		"X-Slack-No-Retry": "1",
-	}, http.StatusBadRequest, body)
-}
+//func writeErrorCallbackResponse(body []byte) string {
+//	//httputil.WriteJsonResponse(w, map[string]string{
+//	//	// Prevent auto retry.
+//	//	// Ref.: https://api.slack.com/events-api#the-events-api__field-guide__error-handling__graceful-retries__turning-retries-off
+//	//	"X-Slack-No-Retry": "1",
+//	//}, http.StatusBadRequest, body)
+//	return ""
+//}
 
 // Web server registers this to themselves and call.
-func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "404 not found", http.StatusNotFound)
-		return
-	}
+//func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+//	if r.Method != "POST" {
+//		http.Error(w, "404 not found", http.StatusNotFound)
+//		return
+//	}
+//
+//	h, err := NewRequestHandler(r)
+//	if err != nil {
+//		log.Error(err.Error())
+//		body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
+//		if err != nil {
+//			body = []byte("internal error")
+//		}
+//		writeErrorCallbackResponse(w, body)
+//		return
+//	}
+//
+//	h.Handler(ctx, w)
+//}
 
-	h, err := NewRequestHandler(r)
+// Lambda callback
+func LambdaHandleRequest(ctx context.Context, event EventCallbackData) (EventCallbackResponse, error) {
+	h, err := NewRequestHandler(&event)
 	if err != nil {
 		log.Error(err.Error())
-		body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
-		if err != nil {
-			body = []byte("internal error")
-		}
-		writeErrorCallbackResponse(w, body)
-		return
+		return *makeErrorCallbackResponse("parameter error", ErrInvalidRequest), nil
 	}
 
-	h.Handler(ctx, w)
+	return h.Handler(ctx), nil
 }

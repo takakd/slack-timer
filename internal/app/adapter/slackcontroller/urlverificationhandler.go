@@ -8,21 +8,18 @@ import (
 // UrlVerificationRequestHandler represents url_verification event
 // Ref. https://api.slack.com/events/url_verification
 type UrlVerificationRequestHandler struct {
-	Data *UrlVerificationEventCallbackData
+	Data *EventCallbackData
 }
 
 // URL verification process just depends on Slack Event API, so no usecase and outputport.
-func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
+func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) EventCallbackResponse {
 	if ur.Data.Challenge == "" {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("invalid challenge"))
-		return
+		return *makeErrorCallbackResponse("invalid challenge", nil)
 	}
 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(ur.Data.Challenge))
-	return
+	return EventCallbackResponse{
+		Message:    "success",
+		StatusCode: http.StatusOK,
+	}
 }

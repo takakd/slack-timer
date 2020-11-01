@@ -1,19 +1,10 @@
-package settimer
+package main
 
 import (
-	"fmt"
-	"context"
 	"github.com/aws/aws-lambda-go/lambda"
+	"slacktimer/internal/app/adapter/slackcontroller"
 )
 
-type MyEvent struct {
-	Name string `json:"name"`
-}
-
-func HandleRequest(ctx context.Context, name MyEvent) (string, error) {
-	return fmt.Sprintf("Hello %s!", name.Name ), nil
-}
-
 func main() {
-	lambda.Start(HandleRequest)
+	lambda.Start(slackcontroller.LambdaHandleRequest)
 }
