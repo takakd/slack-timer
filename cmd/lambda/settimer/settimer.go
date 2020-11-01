@@ -1,4 +1,4 @@
-package lambda
+package settimer
 
 import (
 	"fmt"
