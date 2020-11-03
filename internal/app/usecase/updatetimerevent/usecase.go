@@ -78,7 +78,7 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, rem
 		event.NotificationTime = event.NotificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
 	}
 
-	if _, err = s.repository.SaveTimerEvent(ctx, []*enterpriserule.TimerEvent{event}); err != nil {
+	if _, err = s.repository.SaveTimerEvent(ctx, event); err != nil {
 		log.Error(err)
 		outputData.Result = fmt.Errorf("save %v: %w", userId, ErrSave)
 		return outputData

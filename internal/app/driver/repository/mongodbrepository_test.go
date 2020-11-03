@@ -18,19 +18,14 @@ import (
 	"time"
 )
 
-func makeTestEvents() []*enterpriserule.TimerEvent {
-	return []*enterpriserule.TimerEvent{
-		{
-			"id1", time.Now().UTC(), 0,
-		},
-		{
-			"id2", time.Now().UTC(), 0,
-		},
+func makeTestEvent() *enterpriserule.TimerEvent {
+	return &enterpriserule.TimerEvent{
+		"id1", time.Now().UTC(), 0,
 	}
 }
 
-func cleanupTestEvents(t *testing.T, events []*enterpriserule.TimerEvent) {
-	if len(events) == 0 {
+func cleanupTestEvents(t *testing.T, event *enterpriserule.TimerEvent) {
+	if event == nil {
 		return
 	}
 	url, colName := getTestMongoDbEnv()
@@ -43,15 +38,11 @@ func cleanupTestEvents(t *testing.T, events []*enterpriserule.TimerEvent) {
 
 	col := getMongoCollection(db, colName)
 
-	ids := make([]interface{}, len(events))
-	for i, event := range events {
-		ids[i] = event.UserId
-	}
 	filter := bson.D{{
 		"user_id",
 		bson.D{{
 			"$in",
-			bson.A(ids),
+			event.UserId,
 		}},
 	}}
 	_, err = col.DeleteMany(ctx, filter)
@@ -144,7 +135,7 @@ func TestMongoDbRepository_FindTimerEvent(t *testing.T) {
 	})
 
 	t.Run("ng:not found", func(t *testing.T) {
-		testEvents := makeTestEvents()
+		testEvent := makeTestEvent()
 		testDbUrl, testDbCol := getTestMongoDbEnv()
 
 		ctrl := gomock.NewController(t)
@@ -162,7 +153,7 @@ func TestMongoDbRepository_FindTimerEvent(t *testing.T) {
 		config.SetConfig(mock)
 
 		repo := NewMongoDbRepository()
-		_, err := repo.SaveTimerEvent(context.TODO(), testEvents)
+		_, err := repo.SaveTimerEvent(context.TODO(), testEvent)
 		assert.NoError(t, err)
 
 		ctx := context.TODO()
@@ -171,11 +162,11 @@ func TestMongoDbRepository_FindTimerEvent(t *testing.T) {
 		assert.NotNil(t, event)
 		assert.NoError(t, err)
 
-		cleanupTestEvents(t, testEvents)
+		cleanupTestEvents(t, testEvent)
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		testEvents := makeTestEvents()
+		testEvent := makeTestEvent()
 		testDbUrl, testDbCol := getTestMongoDbEnv()
 
 		ctrl := gomock.NewController(t)
@@ -188,26 +179,22 @@ func TestMongoDbRepository_FindTimerEvent(t *testing.T) {
 		call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl)
 		call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
 		// For FindTimerEvent
-		for i := 0; i < len(testEvents); i++ {
-			call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl).After(call)
-			call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
-		}
+		call = mock.EXPECT().Get(gomock.Eq("MONGODB_URI"), gomock.Eq("")).Return(testDbUrl).After(call)
+		call = mock.EXPECT().Get(gomock.Eq("MONGODB_COLLECTION"), gomock.Eq("")).Return(testDbCol).After(call)
 
 		config.SetConfig(mock)
 
 		ctx := context.TODO()
 
 		repo := NewMongoDbRepository()
-		_, err := repo.SaveTimerEvent(ctx, testEvents)
+		_, err := repo.SaveTimerEvent(ctx, testEvent)
 		assert.NoError(t, err)
 
-		for _, event := range testEvents {
-			got, err := repo.FindTimerEvent(ctx, event.UserId)
-			assert.NoError(t, err)
-			assert.Equal(t, event, got)
-		}
+		got, err := repo.FindTimerEvent(ctx, testEvent.UserId)
+		assert.NoError(t, err)
+		assert.Equal(t, testEvent, got)
 
-		cleanupTestEvents(t, testEvents)
+		cleanupTestEvents(t, testEvent)
 	})
 }
 
@@ -256,8 +243,10 @@ func TestMongoDbRepository_FindTimerEventByTime(t *testing.T) {
 
 		repo := NewMongoDbRepository()
 		ctx := context.TODO()
-		_, err := repo.SaveTimerEvent(ctx, events)
-		assert.NoError(t, err)
+		for _, event := range events {
+			_, err := repo.SaveTimerEvent(ctx, event)
+			assert.NoError(t, err)
+		}
 
 		got, err := repo.FindTimerEventByTime(ctx, from, to)
 		assert.NoError(t, err)
@@ -270,7 +259,9 @@ func TestMongoDbRepository_FindTimerEventByTime(t *testing.T) {
 		//	t.Error(testutil.MakeTestMessageWithGotWant(got[1], wants[1]))
 		//}
 
-		cleanupTestEvents(t, events)
+		for _, event := range events {
+			cleanupTestEvents(t, event)
+		}
 	})
 }
 
@@ -280,7 +271,7 @@ func TestMongoDbRepository_SaveTimerEvent(t *testing.T) {
 	}
 
 	t.Run("ok", func(t *testing.T) {
-		testEvents := makeTestEvents()
+		testEvent := makeTestEvent()
 
 		testDbUrl, testDbCol := getTestMongoDbEnv()
 
@@ -300,17 +291,9 @@ func TestMongoDbRepository_SaveTimerEvent(t *testing.T) {
 
 		ctx := context.TODO()
 
-		savedEvents, err := repo.SaveTimerEvent(ctx, testEvents)
+		savedEvent, err := repo.SaveTimerEvent(ctx, testEvent)
 		assert.NoError(t, err)
-
-		for i, savedEvent := range savedEvents {
-			// TODO: check
-			assert.Equal(t, testEvents[i], savedEvent)
-			//if !testEvents[i].Equal(savedEvent) {
-			//	t.Error(testutil.MakeTestMessageWithGotWant(savedEvent, testEvents[i]))
-			//}
-		}
-
-		cleanupTestEvents(t, testEvents)
+		assert.Equal(t, testEvent, savedEvent)
+		cleanupTestEvents(t, testEvent)
 	})
 }

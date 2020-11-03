@@ -73,7 +73,7 @@ func (r *PostgresRepository) FindTimerEventByTime(ctx context.Context, from, to 
 // Save TimerEvent to DB.
 //
 // Return error and the slice of TimerEvent saved successfully.
-func (r *PostgresRepository) SaveTimerEvent(ctx context.Context, events []*enterpriserule.TimerEvent) (saved []*enterpriserule.TimerEvent, err error) {
+func (r *PostgresRepository) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	db, err := getPostgresDb(ctx, config.Get("DATABASE_URL", ""))
 	if err != nil {
 		return
@@ -92,21 +92,19 @@ func (r *PostgresRepository) SaveTimerEvent(ctx context.Context, events []*enter
 	}()
 
 	table := config.Get("POSTGRES_TBL_TIMEREVENT", "")
-	for _, event := range events {
-		_, err = tx.NamedExecContext(ctx, fmt.Sprintf(`
+	_, err = tx.NamedExecContext(ctx, fmt.Sprintf(`
 			INSERT INTO %s (user_id, notification_time_utc, interval_min)
 			VALUES (:user_id, :notification_time_utc, :interval_min)
 			ON CONFLICT (user_id) DO UPDATE
 			SET notification_time_utc = :notification_time_utc,
 				interval_min = :interval_min 
 		`, table), event)
-		if err != nil {
-			tx.Rollback()
-			return
-		}
+	if err != nil {
+		tx.Rollback()
+		return
 	}
 	tx.Commit()
 
-	saved = events
+	saved = event
 	return
 }
