@@ -9,6 +9,7 @@ import (
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/pkg/log"
 	"strconv"
+	"time"
 )
 
 // SetRequestHandler represents the API command "Set".
@@ -48,7 +49,8 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) EventCallbackResponse 
 	}
 
 	outputPort := &SetRequestOutputPort{}
-	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.remindIntervalInMin, outputPort)
+	now := time.Now().UTC()
+	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, now, sr.remindIntervalInMin, outputPort)
 	return *outputPort.Resp
 }
 

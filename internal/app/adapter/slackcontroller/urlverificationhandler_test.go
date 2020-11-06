@@ -2,9 +2,9 @@ package slackcontroller
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestUrlVerificationHandler_Handler(t *testing.T) {

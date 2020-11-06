@@ -131,8 +131,7 @@ func TestMakeErrorCallbackResponseBody(t *testing.T) {
 
 func TestHandler(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		caseData := EventCallbackData{
-		}
+		caseData := EventCallbackData{}
 		want := *makeErrorCallbackResponse("parameter error", ErrInvalidRequest)
 		got, err := LambdaHandleRequest(context.TODO(), caseData)
 		assert.NoError(t, err)

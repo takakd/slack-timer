@@ -18,15 +18,17 @@ var (
 )
 
 type Usecase interface {
-	// Update next notification time.
+	// Set notificationTime to the notification time of the event which corresponds to userId.
 	// Pass OutputPort interface if overwrite presenter implementation.
 	//		e.g. HTTPResponse that needs http.ResponseWrite
-	UpdateNotificationTime(ctx context.Context, userId string, overWriteOutputPort OutputPort)
+	// userId
+	UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort)
 
-	// Save notification interval minutes.
+	// Set notification interval to the event which corresponds to userId.
+	// Use currentTime in calculating notification time if the event is not created.
 	// Pass OutputPort interface if overwrite presenter implementation.
 	//		e.g. HTTPResponse that needs http.ResponseWrite
-	SaveIntervalMin(ctx context.Context, userId string, minutes int, overWriteOutputPort OutputPort)
+	SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, overWriteOutputPort OutputPort)
 }
 
 type OutputData struct {
@@ -51,7 +53,7 @@ func NewUsecase() Usecase {
 }
 
 // Common processing.
-func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, remindInterval int) *OutputData {
+func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, notificationTime time.Time, remindInterval int) *OutputData {
 
 	outputData := &OutputData{}
 
@@ -68,8 +70,7 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, rem
 			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
 			return outputData
 		}
-		// TODO: テストしにくいので引数で時間を与える
-		event.NotificationTime = time.Now().UTC()
+		event.NotificationTime = notificationTime
 	}
 
 	if remindInterval != 0 {
@@ -89,22 +90,19 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, rem
 	return outputData
 }
 
-// Update notification time.
-func (s *Interactor) UpdateNotificationTime(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
-	data := s.saveTimerEventValue(ctx, userId, 0)
+// See Usecase interface for details.
+func (s *Interactor) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort) {
+	data := s.saveTimerEventValue(ctx, userId, notificationTime, 0)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)
-		//} else {
-		//	s.outputPort.Output(data)
 	}
 }
 
 // Save the remind interval second for user.
-func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, minutes int, overWriteOutputPort OutputPort) {
-	data := s.saveTimerEventValue(ctx, userId, minutes)
+// See Usecase interface for details.
+func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, overWriteOutputPort OutputPort) {
+	data := s.saveTimerEventValue(ctx, userId, currentTime, minutes)
 	if overWriteOutputPort != nil {
 		overWriteOutputPort.Output(data)
-		//} else {
-		//	s.outputPort.Output(data)
 	}
 }

@@ -72,7 +72,7 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 				ctrl := gomock.NewController(t)
 				defer ctrl.Finish()
 				mu = updatetimerevent.NewMockUsecase(ctrl)
-				mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(caseData.MessageEvent.User), gomock.Eq(10), gomock.Any()).DoAndReturn(func(_, _, _, outputPort interface{}) {
+				mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(caseData.MessageEvent.User), gomock.Any(), gomock.Eq(10), gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
 					output := outputPort.(*SetRequestOutputPort)
 					output.Resp = c.resp
 				})
@@ -105,8 +105,7 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 			}
 			wantResp := makeErrorCallbackResponse("failed to save event", ErrSaveEvent)
 
-			outputPort := &SetRequestOutputPort{
-			}
+			outputPort := &SetRequestOutputPort{}
 			outputPort.Output(caseData)
 
 			assert.Equal(t, wantResp, outputPort.Resp)
@@ -122,8 +121,7 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 			StatusCode: http.StatusOK,
 		}
 
-		outputPort := &SetRequestOutputPort{
-		}
+		outputPort := &SetRequestOutputPort{}
 		outputPort.Output(caseData)
 
 		assert.Equal(t, wantResp, outputPort.Resp)
