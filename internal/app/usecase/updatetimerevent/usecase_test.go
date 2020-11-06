@@ -24,8 +24,10 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 		now := time.Now()
 		event, _ := enterpriserule.NewTimerEvent(userId)
-		event.NotificationTime = now
-		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Len(1)).Return(nil, nil)
+		event.NotificationTime = now.UTC()
+		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(_, event *enterpriserule.TimerEvent) (*enterpriserule.TimerEvent, error) {
+
+		})
 
 		interactor := &Interactor{
 			repository: m,
@@ -44,14 +46,14 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(event.UserId)).
 			Return(event, nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq([]*enterpriserule.TimerEvent{event})).
+		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(event)).
 			Return(nil, nil)
 
 		interactor := &Interactor{
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(context.TODO(), event.UserId, 0)
+		data := interactor.saveTimerEventValue(ctx, event.UserId, 0)
 		assert.NoError(t, data.Result)
 	})
 
@@ -68,14 +70,14 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		interval := 1
 		event, _ := enterpriserule.NewTimerEvent(userId)
 		event.IntervalMin = interval
-		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Len(1)).
+		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(event)).
 			Return(nil, nil)
 
 		interactor := &Interactor{
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(context.TODO(), userId, interval)
+		data := interactor.saveTimerEventValue(ctx, userId, interval)
 		assert.NoError(t, data.Result)
 	})
 

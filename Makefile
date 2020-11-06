@@ -15,11 +15,11 @@ dbstop:
 
 test:
 	@echo "==> Testing..."
-	@sh -c "sh '$(CURDIR)/scripts/local.sh' test"
+	@sh -c "sh '$(CURDIR)/scripts/local.sh' test -v -cover -tags=\'test local\' -count 1 ./..."
 
-testnocache:
+test_light:
 	@echo "==> Testing..."
-	@sh -c "sh '$(CURDIR)/scripts/local.sh' test nocache"
+	@sh -c "sh '$(CURDIR)/scripts/local.sh' test -tags=\'test local\' -count 1 ./..."
 
 fmt:
 	@echo "==> Formatting go sources..."

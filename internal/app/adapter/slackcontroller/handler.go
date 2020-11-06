@@ -69,8 +69,7 @@ func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 	}
 
 	// Normal Event callback
-	var supportEvent bool
-	supportEvent = supportEvent || data.MessageEvent.Type == "message"
+	supportEvent := data.MessageEvent.Type == "message"
 	if !supportEvent {
 		return nil, fmt.Errorf("invalid event type, type=%s", data.MessageEvent.Type)
 	}
@@ -79,12 +78,12 @@ func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 	re := regexp.MustCompile(`^([^\s]*)\s*`)
 	m := re.FindStringSubmatch(data.MessageEvent.Text)
 	if m == nil {
-		return nil, fmt.Errorf("invalid Text format")
+		return nil, fmt.Errorf("invalid Text format, text=%s", data.MessageEvent.Text)
 	}
 
 	subType := m[1]
 	if subType != CmdSet {
-		return nil, fmt.Errorf("invalid sub type")
+		return nil, fmt.Errorf("invalid sub type, subtype=%s", subType)
 	}
 
 	usecase := di.Get("UpdateTimerEvent").(updatetimerevent.Usecase)
@@ -113,36 +112,6 @@ func makeErrorCallbackResponse(message string, err error) *EventCallbackResponse
 	}
 	return resp
 }
-
-//func writeErrorCallbackResponse(body []byte) string {
-//	//httputil.WriteJsonResponse(w, map[string]string{
-//	//	// Prevent auto retry.
-//	//	// Ref.: https://api.slack.com/events-api#the-events-api__field-guide__error-handling__graceful-retries__turning-retries-off
-//	//	"X-Slack-No-Retry": "1",
-//	//}, http.StatusBadRequest, body)
-//	return ""
-//}
-
-// Web server registers this to themselves and call.
-//func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-//	if r.Method != "POST" {
-//		http.Error(w, "404 not found", http.StatusNotFound)
-//		return
-//	}
-//
-//	h, err := NewRequestHandler(r)
-//	if err != nil {
-//		log.Error(err.Error())
-//		body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
-//		if err != nil {
-//			body = []byte("internal error")
-//		}
-//		writeErrorCallbackResponse(w, body)
-//		return
-//	}
-//
-//	h.Handler(ctx, w)
-//}
 
 // Lambda callback
 func LambdaHandleRequest(ctx context.Context, event EventCallbackData) (EventCallbackResponse, error) {

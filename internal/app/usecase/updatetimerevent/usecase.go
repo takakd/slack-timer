@@ -68,6 +68,7 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, rem
 			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
 			return outputData
 		}
+		// TODO: テストしにくいので引数で時間を与える
 		event.NotificationTime = time.Now().UTC()
 	}
 

@@ -55,12 +55,16 @@ run() {
 #    docker_cleanup
 }
 docker_run() {
-    docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
-    # wait for DB is up
-    sleep 2
+    if [[ "$DATABASE_URL" != "" ]]; then
+        docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml up -d
+        # wait for DB is up
+        sleep 2
+    fi
 }
 docker_cleanup() {
-    docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml down
+    if [[ "$DATABASE_URL" != "" ]]; then
+        docker-compose -f ${SCRIPT_DIR}/../deployments/local/docker-compose.yml down
+    fi
 }
 
 cmd_test() {
@@ -68,21 +72,11 @@ cmd_test() {
 
     cd ${SCRIPT_DIR}/..
 
-    ARGS=""
-    if [[ "$ARGC" -ge 2 ]]; then
-        if [[ "${ARGV[1]}" == "nocache"  ]]; then
-            ARGS="-count 1"
-        fi
-    fi
-    if [[ "$ARGC" -ge 3 ]]; then
-        ARGS="$ARGS -run ${ARGV[2]}"
-    fi
-
     # @see https://stackoverflow.com/questions/16353016/how-to-go-test-all-tests-in-my-project/35852900#35852900
     # NG
     #go test -v -cover "${ARGS}" ./...
     # OK
-    go test -v -cover -tags="test local" ${ARGS} ./...
+    sh -c "go $(echo ${ARGV[@]})"
 
     docker_cleanup
 }

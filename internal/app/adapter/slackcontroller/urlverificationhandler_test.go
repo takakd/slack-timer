@@ -2,38 +2,38 @@ package slackcontroller
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/http/httptest"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUrlVerificationHandler_Handler(t *testing.T) {
 	cases := []struct {
 		name      string
 		challenge string
-		status    int
-		body      string
+		resp      EventCallbackResponse
 	}{
-		{"empty challenge", "", http.StatusInternalServerError, "invalid challenge"},
-		{"ok", "valid token", http.StatusOK, "valid token"},
+		{"empty challenge", "", EventCallbackResponse{
+			Message:    "invalid challenge",
+			StatusCode: http.StatusInternalServerError,
+		}},
+		{"ok", "valid token", EventCallbackResponse{
+			Message:    "success",
+			StatusCode: http.StatusOK,
+		}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			data := UrlVerificationEventCallbackData{
+			caseData := &EventCallbackData{
 				Challenge: c.challenge,
 			}
 
-			ctx := context.TODO()
-			w := httptest.NewRecorder()
-
 			h := UrlVerificationRequestHandler{
-				Data: &data,
+				Data: caseData,
 			}
-			h.Handler(ctx, w)
 
-			assert.Equal(t, w.Code, c.status)
-			assert.Equal(t, w.Body.String(), c.body)
+			got := h.Handler(context.TODO())
+			assert.Equal(t, c.resp, got)
 		})
 	}
 }

@@ -66,16 +66,16 @@ func (mr *MockRepositoryMockRecorder) FindTimerEventByTime(ctx, from, to interfa
 }
 
 // SaveTimerEvent mocks base method
-func (m *MockRepository) SaveTimerEvent(ctx context.Context, events []*enterpriserule.TimerEvent) ([]*enterpriserule.TimerEvent, error) {
+func (m *MockRepository) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (*enterpriserule.TimerEvent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveTimerEvent", ctx, events)
-	ret0, _ := ret[0].([]*enterpriserule.TimerEvent)
+	ret := m.ctrl.Call(m, "SaveTimerEvent", ctx, event)
+	ret0, _ := ret[0].(*enterpriserule.TimerEvent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveTimerEvent indicates an expected call of SaveTimerEvent
-func (mr *MockRepositoryMockRecorder) SaveTimerEvent(ctx, events interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) SaveTimerEvent(ctx, event interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTimerEvent", reflect.TypeOf((*MockRepository)(nil).SaveTimerEvent), ctx, events)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTimerEvent", reflect.TypeOf((*MockRepository)(nil).SaveTimerEvent), ctx, event)
 }

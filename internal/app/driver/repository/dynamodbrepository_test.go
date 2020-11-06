@@ -127,7 +127,7 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
 		repo := NewDynamoDbRepository(s)
-		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
+		got, err := repo.FindTimerEventByTime(context.TODO(), time.Now(), time.Now().Add(100))
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -149,7 +149,7 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 			TableName:              aws.String(caseTableName),
 		}
 		caseErr := errors.New("dummy error")
-		caseItem := &dynamodb.GetItemOutput{}
+		caseItem := &dynamodb.QueryOutput{}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -160,7 +160,7 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
-		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Item), gomock.Any()).Return(caseErr)
+		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
 
 		repo := NewDynamoDbRepository(s)
 		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
@@ -184,7 +184,12 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 			KeyConditionExpression: aws.String("NotificationTime >= :from and NotificationTime <= :to"),
 			TableName:              aws.String(caseTableName),
 		}
-		caseItem := &dynamodb.GetItemOutput{}
+		caseItem := &dynamodb.QueryOutput{
+			Items: []map[string]*dynamodb.AttributeValue{
+				{"dummy": {S: aws.String("dummy")}},
+				{"dummy": {S: aws.String("dummy")}},
+			},
+		}
 		caseEvent := []*enterpriserule.TimerEvent{
 			{
 				UserId: "abc1",
@@ -203,10 +208,10 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
-		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Item), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
+		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
 			events := out.([]*enterpriserule.TimerEvent)
-			events[0].UserId = caseEvent[0].UserId
-			events[1].UserId = caseEvent[1].UserId
+			events[0] = caseEvent[0]
+			events[1] = caseEvent[1]
 			return nil
 		})
 
@@ -255,6 +260,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
+		s.EXPECT().MarshalMap(gomock.Eq(caseEvent)).Return(caseInput.Item, nil)
 		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, caseErr)
 
 		repo := NewDynamoDbRepository(s)
@@ -283,6 +289,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
+		s.EXPECT().MarshalMap(gomock.Eq(caseEvent)).Return(caseInput.Item, nil)
 		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, nil)
 
 		repo := NewDynamoDbRepository(s)
