@@ -2,10 +2,12 @@ package slackcontroller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/updatetimerevent"
@@ -105,25 +107,29 @@ func TestNewRequestHandler(t *testing.T) {
 	}
 }
 
-func TestMakeErrorCallbackResponseBody(t *testing.T) {
+func TestMakeErrorHandleResponse(t *testing.T) {
 	cases := []struct {
 		name    string
 		message string
-		err     string
+		err     error
 	}{
-		{"no error", "test", ""},
-		{"error", "test", "test err"},
+		{"no error", "test", nil},
+		{"error", "test", errors.New("test err")},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			want := &EventCallbackResponse{
-				Message:    c.message,
+			wantBody := &HandlerResponseErrorBody{
+				Message: c.message,
+			}
+			if c.err != nil {
+				wantBody.Detail = c.err.Error()
+			}
+			want := &HandlerResponse{
 				StatusCode: http.StatusInternalServerError,
+				Body:       wantBody,
 			}
-			if c.err != "" {
-				want.Detail = c.err
-			}
-			got := makeErrorCallbackResponse(c.message, errors.New(c.err))
+
+			got := makeErrorHandlerResponse(c.message, c.err)
 			assert.Equal(t, want, got)
 		})
 	}
@@ -131,24 +137,36 @@ func TestMakeErrorCallbackResponseBody(t *testing.T) {
 
 func TestHandler(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		caseData := EventCallbackData{}
-		want := *makeErrorCallbackResponse("parameter error", ErrInvalidRequest)
-		got, err := LambdaHandleRequest(context.TODO(), caseData)
+		caseJson, err := json.Marshal(EventCallbackData{})
+		require.NoError(t, err)
+
+		caseInput := LambdaInput{
+			Body: string(caseJson),
+		}
+		want := makeErrorHandlerResponse("parameter error", ErrInvalidParameters)
+		got, err := LambdaHandleRequest(context.TODO(), caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		caseData := EventCallbackData{
-			Type: "url_verification",
+		caseData := &EventCallbackData{
+			Type:      "url_verification",
+			Challenge: "test challenge",
+		}
+		caseJson, err := json.Marshal(caseData)
+		require.NoError(t, err)
+
+		caseInput := LambdaInput{
+			Body: string(caseJson),
 		}
 		ctx := context.TODO()
-		h := UrlVerificationRequestHandler{
-			Data: &caseData,
-		}
 
-		want := h.Handler(ctx)
-		got, err := LambdaHandleRequest(ctx, caseData)
+		want := LambdaOutput{
+			StatusCode: http.StatusOK,
+			Body:       []byte(caseData.Challenge),
+		}
+		got, err := LambdaHandleRequest(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
 	})

@@ -4,6 +4,7 @@ package slackcontroller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/pkg/typeutil"
 )
 
 // Errors
@@ -26,8 +28,54 @@ const (
 	CmdSet = "set"
 )
 
-// JSON to be sent
-// Defined what app needs
+// Lambda handler input data
+type LambdaInput struct {
+	Resource                        string              `json:"resource,omitempty"`
+	Path                            string              `json:"path,omitempty"`
+	HttpMethod                      string              `json:"httpMethod,omitempty"`
+	Headers                         map[string]string   `json:"headers,omitempty"`
+	MultiValueHeaders               []map[string]string `json:"multiValueHeaders,omitempty"`
+	QueryStringParameters           map[string]string   `json:"queryStringParameters,omitempty"`
+	MultiValueQueryStringParameters []map[string]string `json:"multiValueQueryStringParameters,omitempty"`
+	PathParameters                  map[string]string   `json:"pathParameters,omitempty"`
+	StageVaribales                  map[string]string   `json:"stageVariables,omitempty"`
+	RequestContext                  struct {
+		AccountId  string `json:"accountId,omitempty"`
+		ResourceId string `json:"resourceId,omitempty"`
+		Stage      string `json:"stage,omitempty"`
+		RequestId  string `json:"requestId,omitempty"`
+		Identity   struct {
+			CognitoIdentityPoolId         string `json:"cognitoIdentityPoolId,omitempty"`
+			AccountId                     string `json:"accountId,omitempty"`
+			CognitoIdentityId             string `json:"cognitoIdentityId,omitempty"`
+			Caller                        string `json:"caller,omitempty"`
+			ApiKey                        string `json:"apiKey,omitempty"`
+			SourceIp                      string `json:"sourceIp,omitempty"`
+			CognitoAuthenticationType     string `json:"cognitoAuthenticationType,omitempty"`
+			CognitoAuthenticationProvider string `json:"cognitoAuthenticationProvider,omitempty"`
+			UserArn                       string `json:"userArn,omitempty"`
+			UserAgent                     string `json:"userAgent,omitempty"`
+			User                          string `json:"user,omitempty"`
+		} `json:"identity,omitempty"`
+		ResourcePath string `json:"resourcePath,omitempty"`
+		HttpMethod   string `json:"httpMethod,omitempty"`
+		ApiId        string `json:"apiId,omitempty"`
+	} `json:"requestContext,omitempty"`
+	Body            string `json:"body,omitempty"`
+	IsBase64Encoded bool   `json:"isBase64Encoded,omitempty"`
+}
+
+// Lambda handler output data
+// Ref: Output format of a Lambda function for proxy integration
+// 	https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
+type LambdaOutput struct {
+	IsBase64Encoded bool              `json:"isBase64Encoded"`
+	StatusCode      int               `json:"statusCode"`
+	Headers         map[string]string `json:"headers"`
+	Body            interface{}       `json:"body"`
+}
+
+// Slack EventAPI Notification data
 type EventCallbackData struct {
 	Token  string `json:"token"`
 	TeamId string `json:"team_id"`
@@ -53,12 +101,18 @@ type MessageEvent struct {
 	Text    string `json:"text"`
 }
 
-type EventCallbackResponse struct {
-	Message    string `json:"message"`
-	StatusCode int    `json:"status"`
-	Detail     string `json:"detail"`
+type HandlerResponse struct {
+	StatusCode int         `json:"status"`
+	Body       interface{} `json:"body"`
 }
 
+// Set this to HandlerResponse.Body if errors happened.
+type HandlerResponseErrorBody struct {
+	Message string      `json:"message"`
+	Detail  interface{} `json:"detail"`
+}
+
+// Create request struct corresponding to input.
 func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 	// URL Verification callback
 	if data.isVerificationEvent() {
@@ -99,27 +153,60 @@ func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 
 // Provides handlers to each request.
 type RequestHandler interface {
-	Handler(ctx context.Context) EventCallbackResponse
+	Handler(ctx context.Context) *HandlerResponse
 }
 
-func makeErrorCallbackResponse(message string, err error) *EventCallbackResponse {
-	resp := &EventCallbackResponse{
-		Message:    message,
-		StatusCode: http.StatusInternalServerError,
+func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
+	body := &HandlerResponseErrorBody{
+		Message: message,
 	}
 	if err != nil {
-		resp.Detail = err.Error()
+		body.Detail = err.Error()
 	}
-	return resp
+	return &HandlerResponse{
+		StatusCode: http.StatusInternalServerError,
+		Body:       body,
+	}
 }
 
 // Lambda callback
-func LambdaHandleRequest(ctx context.Context, event EventCallbackData) (EventCallbackResponse, error) {
-	h, err := NewRequestHandler(&event)
+// Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
+func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, error) {
+	log.Debug(fmt.Sprintf("handler, event=%v", input))
+
+	var body EventCallbackData
+	err := json.Unmarshal([]byte(input.Body), &body)
 	if err != nil {
 		log.Error(err.Error())
-		return *makeErrorCallbackResponse("parameter error", ErrInvalidRequest), nil
+		return makeErrorHandlerResponse("invalid request", ErrInvalidRequest), nil
 	}
 
-	return h.Handler(ctx), nil
+	h, err := NewRequestHandler(&body)
+	if err != nil {
+		log.Error(err.Error())
+		return makeErrorHandlerResponse("parameter error", ErrInvalidParameters), nil
+	}
+
+	resp := h.Handler(ctx)
+	if resp == nil {
+		return nil, errors.New("no response")
+	}
+
+	var respBody []byte
+	needMarshal := typeutil.IsStruct(resp.Body)
+	fmt.Println(needMarshal)
+	if needMarshal {
+		respBody, err = json.Marshal(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create error: %w", err)
+		}
+	} else {
+		respBody = []byte(fmt.Sprintf("%v", resp.Body))
+	}
+
+	output := LambdaOutput{
+		StatusCode: resp.StatusCode,
+		Body:       respBody,
+	}
+	return output, nil
 }

@@ -7,7 +7,6 @@ package slackcontroller
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	http "net/http"
 	reflect "reflect"
 )
 
@@ -35,13 +34,15 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 }
 
 // Handler mocks base method
-func (m *MockRequestHandler) Handler(ctx context.Context, w http.ResponseWriter) {
+func (m *MockRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Handler", ctx, w)
+	ret := m.ctrl.Call(m, "Handler", ctx)
+	ret0, _ := ret[0].(*HandlerResponse)
+	return ret0
 }
 
 // Handler indicates an expected call of Handler
-func (mr *MockRequestHandlerMockRecorder) Handler(ctx, w interface{}) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) Handler(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handler", reflect.TypeOf((*MockRequestHandler)(nil).Handler), ctx, w)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handler", reflect.TypeOf((*MockRequestHandler)(nil).Handler), ctx)
 }

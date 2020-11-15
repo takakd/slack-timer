@@ -43,16 +43,18 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 	cases := []struct {
 		name string
 		text string
-		resp *EventCallbackResponse
+		resp *HandlerResponse
 	}{
-		{"validate error", "", &EventCallbackResponse{
-			Message:    "invalid format",
+		{"validate error", "", &HandlerResponse{
 			StatusCode: http.StatusInternalServerError,
-			Detail:     "invalid parameters",
+			Body: &HandlerResponseErrorBody{
+				Message: "invalid format",
+				Detail:  "invalid parameters",
+			},
 		}},
-		{"ok", "set 10", &EventCallbackResponse{
-			Message:    "success",
+		{"ok", "set 10", &HandlerResponse{
 			StatusCode: http.StatusOK,
+			Body:       "success",
 		}},
 	}
 	for _, c := range cases {
@@ -83,7 +85,7 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 				usecase:      mu,
 			}
 			got := h.Handler(ctx)
-			assert.Equal(t, c.resp, &got)
+			assert.Equal(t, c.resp, got)
 		})
 	}
 }
@@ -103,7 +105,7 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 			caseData := &updatetimerevent.OutputData{
 				Result: c.err,
 			}
-			wantResp := makeErrorCallbackResponse("failed to save event", ErrSaveEvent)
+			wantResp := makeErrorHandlerResponse("failed to save event", ErrSaveEvent)
 
 			outputPort := &SetRequestOutputPort{}
 			outputPort.Output(caseData)
@@ -116,9 +118,9 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 		caseData := &updatetimerevent.OutputData{
 			Result: nil,
 		}
-		wantResp := &EventCallbackResponse{
-			Message:    "success",
+		wantResp := &HandlerResponse{
 			StatusCode: http.StatusOK,
+			Body:       "success",
 		}
 
 		outputPort := &SetRequestOutputPort{}

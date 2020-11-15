@@ -38,24 +38,24 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	return bag
 }
 
-func (sr *SetRequestHandler) Handler(ctx context.Context) EventCallbackResponse {
+func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 	if validateErrors := sr.validate(); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError
 		for _, v := range validateErrors.GetErrors() {
 			firstError = v
 			break
 		}
-		return *makeErrorCallbackResponse(firstError.Summary, ErrInvalidParameters)
+		return makeErrorHandlerResponse(firstError.Summary, ErrInvalidParameters)
 	}
 
 	outputPort := &SetRequestOutputPort{}
 	now := time.Now().UTC()
 	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, now, sr.remindIntervalInMin, outputPort)
-	return *outputPort.Resp
+	return outputPort.Resp
 }
 
 type SetRequestOutputPort struct {
-	Resp *EventCallbackResponse
+	Resp *HandlerResponse
 }
 
 func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
@@ -71,12 +71,12 @@ func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 
 	if errRaised {
 		log.Error(err)
-		s.Resp = makeErrorCallbackResponse("failed to save event", ErrSaveEvent)
+		s.Resp = makeErrorHandlerResponse("failed to save event", ErrSaveEvent)
 		return
 	}
 
-	s.Resp = &EventCallbackResponse{
-		Message:    "success",
+	s.Resp = &HandlerResponse{
 		StatusCode: http.StatusOK,
+		Body:       "success",
 	}
 }

@@ -12,14 +12,14 @@ type UrlVerificationRequestHandler struct {
 }
 
 // URL verification process just depends on Slack Event API, so no usecase and outputport.
-func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) EventCallbackResponse {
+func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 	if ur.Data.Challenge == "" {
-		return *makeErrorCallbackResponse("invalid challenge", nil)
+		return makeErrorHandlerResponse("invalid challenge", nil)
 	}
 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.
-	return EventCallbackResponse{
-		Message:    "success",
+	return &HandlerResponse{
 		StatusCode: http.StatusOK,
+		Body:       ur.Data.Challenge,
 	}
 }

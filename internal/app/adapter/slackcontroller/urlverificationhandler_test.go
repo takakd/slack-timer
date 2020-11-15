@@ -11,14 +11,16 @@ func TestUrlVerificationHandler_Handler(t *testing.T) {
 	cases := []struct {
 		name      string
 		challenge string
-		resp      EventCallbackResponse
+		resp      *HandlerResponse
 	}{
-		{"empty challenge", "", EventCallbackResponse{
-			Message:    "invalid challenge",
+		{"empty challenge", "", &HandlerResponse{
+			Body: &HandlerResponseErrorBody{
+				Message: "invalid challenge",
+			},
 			StatusCode: http.StatusInternalServerError,
 		}},
-		{"ok", "valid token", EventCallbackResponse{
-			Message:    "success",
+		{"ok", "valid token", &HandlerResponse{
+			Body:       "valid token",
 			StatusCode: http.StatusOK,
 		}},
 	}

@@ -21,13 +21,28 @@ Resources:
       EndpointConfiguration:
         Types: [REGIONAL]
 
+  # API - Deployment
+  SetTimerDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SetTimerPost
+    Properties:
+      Description: "Production deployment"
+      RestApiId: !Ref SetTimerApi
+      StageName: "Prod"
+
   # API - Resource
-  SetTimerResource:
+  SetTimerParentResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       RestApiId: !Ref SetTimerApi
       ParentId: !GetAtt SetTimerApi.RootResourceId
       PathPart: callback
+  SetTimerResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref SetTimerApi
+      ParentId: !Ref SetTimerParentResource
+      PathPart: '{proxy+}'
 
   # API - Resource - Method
   SetTimerPost:
@@ -35,23 +50,26 @@ Resources:
     Properties:
       ApiKeyRequired: false
       AuthorizationType: NONE
-      HttpMethod: POST
+      HttpMethod: ANY
       Integration:
-        Type: AWS
+        Type: AWS_PROXY
         IntegrationHttpMethod: POST
         # Ref: Uri section in https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration.html
         Uri: !Join ["", ["arn:aws:apigateway:", !Ref AWS::Region, ":lambda:path/2015-03-31/functions/", !GetAtt SetTimerFunction.Arn, "/invocations"]]
-        RequestTemplates:
-          application/json: "{\"body\":$input.json('$')}"
-        PassthroughBehavior: WHEN_NO_TEMPLATES
-        IntegrationResponses:
-          - StatusCode: 200
-            SelectionPattern: "status:\\s*200"
-          - StatusCode: 500
-            SelectionPattern: "status:\\s*500"
-            ResponseParameters:
-              # Enclose single quote for using static value. Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters
-              method.response.header.X-Slack-No-Retry: "'1'"
+#        RequestTemplates:
+#          application/json: "{\"body\":$input.json('$')}"
+#        PassthroughBehavior: WHEN_NO_TEMPLATES
+#        IntegrationResponses:
+#          - StatusCode: 200
+#            SelectionPattern: ""
+#          - StatusCode: 500
+#            SelectionPattern: ".*integration_status:500.*"
+#            ContentHandling: CONVERT_TO_TEXT
+#            ResponseParameters:
+#              # Enclose single quote for using static value. Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters
+#              method.response.header.X-Slack-No-Retry: "'1'"
+#            ResponseTemplates:
+#              application/json: "{\"message\":$input.json('$.message'),\"status\":$input('$.status'),\"detail\":$input('$.detail'),\"detail2\":$input('$')}"
       MethodResponses:
         - StatusCode: 200
         - StatusCode: 500
