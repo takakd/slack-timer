@@ -8,9 +8,16 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/driver/di/container"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/config/driver"
+	"slacktimer/internal/pkg/errorutil"
+	"slacktimer/internal/pkg/fileutil"
 	"slacktimer/internal/pkg/log"
 	"slacktimer/internal/pkg/typeutil"
 )
@@ -109,8 +116,8 @@ type HandlerResponse struct {
 
 // Set this to HandlerResponse.Body if errors happened.
 type HandlerResponseErrorBody struct {
-	Message string
-	Detail  interface{}
+	Message string      `json:"message"`
+	Detail  interface{} `json:"detail"`
 }
 
 // Create request struct corresponding to input.
@@ -237,6 +244,7 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 
 	var respBody string
 	if typeutil.IsStruct(resp.Body) {
+		log.Debug("is struct")
 		body, err := json.Marshal(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create response: %w", err)
@@ -245,6 +253,7 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 	} else {
 		respBody = fmt.Sprintf("%v", resp.Body)
 	}
+	log.Debug("respBody", respBody)
 
 	output := LambdaOutput{
 		IsBase64Encoded: resp.IsBase64Encoded,
