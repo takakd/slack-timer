@@ -170,10 +170,52 @@ func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
 	}
 }
 
+// Setup config.
+func setConfig() {
+	configType := os.Getenv("APP_CONFIG_TYPE")
+	if configType == "" {
+		configType = "env"
+	}
+
+	log.Info(fmt.Sprintf("set config type=%s", configType))
+
+	if configType == "env" {
+		// Get .env path
+		appDir, err := fileutil.GetAppDir()
+		if err != nil {
+			panic(errorutil.MakePanicMessage("need app directory path."))
+		}
+		names := make([]string, 0)
+		path := filepath.Join(appDir, ".env")
+		if fileutil.FileExists(path) {
+			names = append(names, path)
+		}
+		config.SetConfig(driver.NewEnvConfig(names...))
+	}
+}
+
+// Setup DI container by env.
+func setDi() {
+	env := config.Get("APP_ENV", "dev")
+
+	log.Info(fmt.Sprintf("set di env=%s", env))
+
+	if env == "prod" {
+		di.SetDi(&container.Production{})
+	} else if env == "dev" {
+		di.SetDi(&container.Development{})
+	} else if env == "test" {
+		di.SetDi(&container.Test{})
+	}
+}
+
 // Lambda callback
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, error) {
 	log.Debug(fmt.Sprintf("handler, input=%v", input))
+
+	setConfig()
+	setDi()
 
 	var body EventCallbackData
 	err := json.Unmarshal([]byte(input.Body), &body)
