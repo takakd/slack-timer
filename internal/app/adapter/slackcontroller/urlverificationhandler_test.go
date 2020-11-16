@@ -20,8 +20,10 @@ func TestUrlVerificationHandler_Handler(t *testing.T) {
 			StatusCode: http.StatusInternalServerError,
 		}},
 		{"ok", "valid token", &HandlerResponse{
-			Body:       "valid token",
 			StatusCode: http.StatusOK,
+			Body: UrlVerificationResponseBody{
+				"valid token",
+			},
 		}},
 	}
 	for _, c := range cases {

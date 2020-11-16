@@ -162,9 +162,13 @@ func TestHandler(t *testing.T) {
 		}
 		ctx := context.TODO()
 
+		body, _ := json.Marshal(UrlVerificationResponseBody{
+			caseData.Challenge,
+		})
+
 		want := LambdaOutput{
 			StatusCode: http.StatusOK,
-			Body:       []byte(caseData.Challenge),
+			Body:       string(body),
 		}
 		got, err := LambdaHandleRequest(ctx, caseInput)
 		assert.NoError(t, err)

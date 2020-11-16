@@ -30,15 +30,15 @@ const (
 
 // Lambda handler input data
 type LambdaInput struct {
-	Resource                        string              `json:"resource,omitempty"`
-	Path                            string              `json:"path,omitempty"`
-	HttpMethod                      string              `json:"httpMethod,omitempty"`
-	Headers                         map[string]string   `json:"headers,omitempty"`
-	MultiValueHeaders               []map[string]string `json:"multiValueHeaders,omitempty"`
-	QueryStringParameters           map[string]string   `json:"queryStringParameters,omitempty"`
-	MultiValueQueryStringParameters []map[string]string `json:"multiValueQueryStringParameters,omitempty"`
-	PathParameters                  map[string]string   `json:"pathParameters,omitempty"`
-	StageVaribales                  map[string]string   `json:"stageVariables,omitempty"`
+	Resource                        string                `json:"resource,omitempty"`
+	Path                            string                `json:"path,omitempty"`
+	HttpMethod                      string                `json:"httpMethod,omitempty"`
+	Headers                         map[string]string     `json:"headers,omitempty"`
+	MultiValueHeaders               map[string][]string   `json:"multiValueHeaders,omitempty"`
+	QueryStringParameters           map[string]string     `json:"queryStringParameters,omitempty"`
+	MultiValueQueryStringParameters []map[string][]string `json:"multiValueQueryStringParameters,omitempty"`
+	PathParameters                  map[string]string     `json:"pathParameters,omitempty"`
+	StageVaribales                  map[string]string     `json:"stageVariables,omitempty"`
 	RequestContext                  struct {
 		AccountId  string `json:"accountId,omitempty"`
 		ResourceId string `json:"resourceId,omitempty"`
@@ -72,7 +72,7 @@ type LambdaOutput struct {
 	IsBase64Encoded bool              `json:"isBase64Encoded"`
 	StatusCode      int               `json:"statusCode"`
 	Headers         map[string]string `json:"headers"`
-	Body            interface{}       `json:"body"`
+	Body            string            `json:"body"`
 }
 
 // Slack EventAPI Notification data
@@ -102,14 +102,15 @@ type MessageEvent struct {
 }
 
 type HandlerResponse struct {
-	StatusCode int         `json:"status"`
-	Body       interface{} `json:"body"`
+	StatusCode      int
+	Body            interface{}
+	IsBase64Encoded bool
 }
 
 // Set this to HandlerResponse.Body if errors happened.
 type HandlerResponseErrorBody struct {
-	Message string      `json:"message"`
-	Detail  interface{} `json:"detail"`
+	Message string
+	Detail  interface{}
 }
 
 // Create request struct corresponding to input.
@@ -172,7 +173,7 @@ func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
 // Lambda callback
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, error) {
-	log.Debug(fmt.Sprintf("handler, event=%v", input))
+	log.Debug(fmt.Sprintf("handler, input=%v", input))
 
 	var body EventCallbackData
 	err := json.Unmarshal([]byte(input.Body), &body)
@@ -192,21 +193,24 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 		return nil, errors.New("no response")
 	}
 
-	var respBody []byte
-	needMarshal := typeutil.IsStruct(resp.Body)
-	fmt.Println(needMarshal)
-	if needMarshal {
-		respBody, err = json.Marshal(resp.Body)
+	var respBody string
+	if typeutil.IsStruct(resp.Body) {
+		body, err := json.Marshal(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create error: %w", err)
+			return nil, fmt.Errorf("failed to create response: %w", err)
 		}
+		respBody = string(body)
 	} else {
-		respBody = []byte(fmt.Sprintf("%v", resp.Body))
+		respBody = fmt.Sprintf("%v", resp.Body)
 	}
 
 	output := LambdaOutput{
-		StatusCode: resp.StatusCode,
-		Body:       respBody,
+		IsBase64Encoded: resp.IsBase64Encoded,
+		StatusCode:      resp.StatusCode,
+		Body:            respBody,
 	}
+
+	log.Debug(fmt.Sprintf("handler, output=%v", output))
+
 	return output, nil
 }

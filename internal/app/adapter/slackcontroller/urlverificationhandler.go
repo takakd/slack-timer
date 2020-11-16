@@ -11,6 +11,10 @@ type UrlVerificationRequestHandler struct {
 	Data *EventCallbackData
 }
 
+type UrlVerificationResponseBody struct {
+	Challenge string `json:"challenge"`
+}
+
 // URL verification process just depends on Slack Event API, so no usecase and outputport.
 func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 	if ur.Data.Challenge == "" {
@@ -20,6 +24,8 @@ func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) *HandlerRe
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.
 	return &HandlerResponse{
 		StatusCode: http.StatusOK,
-		Body:       ur.Data.Challenge,
+		Body: UrlVerificationResponseBody{
+			ur.Data.Challenge,
+		},
 	}
 }
