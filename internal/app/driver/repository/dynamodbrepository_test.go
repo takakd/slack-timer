@@ -13,6 +13,32 @@ import (
 	"time"
 )
 
+func TestNewTimerEventDbItem(t *testing.T) {
+	caseTime := time.Now()
+	caseEvent := &enterpriserule.TimerEvent{
+		UserId:           "test_user",
+		NotificationTime: caseTime,
+		IntervalMin:      3,
+	}
+	got := NewTimerEventDbItem(caseEvent)
+	assert.Equal(t, caseEvent.UserId, got.UserId)
+	assert.Equal(t, caseEvent.NotificationTime.Unix(), got.NotificationTime)
+	assert.Equal(t, caseEvent.IntervalMin, got.IntervalMin)
+}
+
+func TestTimerEventDbItem_TimerEvent(t *testing.T) {
+	caseTime := time.Now().Truncate(time.Second)
+	want := &enterpriserule.TimerEvent{
+		UserId:           "test_user",
+		NotificationTime: caseTime,
+		IntervalMin:      3,
+	}
+	caseItem := NewTimerEventDbItem(want)
+
+	got := caseItem.TimerEvent()
+	assert.Equal(t, want, got)
+}
+
 func TestNewDynamoDbRepository(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		repo := NewDynamoDbRepository(nil)
@@ -34,7 +60,7 @@ func TestNewDynamoDbRepository(t *testing.T) {
 }
 
 func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
-	t.Run("ng:GetItem", func(t *testing.T) {
+	t.Run("ng:Query error", func(t *testing.T) {
 		caseErr := errors.New("dummy error")
 
 		ctrl := gomock.NewController(t)
@@ -45,17 +71,68 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().GetItem(gomock.Any()).Return(nil, caseErr)
+		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
 		repo := NewDynamoDbRepository(s)
 		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
+	})
+
+	t.Run("ng:Query returns two items", func(t *testing.T) {
+		caseUserId := "abc123"
+		caseTableName := "disable"
+		caseInput := &dynamodb.QueryInput{
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":userid": {
+					S: aws.String(caseUserId),
+				},
+			},
+			KeyConditionExpression: aws.String("UserId = :userid"),
+			TableName:              aws.String(caseTableName),
+		}
+		caseItem := &dynamodb.QueryOutput{
+			Items: []map[string]*dynamodb.AttributeValue{
+				{
+					"item1": {
+						S: aws.String("dummy"),
+					},
+				},
+				{
+					"item2": {
+						S: aws.String("dummy"),
+					},
+				},
+			},
+		}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		config.SetConfig(c)
+
+		s := NewMockDynamoDbWrapper(ctrl)
+		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
+
+		repo := NewDynamoDbRepository(s)
+		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
+		assert.Nil(t, got)
+		assert.Error(t, err)
 	})
 
 	t.Run("ng:UnmarshalMap", func(t *testing.T) {
 		caseErr := errors.New("dummy error")
-		caseItem := &dynamodb.GetItemOutput{}
+		caseItem := &dynamodb.QueryOutput{
+			Items: []map[string]*dynamodb.AttributeValue{
+				{
+					"dummy": {
+						S: aws.String("dummy"),
+					},
+				},
+			},
+		}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -65,8 +142,8 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().GetItem(gomock.Any()).Return(caseItem, nil)
-		s.EXPECT().UnmarshalMap(gomock.Eq(caseItem.Item), gomock.Any()).Return(caseErr)
+		s.EXPECT().Query(gomock.Any()).Return(caseItem, nil)
+		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
 
 		repo := NewDynamoDbRepository(s)
 		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
@@ -74,19 +151,60 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		assert.Equal(t, caseErr, err)
 	})
 
-	t.Run("ok", func(t *testing.T) {
+	t.Run("ok:Query returns 0 item", func(t *testing.T) {
 		caseUserId := "abc123"
 		caseTableName := "disable"
-		caseInput := &dynamodb.GetItemInput{
-			Key: map[string]*dynamodb.AttributeValue{
-				"UserId": {
+		caseInput := &dynamodb.QueryInput{
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":userid": {
 					S: aws.String(caseUserId),
 				},
 			},
-			TableName: aws.String(caseTableName),
+			KeyConditionExpression: aws.String("UserId = :userid"),
+			TableName:              aws.String(caseTableName),
 		}
-		caseItem := &dynamodb.GetItemOutput{}
-		caseEvent := &enterpriserule.TimerEvent{
+		caseItem := &dynamodb.QueryOutput{
+			Items: []map[string]*dynamodb.AttributeValue{},
+		}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		config.SetConfig(c)
+
+		s := NewMockDynamoDbWrapper(ctrl)
+		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
+
+		repo := NewDynamoDbRepository(s)
+		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
+		assert.Nil(t, got)
+		assert.NoError(t, err)
+	})
+
+	t.Run("ok: Query returns one item", func(t *testing.T) {
+		caseUserId := "abc123"
+		caseTableName := "disable"
+		caseInput := &dynamodb.QueryInput{
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":userid": {
+					S: aws.String(caseUserId),
+				},
+			},
+			KeyConditionExpression: aws.String("UserId = :userid"),
+			TableName:              aws.String(caseTableName),
+		}
+		caseItem := &dynamodb.QueryOutput{
+			Items: []map[string]*dynamodb.AttributeValue{
+				{
+					"dummy": {
+						S: aws.String("dummy"),
+					},
+				},
+			},
+		}
+		caseDbItem := &TimerEventDbItem{
 			UserId: caseUserId,
 		}
 
@@ -98,17 +216,17 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().GetItem(gomock.Eq(caseInput)).Return(caseItem, nil)
-		s.EXPECT().UnmarshalMap(gomock.Eq(caseItem.Item), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
-			event := out.(*enterpriserule.TimerEvent)
-			event.UserId = caseEvent.UserId
+		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
+		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
+			events := out.([]*TimerEventDbItem)
+			events[0] = caseDbItem
 			return nil
 		})
 
 		repo := NewDynamoDbRepository(s)
 		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
 		assert.NoError(t, err)
-		assert.EqualValues(t, caseEvent, got)
+		assert.Equal(t, caseDbItem.TimerEvent(), got)
 	})
 }
 
@@ -190,13 +308,17 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 				{"dummy": {S: aws.String("dummy")}},
 			},
 		}
-		caseEvent := []*enterpriserule.TimerEvent{
+		caseDbItems := []*TimerEventDbItem{
 			{
 				UserId: "abc1",
 			},
 			{
 				UserId: "abc2",
 			},
+		}
+		caseEvents := []*enterpriserule.TimerEvent{
+			caseDbItems[0].TimerEvent(),
+			caseDbItems[1].TimerEvent(),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -209,38 +331,38 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
-			events := out.([]*enterpriserule.TimerEvent)
-			events[0] = caseEvent[0]
-			events[1] = caseEvent[1]
+			events := out.([]*TimerEventDbItem)
+			events[0] = caseDbItems[0]
+			events[1] = caseDbItems[1]
 			return nil
 		})
 
 		repo := NewDynamoDbRepository(s)
 		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
 		assert.NoError(t, err)
-		assert.EqualValues(t, caseEvent, got)
+		assert.EqualValues(t, caseEvents, got)
 	})
 }
 
 func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 	t.Run("ng:MarshalMap", func(t *testing.T) {
-		caseEvent := &enterpriserule.TimerEvent{}
+		caseItem := &TimerEventDbItem{}
 		caseErr := errors.New("dummy error")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().MarshalMap(gomock.Eq(caseEvent)).Return(nil, caseErr)
+		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(nil, caseErr)
 
 		repo := NewDynamoDbRepository(s)
-		got, err := repo.SaveTimerEvent(context.TODO(), caseEvent)
+		got, err := repo.SaveTimerEvent(context.TODO(), caseItem.TimerEvent())
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
 
 	t.Run("ng:PutItem", func(t *testing.T) {
-		caseEvent := &enterpriserule.TimerEvent{}
+		caseItem := &TimerEventDbItem{}
 		caseTableName := "disable"
 		caseErr := errors.New("dummy error")
 		caseInput := &dynamodb.PutItemInput{
@@ -260,17 +382,17 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().MarshalMap(gomock.Eq(caseEvent)).Return(caseInput.Item, nil)
+		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(caseInput.Item, nil)
 		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, caseErr)
 
 		repo := NewDynamoDbRepository(s)
-		got, err := repo.SaveTimerEvent(context.TODO(), caseEvent)
+		got, err := repo.SaveTimerEvent(context.TODO(), caseItem.TimerEvent())
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		caseEvent := &enterpriserule.TimerEvent{}
+		caseItem := &TimerEventDbItem{}
 		caseTableName := "disable"
 		caseInput := &dynamodb.PutItemInput{
 			Item: map[string]*dynamodb.AttributeValue{
@@ -289,12 +411,12 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().MarshalMap(gomock.Eq(caseEvent)).Return(caseInput.Item, nil)
+		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(caseInput.Item, nil)
 		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, nil)
 
 		repo := NewDynamoDbRepository(s)
-		got, err := repo.SaveTimerEvent(context.TODO(), caseEvent)
+		got, err := repo.SaveTimerEvent(context.TODO(), caseItem.TimerEvent())
 		assert.NoError(t, err)
-		assert.EqualValues(t, caseEvent, got)
+		assert.EqualValues(t, caseItem.TimerEvent(), got)
 	})
 }

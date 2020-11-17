@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -62,6 +63,31 @@ type DynamoDbRepository struct {
 	wrp DynamoDbWrapper
 }
 
+// DAO for repository
+type TimerEventDbItem struct {
+	UserId           string `dynamodbav:"UserId"`
+	NotificationTime int64  `dynamodbav:"NotificationTime"`
+	IntervalMin      int    `dynamodbav:"IntervalMin"`
+}
+
+func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
+	t := &TimerEventDbItem{
+		UserId:           event.UserId,
+		NotificationTime: event.NotificationTime.Unix(),
+		IntervalMin:      event.IntervalMin,
+	}
+	return t
+}
+
+func (t *TimerEventDbItem) TimerEvent() *enterpriserule.TimerEvent {
+	e := &enterpriserule.TimerEvent{
+		UserId:      t.UserId,
+		IntervalMin: t.IntervalMin,
+	}
+	e.NotificationTime = time.Unix(t.NotificationTime, 0)
+	return e
+}
+
 // Set svc to null. In case unit test, set mock interface.
 func NewDynamoDbRepository(wrp DynamoDbWrapper) updatetimerevent.Repository {
 	if wrp == nil {
@@ -76,25 +102,37 @@ func NewDynamoDbRepository(wrp DynamoDbWrapper) updatetimerevent.Repository {
 
 // Find timer event by user id.
 func (r *DynamoDbRepository) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
-	input := &dynamodb.GetItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"UserId": {
+	input := &dynamodb.QueryInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":userid": {
 				S: aws.String(userId),
 			},
 		},
-		TableName: aws.String(config.Get("DYNAMODB_TABLE", "")),
+		KeyConditionExpression: aws.String("UserId = :userid"),
+		TableName:              aws.String(config.Get("DYNAMODB_TABLE", "")),
 	}
-	result, err := r.wrp.GetItem(input)
+	result, err := r.wrp.Query(input)
 	if err != nil {
 		return
 	}
 
-	event = &enterpriserule.TimerEvent{}
-	err = r.wrp.UnmarshalMap(result.Item, event)
+	itemLen := len(result.Items)
+	if itemLen == 0 {
+		event = nil
+		return
+	} else if itemLen > 1 {
+		event = nil
+		err = fmt.Errorf("item should be one, but found two, user_id=%v", userId)
+		return
+	}
+
+	events := make([]*TimerEventDbItem, len(result.Items))
+	err = r.wrp.UnmarshalListOfMaps(result.Items, events)
 	if err != nil {
 		event = nil
 		return
 	}
+	event = events[0].TimerEvent()
 	return
 }
 
@@ -117,11 +155,16 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 		return
 	}
 
-	events = make([]*enterpriserule.TimerEvent, len(result.Items))
-	err = r.wrp.UnmarshalListOfMaps(result.Items, events)
+	items := make([]*TimerEventDbItem, len(result.Items))
+	err = r.wrp.UnmarshalListOfMaps(result.Items, items)
 	if err != nil {
 		events = nil
 		return
+	}
+
+	events = make([]*enterpriserule.TimerEvent, len(result.Items))
+	for i, v := range items {
+		events[i] = v.TimerEvent()
 	}
 	return
 }
@@ -129,7 +172,8 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 // Save TimerEvent to DB.
 // Return error and saved event successfully.
 func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
-	item, err := r.wrp.MarshalMap(event)
+	dbItem := NewTimerEventDbItem(event)
+	item, err := r.wrp.MarshalMap(dbItem)
 	if err != nil {
 		return
 	}
