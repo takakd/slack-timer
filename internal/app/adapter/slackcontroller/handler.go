@@ -156,8 +156,6 @@ func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 		usecase:      usecase,
 	}
 
-	log.Debug(req)
-
 	return req, nil
 }
 
@@ -240,14 +238,12 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 	}
 
 	resp := h.Handler(ctx)
-	log.Debug(resp)
 	if resp == nil {
 		return nil, errors.New("no response")
 	}
 
 	var respBody string
 	if typeutil.IsStruct(resp.Body) {
-		log.Debug("is struct")
 		body, err := json.Marshal(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create response: %w", err)
@@ -256,7 +252,6 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 	} else {
 		respBody = fmt.Sprintf("%v", resp.Body)
 	}
-	log.Debug("respBody", respBody)
 
 	output := LambdaOutput{
 		IsBase64Encoded: resp.IsBase64Encoded,
