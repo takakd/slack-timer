@@ -218,8 +218,9 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
-			events := out.([]*TimerEventDbItem)
-			events[0] = caseDbItem
+			events := out.(*[]TimerEventDbItem)
+			*events = make([]TimerEventDbItem, 1)
+			(*events)[0] = *caseDbItem
 			return nil
 		})
 
@@ -331,9 +332,10 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
-			events := out.([]*TimerEventDbItem)
-			events[0] = caseDbItems[0]
-			events[1] = caseDbItems[1]
+			events := out.(*[]TimerEventDbItem)
+			*events = make([]TimerEventDbItem, 2)
+			(*events)[0] = *caseDbItems[0]
+			(*events)[1] = *caseDbItems[1]
 			return nil
 		})
 

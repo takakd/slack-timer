@@ -156,7 +156,7 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 	}
 
 	var items []TimerEventDbItem
-	err = r.wrp.UnmarshalListOfMaps(result.Items, items)
+	err = r.wrp.UnmarshalListOfMaps(result.Items, &items)
 	if err != nil {
 		events = nil
 		return
