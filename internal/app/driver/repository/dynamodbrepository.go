@@ -126,8 +126,8 @@ func (r *DynamoDbRepository) FindTimerEvent(ctx context.Context, userId string) 
 		return
 	}
 
-	events := make([]*TimerEventDbItem, len(result.Items))
-	err = r.wrp.UnmarshalListOfMaps(result.Items, events)
+	var events []TimerEventDbItem
+	err = r.wrp.UnmarshalListOfMaps(result.Items, &events)
 	if err != nil {
 		event = nil
 		return
@@ -155,7 +155,7 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 		return
 	}
 
-	items := make([]*TimerEventDbItem, len(result.Items))
+	var items []TimerEventDbItem
 	err = r.wrp.UnmarshalListOfMaps(result.Items, items)
 	if err != nil {
 		events = nil
