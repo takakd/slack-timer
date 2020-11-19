@@ -10,7 +10,7 @@ func TestMakeTestMessageWithGotWant(t *testing.T) {
 	assert.Equal(t, "got: Hi, want: Hello", s)
 }
 
-func TestIsTestCallPanic(t *testing.T) {
+func TestDoesTestCallPanic(t *testing.T) {
 	isCalled := DoesTestCallPanic(func() {
 		var i interface{}
 		if i == nil {

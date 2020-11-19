@@ -151,7 +151,7 @@ func (r *MongoDbRepository) FindTimerEventByTime(ctx context.Context, from, to t
 // Save TimerEvent to DB.
 //
 // Return error and the slice of TimerEvent saved successfully.
-func (r *MongoDbRepository) SaveTimerEvent(ctx context.Context, events []*enterpriserule.TimerEvent) (saved []*enterpriserule.TimerEvent, err error) {
+func (r *MongoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	db, err := getMongoDb(ctx, config.Get("MONGODB_URI", ""))
 	if err != nil {
 		return nil, err
@@ -162,16 +162,14 @@ func (r *MongoDbRepository) SaveTimerEvent(ctx context.Context, events []*enterp
 
 	collection := getMongoCollection(db, config.Get("MONGODB_COLLECTION", ""))
 
-	saved = make([]*enterpriserule.TimerEvent, 0, len(events))
 	var filter bson.M
 	opts := options.Update().SetUpsert(true)
-	for _, event := range events {
-		filter = bson.M{"user_id": event.UserId}
-		value := bson.D{{"$set", event}}
-		_, err = collection.UpdateOne(ctx, filter, value, opts)
-		if err == nil {
-			saved = append(saved, event)
-		}
+
+	filter = bson.M{"user_id": event.UserId}
+	value := bson.D{{"$set", event}}
+	_, err = collection.UpdateOne(ctx, filter, value, opts)
+	if err == nil {
+		saved = event
 	}
 	return
 }

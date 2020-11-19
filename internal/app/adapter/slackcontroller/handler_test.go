@@ -1,7 +1,6 @@
 package slackcontroller
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,145 +9,169 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
-	"net/http/httptest"
 	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"strings"
 	"testing"
 )
 
-func TestNewRequestHandler(t *testing.T) {
+func TestEventCallbackData_isVerificationEvent(t *testing.T) {
 	cases := []struct {
-		name    string
-		text    string
-		subType string
+		name         string
+		dataType     string
+		verification bool
 	}{
-		{"set", "set 1", CmdSet},
-		{"nil", "invalid", ""},
+		{"ok", "url_verification", true},
+		{"ng", "", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			data := EventCallbackData{
-				MessageEvent: MessageEvent{
-					Type: "message",
-					User: "test user",
-					Text: c.text,
-				},
+			d := &EventCallbackData{
+				Type: c.dataType,
 			}
-			body, err := json.Marshal(data)
-			require.NoError(t, err)
-			httpReq := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
-			httpReq.Header.Set("Content-Type", "application/json")
-
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			m := di.NewMockDI(ctrl)
-			if c.name == "nil" {
-				m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).MinTimes(0)
-			} else {
-				m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(&updatetimerevent.Interactor{})
-			}
-			di.SetDi(m)
-
-			req, err := NewRequestHandler(httpReq)
-			if c.subType != "" {
-				assert.NoError(t, err)
-				assert.NotNil(t, req)
-			}
-
-			if c.subType == CmdSet {
-				h, match := req.(*SetRequestHandler)
-				assert.True(t, match)
-				assert.Equal(t, h.messageEvent.Text, c.text)
-			} else {
-				assert.Nil(t, req)
-			}
+			assert.Equal(t, d.isVerificationEvent(), c.verification)
 		})
 	}
 }
 
-func TestMakeErrorCallbackResponseBody(t *testing.T) {
-	t.Run("ok", func(t *testing.T) {
-		msg := "test"
-		err := errors.New("test")
-		want := `{"message":"test","error":"test"}`
+func TestNewRequestHandler(t *testing.T) {
+	t.Run("ok:verify", func(t *testing.T) {
+		caseData := &EventCallbackData{
+			Type: "url_verification",
+		}
 
-		gotB, gotErr := makeErrorCallbackResponseBody(msg, err)
-		assert.NoError(t, gotErr)
-		assert.Equal(t, []byte(want), gotB)
-	})
-}
-
-func TestHandler(t *testing.T) {
-	t.Run("wrong method", func(t *testing.T) {
-		body := strings.NewReader("")
-		httpReq := httptest.NewRequest(http.MethodGet, "/", body)
-		httpReq.Header.Set("Content-Type", "application/json")
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Times(0)
-		di.SetDi(m)
-
-		w := httptest.NewRecorder()
-
-		Handler(context.TODO(), w, httpReq)
-
-		assert.Equal(t, 404, w.Result().StatusCode)
+		h, err := NewRequestHandler(caseData)
+		assert.NoError(t, err)
+		_, ok := h.(*UrlVerificationRequestHandler)
+		assert.True(t, ok)
 	})
 
-	t.Run("invalid parameter", func(t *testing.T) {
-		want := fmt.Sprintf(`{"message":"parameter error","error":"%s"}`, ErrInvalidRequest.Error())
+	t.Run("not support event", func(t *testing.T) {
+		caseData := &EventCallbackData{
+			Type: "",
+			MessageEvent: MessageEvent{
+				Type: "test",
+			},
+		}
+		caseErr := fmt.Errorf("invalid event type, type=%s", caseData.MessageEvent.Type)
 
-		body := strings.NewReader("")
-		httpReq := httptest.NewRequest(http.MethodPost, "/", body)
-		httpReq.Header.Set("Content-Type", "application/json")
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Times(0)
-		di.SetDi(m)
-
-		w := httptest.NewRecorder()
-
-		Handler(context.TODO(), w, httpReq)
-
-		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
-		assert.Equal(t, want, w.Body.String())
-
+		h, err := NewRequestHandler(caseData)
+		assert.Nil(t, h)
+		assert.Equal(t, caseErr, err)
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		ctx := context.TODO()
-		userId := "abc"
-
-		data := EventCallbackData{
+		caseData := &EventCallbackData{
 			MessageEvent: MessageEvent{
 				Type: "message",
-				User: userId,
 				Text: "set 10",
 			},
 		}
-		body, err := json.Marshal(data)
-		require.NoError(t, err)
-		httpReq := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
-		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		caseUsecase := &updatetimerevent.Interactor{}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mu := updatetimerevent.NewMockUsecase(ctrl)
-		mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(userId), gomock.Eq(10), gomock.Any())
 		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(mu)
+		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(caseUsecase)
 		di.SetDi(m)
 
-		w := httptest.NewRecorder()
+		h, err := NewRequestHandler(caseData)
+		assert.NoError(t, err)
+		assert.Equal(t, &SetRequestHandler{
+			messageEvent: &caseData.MessageEvent,
+			usecase:      caseUsecase,
+		}, h)
+	})
 
-		Handler(ctx, w, httpReq)
+	cases := []struct {
+		name      string
+		eventType string
+		text      string
+		err       error
+	}{
+		{"invalid format", "", "test", fmt.Errorf("invalid event type, type=%s", "")},
+		{"invalid type", "message", "invalid 1", fmt.Errorf("invalid sub type, subtype=%s", "invalid")},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			caseData := &EventCallbackData{
+				MessageEvent: MessageEvent{
+					Type: c.eventType,
+					Text: c.text,
+				},
+			}
 
-		t.Log(w.Body.String())
-		assert.Equal(t, http.StatusOK, w.Result().StatusCode)
+			h, err := NewRequestHandler(caseData)
+			assert.Nil(t, h)
+			assert.Equal(t, c.err, err)
+		})
+	}
+}
+
+func TestMakeErrorHandleResponse(t *testing.T) {
+	cases := []struct {
+		name    string
+		message string
+		err     error
+	}{
+		{"no error", "test", nil},
+		{"error", "test", errors.New("test err")},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			wantBody := &HandlerResponseErrorBody{
+				Message: c.message,
+			}
+			if c.err != nil {
+				wantBody.Detail = c.err.Error()
+			}
+			want := &HandlerResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       wantBody,
+			}
+
+			got := makeErrorHandlerResponse(c.message, c.err)
+			assert.Equal(t, want, got)
+		})
+	}
+}
+
+func TestHandler(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		caseJson, err := json.Marshal(EventCallbackData{})
+		require.NoError(t, err)
+
+		caseInput := LambdaInput{
+			Body: string(caseJson),
+		}
+		want := makeErrorHandlerResponse("parameter error", ErrInvalidParameters)
+		got, err := LambdaHandleRequest(context.TODO(), caseInput)
+		assert.NoError(t, err)
+		assert.Equal(t, want, got)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		caseData := &EventCallbackData{
+			Type:      "url_verification",
+			Challenge: "test challenge",
+		}
+		caseJson, err := json.Marshal(caseData)
+		require.NoError(t, err)
+
+		caseInput := LambdaInput{
+			Body: string(caseJson),
+		}
+		ctx := context.TODO()
+
+		body, _ := json.Marshal(UrlVerificationResponseBody{
+			caseData.Challenge,
+		})
+
+		want := LambdaOutput{
+			StatusCode: http.StatusOK,
+			Body:       string(body),
+		}
+		got, err := LambdaHandleRequest(ctx, caseInput)
+		assert.NoError(t, err)
+		assert.Equal(t, want, got)
 	})
 }

@@ -15,7 +15,7 @@ func (d *Development) Get(name string) interface{} {
 	if name == "UpdateTimerEvent" {
 		c = updatetimerevent.NewUsecase()
 	} else if name == "Repository" {
-		c = repository.NewPostgresRepository()
+		c = repository.NewDynamoDbRepository(nil)
 	} else if name == "UpdateTimerEventOutputPort" {
 
 	}

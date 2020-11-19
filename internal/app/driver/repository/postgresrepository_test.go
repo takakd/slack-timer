@@ -45,19 +45,14 @@ func cleanupPostgresTestDb(t *testing.T) {
 	execTestPostgresSql(t, "testdata/cleanup.sql")
 }
 
-func makePostgresTestEvents() []*enterpriserule.TimerEvent {
-	return []*enterpriserule.TimerEvent{
-		{
-			"id1", time.Now().UTC(), 0,
-		},
-		{
-			"id2", time.Now().UTC(), 0,
-		},
+func makePostgresTestEvent() *enterpriserule.TimerEvent {
+	return &enterpriserule.TimerEvent{
+		"id1", time.Now().UTC(), 0,
 	}
 }
 
-func cleanupPostgresTestEvents(t *testing.T, events []*enterpriserule.TimerEvent) {
-	if len(events) == 0 {
+func cleanupPostgresTestEvent(t *testing.T, event *enterpriserule.TimerEvent) {
+	if event == nil {
 		return
 	}
 
@@ -69,10 +64,8 @@ func cleanupPostgresTestEvents(t *testing.T, events []*enterpriserule.TimerEvent
 
 	defer db.Close()
 
-	for _, event := range events {
-		_, err := db.NamedQueryContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE user_id=:user_id", tableName), event)
-		assert.NoError(t, err)
-	}
+	_, err = db.NamedQueryContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE user_id=:user_id", tableName), event)
+	assert.NoError(t, err)
 }
 
 func doesSkipPostgresRepositoryTest(t *testing.T) bool {
@@ -162,7 +155,7 @@ func TestPostgresRepository_FindTimerEvent(t *testing.T) {
 	})
 
 	t.Run("ng:not found", func(t *testing.T) {
-		testEvents := makePostgresTestEvents()
+		testEvent := makePostgresTestEvent()
 		dsn, tableName := getTestPostgresEnv(t)
 
 		ctrl := gomock.NewController(t)
@@ -180,7 +173,7 @@ func TestPostgresRepository_FindTimerEvent(t *testing.T) {
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		_, err := repo.SaveTimerEvent(context.TODO(), testEvents)
+		_, err := repo.SaveTimerEvent(context.TODO(), testEvent)
 		assert.NoError(t, err)
 
 		ctx := context.TODO()
@@ -189,12 +182,12 @@ func TestPostgresRepository_FindTimerEvent(t *testing.T) {
 		assert.Nil(t, event)
 		assert.NoError(t, err)
 
-		cleanupPostgresTestEvents(t, testEvents)
+		cleanupPostgresTestEvent(t, testEvent)
 	})
 
 	t.Run("ok", func(t *testing.T) {
 		ctx := context.TODO()
-		testEvents := makePostgresTestEvents()
+		testEvent := makePostgresTestEvent()
 		dsn, tableName := getTestPostgresEnv(t)
 
 		ctrl := gomock.NewController(t)
@@ -206,23 +199,19 @@ func TestPostgresRepository_FindTimerEvent(t *testing.T) {
 		call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn)
 		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName).After(call)
 		// For FindTimerEvent
-		for i := 0; i < len(testEvents); i++ {
-			call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn).After(call)
-			call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName).After(call)
-		}
+		call = mock.EXPECT().Get(gomock.Eq("DATABASE_URL"), gomock.Eq("")).Return(dsn).After(call)
+		call = mock.EXPECT().Get(gomock.Eq("POSTGRES_TBL_TIMEREVENT"), gomock.Eq("")).Return(tableName).After(call)
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		_, err := repo.SaveTimerEvent(ctx, testEvents)
+		_, err := repo.SaveTimerEvent(ctx, testEvent)
 		assert.NoError(t, err)
 
-		for _, event := range testEvents {
-			got, err := repo.FindTimerEvent(ctx, event.UserId)
-			assert.NoError(t, err)
-			assert.Equal(t, event, got)
-		}
+		got, err := repo.FindTimerEvent(ctx, testEvent.UserId)
+		assert.NoError(t, err)
+		assert.Equal(t, testEvent, got)
 
-		cleanupPostgresTestEvents(t, testEvents)
+		cleanupPostgresTestEvent(t, testEvent)
 	})
 }
 
@@ -273,8 +262,10 @@ func TestPostgresRepository_FindTimerEventByTime(t *testing.T) {
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		_, err := repo.SaveTimerEvent(ctx, events)
-		require.NoError(t, err)
+		for _, event := range events {
+			_, err := repo.SaveTimerEvent(ctx, event)
+			require.NoError(t, err)
+		}
 
 		got, err := repo.FindTimerEventByTime(ctx, from, to)
 		assert.NoError(t, err)
@@ -282,7 +273,9 @@ func TestPostgresRepository_FindTimerEventByTime(t *testing.T) {
 		wants := events[:2]
 		assert.Equal(t, wants, got)
 
-		cleanupPostgresTestEvents(t, events)
+		for _, event := range events {
+			cleanupPostgresTestEvent(t, event)
+		}
 	})
 }
 
@@ -298,7 +291,7 @@ func TestPostgresRepository_SaveTimerEvent(t *testing.T) {
 		}()
 
 		ctx := context.TODO()
-		testEvents := makePostgresTestEvents()
+		testEvent := makePostgresTestEvent()
 		dsn, tableName := getTestPostgresEnv(t)
 
 		ctrl := gomock.NewController(t)
@@ -312,10 +305,10 @@ func TestPostgresRepository_SaveTimerEvent(t *testing.T) {
 		config.SetConfig(mock)
 
 		repo := NewPostgresRepository()
-		savedEvents, err := repo.SaveTimerEvent(ctx, testEvents)
+		savedEvent, err := repo.SaveTimerEvent(ctx, testEvent)
 		assert.NoError(t, err)
-		assert.Equal(t, testEvents, savedEvents)
+		assert.Equal(t, testEvent, savedEvent)
 
-		cleanupPostgresTestEvents(t, testEvents)
+		cleanupPostgresTestEvent(t, testEvent)
 	})
 }

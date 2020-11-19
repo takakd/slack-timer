@@ -1,8 +1,5 @@
 // Package slackcontroller provides the slack Event API callback handler.
-// 		Routes
-//			POST /api/{ver}/slack-callback
-// Library exists: https://github.com/slack-go/slack
-// Ref.: https://api.slack.com/events-api#the-events-api__receiving-events
+// Ref: https://api.slack.com/events-api#the-events-api__receiving-events
 package slackcontroller
 
 import (
@@ -11,11 +8,18 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/driver/di/container"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/httputil"
+	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/config/driver"
+	"slacktimer/internal/pkg/errorutil"
+	"slacktimer/internal/pkg/fileutil"
 	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/pkg/typeutil"
 )
 
 // Errors
@@ -31,20 +35,54 @@ const (
 	CmdSet = "set"
 )
 
-// URL Verification Event callback data
-// Ref. https://api.slack.com/events/url_verification
-type UrlVerificationEventCallbackData struct {
-	Token     string `json:"token"`
-	Challenge string `json:"challenge"`
-	Type      string `json:"type"`
+// Lambda handler input data
+type LambdaInput struct {
+	Resource                        string                `json:"resource,omitempty"`
+	Path                            string                `json:"path,omitempty"`
+	HttpMethod                      string                `json:"httpMethod,omitempty"`
+	Headers                         map[string]string     `json:"headers,omitempty"`
+	MultiValueHeaders               map[string][]string   `json:"multiValueHeaders,omitempty"`
+	QueryStringParameters           map[string]string     `json:"queryStringParameters,omitempty"`
+	MultiValueQueryStringParameters []map[string][]string `json:"multiValueQueryStringParameters,omitempty"`
+	PathParameters                  map[string]string     `json:"pathParameters,omitempty"`
+	StageVaribales                  map[string]string     `json:"stageVariables,omitempty"`
+	RequestContext                  struct {
+		AccountId  string `json:"accountId,omitempty"`
+		ResourceId string `json:"resourceId,omitempty"`
+		Stage      string `json:"stage,omitempty"`
+		RequestId  string `json:"requestId,omitempty"`
+		Identity   struct {
+			CognitoIdentityPoolId         string `json:"cognitoIdentityPoolId,omitempty"`
+			AccountId                     string `json:"accountId,omitempty"`
+			CognitoIdentityId             string `json:"cognitoIdentityId,omitempty"`
+			Caller                        string `json:"caller,omitempty"`
+			ApiKey                        string `json:"apiKey,omitempty"`
+			SourceIp                      string `json:"sourceIp,omitempty"`
+			CognitoAuthenticationType     string `json:"cognitoAuthenticationType,omitempty"`
+			CognitoAuthenticationProvider string `json:"cognitoAuthenticationProvider,omitempty"`
+			UserArn                       string `json:"userArn,omitempty"`
+			UserAgent                     string `json:"userAgent,omitempty"`
+			User                          string `json:"user,omitempty"`
+		} `json:"identity,omitempty"`
+		ResourcePath string `json:"resourcePath,omitempty"`
+		HttpMethod   string `json:"httpMethod,omitempty"`
+		ApiId        string `json:"apiId,omitempty"`
+	} `json:"requestContext,omitempty"`
+	Body            string `json:"body,omitempty"`
+	IsBase64Encoded bool   `json:"isBase64Encoded,omitempty"`
 }
 
-func (d *UrlVerificationEventCallbackData) doesMatchType() bool {
-	return d.Type == "url_verification"
+// Lambda handler output data
+// Ref: Output format of a Lambda function for proxy integration
+// 	https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
+type LambdaOutput struct {
+	IsBase64Encoded bool              `json:"isBase64Encoded"`
+	StatusCode      int               `json:"statusCode"`
+	Headers         map[string]string `json:"headers"`
+	Body            string            `json:"body"`
 }
 
-// JSON to be sent
-// Defined what app needs
+// Slack EventAPI Notification data
 type EventCallbackData struct {
 	Token  string `json:"token"`
 	TeamId string `json:"team_id"`
@@ -52,6 +90,14 @@ type EventCallbackData struct {
 	MessageEvent MessageEvent `json:"event"`
 	Type         string       `json:"type"`
 	EventTime    int          `json:"event_time"`
+
+	// This field is only included in URL Verification Event.
+	// Ref: https://api.slack.com/events/url_verification
+	Challenge string `json:"challenge"`
+}
+
+func (e *EventCallbackData) isVerificationEvent() bool {
+	return e.Type == "url_verification"
 }
 
 type MessageEvent struct {
@@ -62,37 +108,30 @@ type MessageEvent struct {
 	Text    string `json:"text"`
 }
 
-//
-func NewRequestHandler(r *http.Request) (RequestHandler, error) {
-	body, err := httputil.GetRequestBody(r)
-	if err != nil {
-		return nil, err
-	}
+type HandlerResponse struct {
+	StatusCode      int
+	Body            interface{}
+	IsBase64Encoded bool
+}
 
-	log.Info(body)
+// Set this to HandlerResponse.Body if errors happened.
+type HandlerResponseErrorBody struct {
+	Message string      `json:"message"`
+	Detail  interface{} `json:"detail"`
+}
 
+// Create request struct corresponding to input.
+func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 	// URL Verification callback
-	urlVerification := UrlVerificationEventCallbackData{}
-	err = json.Unmarshal(body, &urlVerification)
-	if err != nil {
-		return nil, err
-	}
-	if urlVerification.doesMatchType() {
+	if data.isVerificationEvent() {
 		log.Info("url verification event")
 		return &UrlVerificationRequestHandler{
-			Data: &urlVerification,
+			Data: data,
 		}, nil
 	}
 
 	// Normal Event callback
-	data := EventCallbackData{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	var supportEvent bool
-	supportEvent = supportEvent || data.MessageEvent.Type == "message"
+	supportEvent := data.MessageEvent.Type == "message"
 	if !supportEvent {
 		return nil, fmt.Errorf("invalid event type, type=%s", data.MessageEvent.Type)
 	}
@@ -101,12 +140,12 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 	re := regexp.MustCompile(`^([^\s]*)\s*`)
 	m := re.FindStringSubmatch(data.MessageEvent.Text)
 	if m == nil {
-		return nil, fmt.Errorf("invalid Text format")
+		return nil, fmt.Errorf("invalid Text format, text=%s", data.MessageEvent.Text)
 	}
 
 	subType := m[1]
 	if subType != CmdSet {
-		return nil, fmt.Errorf("invalid sub type")
+		return nil, fmt.Errorf("invalid sub type, subtype=%s", subType)
 	}
 
 	usecase := di.Get("UpdateTimerEvent").(updatetimerevent.Usecase)
@@ -122,59 +161,105 @@ func NewRequestHandler(r *http.Request) (RequestHandler, error) {
 
 // Provides handlers to each request.
 type RequestHandler interface {
-	Handler(ctx context.Context, w http.ResponseWriter)
+	Handler(ctx context.Context) *HandlerResponse
 }
 
-// Represents this API response.
-type SlackCallbackResponse struct {
-	Message string `json:"message"`
-}
-
-// Represents this API error response.
-// Ref: https://developer.github.com/v3/
-type ErrorSlackCallbackResponse struct {
-	// Error brief.
-	Message string `json:"message"`
-	Error   string `json:"error"`
-}
-
-func makeErrorCallbackResponseBody(message string, err error) ([]byte, error) {
-	resp := ErrorSlackCallbackResponse{
+func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
+	body := &HandlerResponseErrorBody{
 		Message: message,
-		Error:   err.Error(),
 	}
-	body, err := json.Marshal(resp)
 	if err != nil {
-		return nil, err
+		body.Detail = err.Error()
 	}
-	return body, nil
+	return &HandlerResponse{
+		StatusCode: http.StatusInternalServerError,
+		Body:       body,
+	}
 }
 
-func writeErrorCallbackResponse(w http.ResponseWriter, body []byte) {
-	httputil.WriteJsonResponse(w, map[string]string{
-		// Prevent auto retry.
-		// Ref.: https://api.slack.com/events-api#the-events-api__field-guide__error-handling__graceful-retries__turning-retries-off
-		"X-Slack-No-Retry": "1",
-	}, http.StatusBadRequest, body)
-}
-
-// Web server registers this to themselves and call.
-func Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "404 not found", http.StatusNotFound)
-		return
+// Setup config.
+func setConfig() {
+	configType := os.Getenv("APP_CONFIG_TYPE")
+	if configType == "" {
+		configType = "env"
 	}
 
-	h, err := NewRequestHandler(r)
+	log.Info(fmt.Sprintf("set config type=%s", configType))
+
+	if configType == "env" {
+		// Get .env path
+		appDir, err := fileutil.GetAppDir()
+		if err != nil {
+			panic(errorutil.MakePanicMessage("need app directory path."))
+		}
+		names := make([]string, 0)
+		path := filepath.Join(appDir, ".env")
+		if fileutil.FileExists(path) {
+			names = append(names, path)
+		}
+		config.SetConfig(driver.NewEnvConfig(names...))
+	}
+}
+
+// Setup DI container by env.
+func setDi() {
+	env := config.Get("APP_ENV", "dev")
+
+	log.Info(fmt.Sprintf("set di env=%s", env))
+
+	if env == "prod" {
+		di.SetDi(&container.Production{})
+	} else if env == "dev" {
+		di.SetDi(&container.Development{})
+	} else if env == "test" {
+		di.SetDi(&container.Test{})
+	}
+}
+
+// Lambda callback
+// Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
+func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, error) {
+	log.Debug(fmt.Sprintf("handler, input=%v", input))
+
+	setConfig()
+	setDi()
+
+	var body EventCallbackData
+	err := json.Unmarshal([]byte(input.Body), &body)
 	if err != nil {
 		log.Error(err.Error())
-		body, err := makeErrorCallbackResponseBody("parameter error", ErrInvalidRequest)
-		if err != nil {
-			body = []byte("internal error")
-		}
-		writeErrorCallbackResponse(w, body)
-		return
+		return makeErrorHandlerResponse("invalid request", ErrInvalidRequest), nil
 	}
 
-	h.Handler(ctx, w)
+	h, err := NewRequestHandler(&body)
+	if err != nil {
+		log.Error(err.Error())
+		return makeErrorHandlerResponse("parameter error", ErrInvalidParameters), nil
+	}
+
+	resp := h.Handler(ctx)
+	if resp == nil {
+		return nil, errors.New("no response")
+	}
+
+	var respBody string
+	if typeutil.IsStruct(resp.Body) {
+		body, err := json.Marshal(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create response: %w", err)
+		}
+		respBody = string(body)
+	} else {
+		respBody = fmt.Sprintf("%v", resp.Body)
+	}
+
+	output := LambdaOutput{
+		IsBase64Encoded: resp.IsBase64Encoded,
+		StatusCode:      resp.StatusCode,
+		Body:            respBody,
+	}
+
+	log.Debug(fmt.Sprintf("handler, output=%v", output))
+
+	return output, nil
 }

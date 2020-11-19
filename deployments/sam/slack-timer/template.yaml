@@ -1,0 +1,172 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  slack-timer AWS Resources
+
+# Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    MemorySize: 128
+    # Ref: https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+    Tracing: Active
+    Runtime: go1.x
+
+Resources:
+  # API
+  SetTimerApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "set-timer"
+      Description: "Set notification time called by Slack Event API"
+      EndpointConfiguration:
+        Types: [REGIONAL]
+
+  # API - Deployment
+  SetTimerDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SetTimerPost
+    Properties:
+      Description: "Production deployment"
+      RestApiId: !Ref SetTimerApi
+      StageName: "Prod"
+
+  # API - Resource
+  SetTimerParentResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref SetTimerApi
+      ParentId: !GetAtt SetTimerApi.RootResourceId
+      PathPart: callback
+  SetTimerResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref SetTimerApi
+      ParentId: !Ref SetTimerParentResource
+      PathPart: '{proxy+}'
+
+  # API - Resource - Method
+  SetTimerPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        # Ref: Uri section in https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration.html
+        Uri: !Join ["", ["arn:aws:apigateway:", !Ref AWS::Region, ":lambda:path/2015-03-31/functions/", !GetAtt SetTimerFunction.Arn, "/invocations"]]
+#        RequestTemplates:
+#          application/json: "{\"body\":$input.json('$')}"
+#        PassthroughBehavior: WHEN_NO_TEMPLATES
+#        IntegrationResponses:
+#          - StatusCode: 200
+#            SelectionPattern: ""
+#          - StatusCode: 500
+#            SelectionPattern: ".*integration_status:500.*"
+#            ContentHandling: CONVERT_TO_TEXT
+#            ResponseParameters:
+#              # Enclose single quote for using static value. Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters
+#              method.response.header.X-Slack-No-Retry: "'1'"
+#            ResponseTemplates:
+#              application/json: "{\"message\":$input.json('$.message'),\"status\":$input('$.status'),\"detail\":$input('$.detail'),\"detail2\":$input('$')}"
+      MethodResponses:
+        - StatusCode: 200
+        - StatusCode: 500
+          ResponseParameters:
+            method.response.header.X-Slack-No-Retry: true
+      ResourceId: !Ref SetTimerResource
+      RestApiId: !Ref SetTimerApi
+
+  # API - Lambda - Permission
+  SetTimerFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: [SetTimerFunction]
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SetTimerFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join ["", ["arn:aws:execute-api:", !Ref AWS::Region, ":", !Ref AWS::AccountId, ":", !Ref SetTimerApi, "/*/POST/*"]]
+
+  # API - Lambda
+  SetTimerFunction:
+    # Ref: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../../cmd/lambda/settimer
+      Handler: settimer
+      # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+      Policies:
+        - CloudWatchPutMetricPolicy: {}
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
+
+  # CloudWatch - Lambda
+  NotifyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../../cmd/lambda/notify
+      Handler: notify
+      Policies:
+        - CloudWatchPutMetricPolicy: {}
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
+
+  # CloudWatch - Lambda - Permission
+  NotifyFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: [NotifyFunction]
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref NotifyFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt NotifyFunctionRule.Arn
+
+  # CloudWatch - Schedule Rule
+  NotifyFunctionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Run NotifyFunction Lambda
+      Name: regular-execution-notify-function
+      # Run every 1 minute
+      ScheduleExpression: "cron(0/1 * * * ? *)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt NotifyFunction.Arn
+          Id: Id1
+
+  # DynamoDB
+  EventTimerTable:
+    # Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: UserId
+          AttributeType: S
+        - AttributeName: NotificationTime
+          AttributeType: N
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: UserId
+          KeyType: HASH
+        - AttributeName: NotificationTime
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: event
+
+Outputs:
+  # Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  SetTimerAPI:
+    Description: "API Gateway endpoint URL for Prod environment for Slack Event API callback."
+    Value: !Sub "https://${SetTimerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  SetTimerFunction:
+    Description: "SetTimer Function ARN"
+    Value: !GetAtt SetTimerFunction.Arn
+  NotifyFunction:
+    Description: "Notify Function ARN"
+    Value: !GetAtt SetTimerFunction.Arn
+  EventTable:
+    Description: "Event Table ARN"
+    Value: !GetAtt EventTimerTable.Arn

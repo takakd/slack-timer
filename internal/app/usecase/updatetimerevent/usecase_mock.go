@@ -8,6 +8,7 @@ import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+	time "time"
 )
 
 // MockUsecase is a mock of Usecase interface
@@ -34,27 +35,27 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 }
 
 // UpdateNotificationTime mocks base method
-func (m *MockUsecase) UpdateNotificationTime(ctx context.Context, userId string, overWriteOutputPort OutputPort) {
+func (m *MockUsecase) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateNotificationTime", ctx, userId, overWriteOutputPort)
+	m.ctrl.Call(m, "UpdateNotificationTime", ctx, userId, notificationTime, overWriteOutputPort)
 }
 
 // UpdateNotificationTime indicates an expected call of UpdateNotificationTime
-func (mr *MockUsecaseMockRecorder) UpdateNotificationTime(ctx, userId, overWriteOutputPort interface{}) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) UpdateNotificationTime(ctx, userId, notificationTime, overWriteOutputPort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockUsecase)(nil).UpdateNotificationTime), ctx, userId, overWriteOutputPort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockUsecase)(nil).UpdateNotificationTime), ctx, userId, notificationTime, overWriteOutputPort)
 }
 
 // SaveIntervalMin mocks base method
-func (m *MockUsecase) SaveIntervalMin(ctx context.Context, userId string, minutes int, overWriteOutputPort OutputPort) {
+func (m *MockUsecase) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, overWriteOutputPort OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SaveIntervalMin", ctx, userId, minutes, overWriteOutputPort)
+	m.ctrl.Call(m, "SaveIntervalMin", ctx, userId, currentTime, minutes, overWriteOutputPort)
 }
 
 // SaveIntervalMin indicates an expected call of SaveIntervalMin
-func (mr *MockUsecaseMockRecorder) SaveIntervalMin(ctx, userId, minutes, overWriteOutputPort interface{}) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) SaveIntervalMin(ctx, userId, currentTime, minutes, overWriteOutputPort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveIntervalMin", reflect.TypeOf((*MockUsecase)(nil).SaveIntervalMin), ctx, userId, minutes, overWriteOutputPort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveIntervalMin", reflect.TypeOf((*MockUsecase)(nil).SaveIntervalMin), ctx, userId, currentTime, minutes, overWriteOutputPort)
 }
 
 // MockOutputPort is a mock of OutputPort interface
