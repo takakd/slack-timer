@@ -48,7 +48,6 @@ type Interactor struct {
 func NewUsecase() Usecase {
 	return &Interactor{
 		repository: di.Get("Repository").(Repository),
-		//outputPort: di.Get("UpdateTimerEventOutputPort").(OutputPort),
 	}
 }
 

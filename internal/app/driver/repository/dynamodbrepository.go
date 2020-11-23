@@ -88,7 +88,7 @@ func (t *TimerEventDbItem) TimerEvent() *enterpriserule.TimerEvent {
 	return e
 }
 
-// Set svc to null. In case unit test, set mock interface.
+// Set wrp to null. In case unit test, set mock interface.
 func NewDynamoDbRepository(wrp DynamoDbWrapper) updatetimerevent.Repository {
 	if wrp == nil {
 		wrp = &DynamoDbWrapperAdapter{
@@ -187,5 +187,35 @@ func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpri
 	}
 
 	saved = event
+	return
+}
+
+// Find timer event before eventTime.
+func (r *DynamoDbRepository) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
+	input := &dynamodb.QueryInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":eventTime": {
+				S: aws.String(aws.Time(eventTime).String()),
+			},
+		},
+		KeyConditionExpression: aws.String("NotificationTime <= :eventTime"),
+		TableName:              aws.String(config.Get("DYNAMODB_TABLE", "")),
+	}
+	result, err := r.wrp.Query(input)
+	if err != nil {
+		return
+	}
+
+	var items []TimerEventDbItem
+	err = r.wrp.UnmarshalListOfMaps(result.Items, &items)
+	if err != nil {
+		events = nil
+		return
+	}
+
+	events = make([]*enterpriserule.TimerEvent, len(result.Items))
+	for i, v := range items {
+		events[i] = v.TimerEvent()
+	}
 	return
 }

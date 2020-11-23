@@ -1,6 +1,7 @@
 package container
 
 import (
+	"slacktimer/internal/app/driver/queue"
 	"slacktimer/internal/app/driver/repository"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 )
@@ -16,6 +17,8 @@ func (d *Development) Get(name string) interface{} {
 		c = updatetimerevent.NewUsecase()
 	} else if name == "Repository" {
 		c = repository.NewDynamoDbRepository(nil)
+	} else if name == "Queue" {
+		c = queue.NewSQSMessageQueue(nil)
 	} else if name == "UpdateTimerEventOutputPort" {
 
 	}
