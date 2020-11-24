@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/aws/aws-lambda-go/lambda"
-	"slacktimer/internal/app/adapter/enqueuecontroller"
+	"slacktimer/internal/app/driver/lambdahandler"
 )
 
 func main() {
-	lambda.Start(enqueuecontroller.LambdaHandleEvent)
+	lambda.Start(lambdahandler.NotifyLambdaHandler)
 }

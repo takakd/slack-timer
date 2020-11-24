@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/pkg/config"
 	"testing"
 )
 
@@ -36,9 +37,11 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 		caseMessage := &enqueueevent.QueueMessage{
 			"id1",
 		}
+		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
 			MessageBody:    aws.String(""),
 			MessageGroupId: aws.String(messageGroupId),
+			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseMessageOutput := &sqs.SendMessageOutput{
 			MessageId: aws.String("msgid1"),
@@ -46,6 +49,10 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("SQS_URL"), "").Return(caseSQSUrl)
+		config.SetConfig(c)
 
 		w := NewMockSQSWrapper(ctrl)
 		w.EXPECT().SendMessage(caseMessageInput).Return(caseMessageOutput, nil)
@@ -60,14 +67,20 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 		caseMessage := &enqueueevent.QueueMessage{
 			"id1",
 		}
+		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
 			MessageBody:    aws.String(""),
 			MessageGroupId: aws.String(messageGroupId),
+			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseError := errors.New("error")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("SQS_URL"), "").Return(caseSQSUrl)
+		config.SetConfig(c)
 
 		w := NewMockSQSWrapper(ctrl)
 		w.EXPECT().SendMessage(caseMessageInput).Return(nil, caseError)

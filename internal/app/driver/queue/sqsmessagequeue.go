@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/pkg/config"
 )
 
 const (
@@ -42,9 +43,9 @@ func NewSQSMessageQueue(wrp SQSWrapper) enqueueevent.Queue {
 
 func (s *SQSMessageQueue) Enqueue(message *enqueueevent.QueueMessage) (string, error) {
 	r, err := s.wrp.SendMessage(&sqs.SendMessageInput{
-		// TODO: message
-		MessageBody:    aws.String(""),
+		MessageBody:    aws.String(message.UserId),
 		MessageGroupId: aws.String(messageGroupId),
+		QueueUrl:       aws.String(config.Get("SQS_URL", "")),
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to enqueue %w", err)

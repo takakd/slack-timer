@@ -27,3 +27,7 @@ func NewTimerEvent(userId string) (*TimerEvent, error) {
 func (p *TimerEvent) Equal(another *TimerEvent) bool {
 	return reflect.DeepEqual(p, another)
 }
+
+func (p *TimerEvent) IncrementNotificationTime() {
+	p.NotificationTime = p.NotificationTime.Add(time.Duration(p.IntervalMin) * time.Minute)
+}

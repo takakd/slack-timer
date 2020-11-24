@@ -1,14 +1,13 @@
-// Package enqueuecontroller provides that events reached the time enqueue queue.
-package enqueuecontroller
+package lambdahandler
 
 import (
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slacktimer/internal/app/adapter/notifycontroller"
 	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/driver/di/container"
-	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/pkg/config"
 	"slacktimer/internal/pkg/config/driver"
 	"slacktimer/internal/pkg/errorutil"
@@ -17,40 +16,30 @@ import (
 )
 
 // Lambda handler input data
+// Ref: https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
 type LambdaInput struct {
-	Version    string   `json:"version"`
-	Id         string   `json:"id"`
-	DetailType string   `json:"detail-type"`
-	Source     string   `json:"source"`
-	Account    string   `json:"account"`
-	Time       string   `json:"time"`
-	Region     string   `json:"region"`
-	Resources  []string `json:"resources"`
-	Detail     struct {
-		EventCategories  []string `json:"EventCategories"`
-		SourceType       string   `json:"SourceType"`
-		SourceArn        string   `json:"SourceArn"`
-		Date             string   `json:"Date"`
-		Message          string   `json:"Message"`
-		SourceIdentifier string   `json:"SourceIdentifier"`
-	} `json:"detail"`
+	Records []*SqsMessage `json:"records"`
 }
 
-type HandlerResponse struct {
-	Error error
+type SqsMessage struct {
+	MessageId     string            `json:"messageId"`
+	ReceiptHandle string            `json:"receiptHandle"`
+	Body          string            `json:"body":`
+	Attributes    map[string]string `json:"attributes"`
+	// TODO: check schema
+	MessageAttributes map[string]interface{} `json:"messageAttributes"`
+	MD5OfBody         string                 `json:"md5OfBody"`
+	EventSource       string                 `json:"eventSource"`
+	EventSourceArn    string                 `json:"eventSourceARN"`
+	AwsRegion         string                 `json:"awsRegion"`
 }
 
-// Create handler corresponding to input.
-func NewEventHandler() EventHandler {
-	h := &CloudWatchEventHandler{
-		usecase: di.Get("EnqueueNotification").(enqueueevent.Usecase),
+func (s *SqsMessage) HandlerInput() *notifycontroller.HandlerInput {
+	return &notifycontroller.HandlerInput{
+		UserId: s.Body,
+		// TODO: if it needs.
+		Message: "",
 	}
-	return h
-}
-
-// Provides handlers to event.
-type EventHandler interface {
-	Handler(ctx context.Context) *HandlerResponse
 }
 
 // Setup config.
@@ -94,13 +83,24 @@ func setDi() {
 
 // Lambda callback
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func LambdaHandleEvent(ctx context.Context, input LambdaInput) error {
+func NotifyLambdaHandler(ctx context.Context, input LambdaInput) error {
 	log.Debug(fmt.Sprintf("handler, input=%v", input))
 
 	setConfig()
 	setDi()
 
-	h := NewEventHandler()
-	resp := h.Handler(ctx)
-	return resp.Error
+	count := 0
+	for _, m := range input.Records {
+		h := notifycontroller.NewHandler()
+		resp := h.Handler(ctx, m.HandlerInput())
+		if resp.Error != nil {
+			count++
+		}
+	}
+
+	if count > 0 {
+		return fmt.Errorf("error happend count=%d", count)
+	}
+
+	return nil
 }

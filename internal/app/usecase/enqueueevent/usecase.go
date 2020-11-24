@@ -14,6 +14,7 @@ var (
 	ErrFind = errors.New("could not find")
 )
 
+// Input port
 type Usecase interface {
 	// Enqueue notification event, which notification time overs eventTime.
 	EnqueueEvent(ctx context.Context, eventTime time.Time) error
