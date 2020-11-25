@@ -18,13 +18,19 @@ func TestSqsMessage_HandlerInput(t *testing.T) {
 	}
 	h := m.HandlerInput()
 	assert.Equal(t, m.Body, h.UserId)
-	assert.Equal(t, "", h.UserId)
+	assert.Equal(t, "test user", h.UserId)
 }
 
 func TestNotifyLambdaHandler(t *testing.T) {
 	t.Run("ok:notify", func(t *testing.T) {
 		ctx := context.TODO()
-		caseInput := LambdaInput{}
+		caseInput := LambdaInput{
+			Records: []*SqsMessage{
+				{
+					Body: "test user",
+				},
+			},
+		}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -71,6 +77,6 @@ func TestNotifyLambdaHandler(t *testing.T) {
 
 		os.Setenv("APP_ENV", "ignore set DI")
 		err := NotifyLambdaHandler(ctx, caseInput)
-		assert.Equal(t, errors.New("error happend count=1"), err)
+		assert.Error(t, errors.New("error happend count=1"), err)
 	})
 }

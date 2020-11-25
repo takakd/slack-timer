@@ -39,7 +39,7 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
-			MessageBody:    aws.String(""),
+			MessageBody:    aws.String(caseMessage.UserId),
 			MessageGroupId: aws.String(messageGroupId),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
@@ -69,7 +69,7 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
-			MessageBody:    aws.String(""),
+			MessageBody:    aws.String(caseMessage.UserId),
 			MessageGroupId: aws.String(messageGroupId),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}

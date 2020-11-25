@@ -1,12 +1,12 @@
 package notifycontroller
 
 import (
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/pkg/log"
 	"testing"
-	"fmt"
 )
 
 func TestCloudWatchLogsPresenter_Output(t *testing.T) {
