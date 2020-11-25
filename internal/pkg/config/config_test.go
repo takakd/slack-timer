@@ -21,12 +21,33 @@ func TestGetConfig(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			m := NewMockConfig(ctrl)
 			m.EXPECT().Get(gomock.Eq(c.key), gomock.Eq(c.defaultValue)).Return(c.value)
-
 			SetConfig(m)
-
 			assert.Equal(t, c.want, Get(c.key, c.defaultValue))
 		})
 	}
+}
+
+func TestMustGet(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		m := NewMockConfig(ctrl)
+		m.EXPECT().Get(gomock.Eq("test"), gomock.Eq("")).Return("value")
+		SetConfig(m)
+		assert.Equal(t, "value", MustGet("test"))
+	})
+
+	t.Run("error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		m := NewMockConfig(ctrl)
+		m.EXPECT().Get(gomock.Eq("not exist"), gomock.Eq("")).Return("")
+		SetConfig(m)
+		assert.Panics(t, func() {
+			MustGet("not exist")
+		})
+	})
 }

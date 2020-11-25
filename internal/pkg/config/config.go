@@ -21,6 +21,15 @@ func Get(name string, defaultValue string) string {
 	return config.Get(name, defaultValue)
 }
 
+// MustGet is like Get but panics if the value is empty.
+func MustGet(name string) string {
+	v := config.Get(name, "")
+	if v == "" {
+		panic("error MustGet")
+	}
+	return v
+}
+
 // Set config used "config.Get".
 func SetConfig(c Config) {
 	config = c
