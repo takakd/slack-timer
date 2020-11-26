@@ -14,14 +14,6 @@ type SlackApi interface {
 	ChatPostMessage(channelId string, message string) error
 }
 
-// Request Body
-// Ref: https://api.slack.com/methods/chat.postMessage
-type ChatPostMessageBody struct {
-	Token   string `json:"token"`
-	Channel string `json:"channel"`
-	Text    string `json:"text"`
-}
-
 type SlackApiDriver struct {
 }
 
@@ -30,7 +22,13 @@ func NewSlackApiDriver() SlackApi {
 	return s
 }
 
-type ConversationsOpenResponse struct {
+// Ref: https://api.slack.com/methods/conversations.open
+type ConversationsOpenRequestBody struct {
+	Token string `json:"token"`
+	Users string `json:"users"`
+}
+
+type ConversationsOpenResponseBody struct {
 	Ok      bool     `json:"ok"`
 	Channel []string `json:"id,omitempty"`
 	// Be set if the response is error
@@ -39,10 +37,7 @@ type ConversationsOpenResponse struct {
 
 // Ref: https://api.slack.com/methods/conversations.open
 func (s *SlackApiDriver) ConversationsOpen(userId string) (string, error) {
-	body := struct {
-		Token string `json:"token"`
-		Users string `json:"users"`
-	}{
+	body := &ConversationsOpenRequestBody{
 		config.MustGet("SLACK_API_BOT_TOKEN"),
 		userId,
 	}
@@ -59,10 +54,10 @@ func (s *SlackApiDriver) ConversationsOpen(userId string) (string, error) {
 
 	respBuf, err := httputil.GetResponseBody(resp)
 	if err != nil {
-		return "", errors.New("failed to read response of Slack API:conversations.open")
+		return "", errors.New("response reading error Slack API:conversations.open")
 	}
 
-	var respBody ConversationsOpenResponse
+	var respBody ConversationsOpenResponseBody
 	err = json.Unmarshal(respBuf, &respBody)
 	if err != nil {
 		return "", errors.New("unmarshal error Slack API:conversations.open")
@@ -77,13 +72,26 @@ func (s *SlackApiDriver) ConversationsOpen(userId string) (string, error) {
 }
 
 // Ref: https://api.slack.com/methods/chat.postMessage
+type ChatPostMessageRequestBody struct {
+	Token   string `json:"token"`
+	Channel string `json:"channel"`
+	Text    string `json:"text"`
+}
+
+// Ref: https://api.slack.com/methods/chat.postMessage
+type ChatPostMessageResponseBody struct {
+	// Define only need
+	Ok bool `json:"ok"`
+}
+
+// Ref: https://api.slack.com/methods/chat.postMessage
 func (s *SlackApiDriver) ChatPostMessage(channelId string, message string) error {
-	body := &ChatPostMessageBody{
-		Token:   config.Get("SLACK_API_BOT_TOKEN", ""),
+	body := &ChatPostMessageRequestBody{
+		Token:   config.MustGet("SLACK_API_BOT_TOKEN"),
 		Channel: channelId,
 		Text:    message,
 	}
-	url := config.Get("SLACK_API_URL_CHAPOSTMESSAGE", "")
+	url := config.MustGet("SLACK_API_URL_CHATPOSTMESSAGE")
 	resp, err := postJson(url, body)
 	if err != nil {
 		return err
@@ -91,7 +99,22 @@ func (s *SlackApiDriver) ChatPostMessage(channelId string, message string) error
 
 	ok := resp.StatusCode == http.StatusOK
 	if !ok {
-		return errors.New("failed to request to slack api")
+		return errors.New("request error Slack API:chat.postMessage")
+	}
+
+	respBuf, err := httputil.GetResponseBody(resp)
+	if err != nil {
+		return errors.New("response reading error Slack API:chat.postMessage")
+	}
+
+	var respBody ChatPostMessageResponseBody
+	err = json.Unmarshal(respBuf, &respBody)
+	if err != nil {
+		return errors.New("unmarshal error Slack API:chat.postMessage")
+	}
+
+	if !respBody.Ok {
+		return errors.New("API response NG Slack API:chat.postMessage")
 	}
 
 	return nil
