@@ -102,17 +102,69 @@ Resources:
             TableName: !Ref EventTimerTable
 
   # CloudWatch - Lambda
-  NotifyFunction:
+  EnqueueFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../cmd/lambda/notify
-      Handler: notify
+      CodeUri: ../../../cmd/lambda/enqueue
+      Handler: enqueue
       Policies:
         - CloudWatchPutMetricPolicy: {}
         - DynamoDBCrudPolicy:
             TableName: !Ref EventTimerTable
 
   # CloudWatch - Lambda - Permission
+  EnqueueFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: [EnqueueFunction]
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref EnqueueFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EnqueueFunctionRule.Arn
+
+  # CloudWatch - Schedule Rule
+  EnqueueFunctionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Run EnqueueFunction Lambda
+      Name: regular-execution-enqueue-function
+      # Run every 1 minute
+      ScheduleExpression: "cron(0/1 * * * ? *)"
+      State: DISABLED
+      Targets:
+        - Arn: !GetAtt EnqueueFunction.Arn
+          Id: Id1
+
+  # SQS
+  NotifyQueue:
+    Type: AWS::SQS::Queue
+    DependsOn: []
+    Properties:
+      FifoQueue: true
+      QueueName: EventQueue.fifo
+
+  # SQS - Lambda
+  NotifyFunction:
+    Type: AWS::Serverless::Function
+    DependsOn: [NotifyQueue]
+    Properties:
+      CodeUri: ../../../cmd/lambda/notify
+      Handler: notify
+      # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NotifyQueue.Arn
+            BatchSize: 10
+      Policies:
+        - CloudWatchPutMetricPolicy: {}
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
+        - SQSPollerPolicy:
+            QueueName: !Ref NotifyQueue
+
+  # SQS - Lambda - Permission
   NotifyFunctionPermission:
     Type: AWS::Lambda::Permission
     DependsOn: [NotifyFunction]
@@ -120,20 +172,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref NotifyFunction
       Principal: events.amazonaws.com
-      SourceArn: !GetAtt NotifyFunctionRule.Arn
-
-  # CloudWatch - Schedule Rule
-  NotifyFunctionRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Run NotifyFunction Lambda
-      Name: regular-execution-notify-function
-      # Run every 1 minute
-      ScheduleExpression: "cron(0/1 * * * ? *)"
-      State: ENABLED
-      Targets:
-        - Arn: !GetAtt NotifyFunction.Arn
-          Id: Id1
+      SourceArn: !GetAtt NotifyQueue.Arn
 
   # DynamoDB
   EventTimerTable:
@@ -164,9 +203,12 @@ Outputs:
   SetTimerFunction:
     Description: "SetTimer Function ARN"
     Value: !GetAtt SetTimerFunction.Arn
+  EnqueueFunction:
+    Description: "Enqueue Function ARN"
+    Value: !GetAtt SetTimerFunction.Arn
   NotifyFunction:
     Description: "Notify Function ARN"
-    Value: !GetAtt SetTimerFunction.Arn
+    Value: !GetAtt NotifyFunction.Arn
   EventTable:
     Description: "Event Table ARN"
     Value: !GetAtt EventTimerTable.Arn
