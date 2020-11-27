@@ -9,6 +9,10 @@ type CloudWatchLogsOutputPort struct {
 	Error error
 }
 
+func NewCloudWatchLogsOutputPort() *CloudWatchLogsOutputPort {
+	return &CloudWatchLogsOutputPort{}
+}
+
 func (c *CloudWatchLogsOutputPort) Output(data *OutputData) {
 	if len(data.NotifiedUserIdList) == 0 {
 		log.Info("no user, so did not enqueue")

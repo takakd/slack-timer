@@ -38,9 +38,9 @@ type Interactor struct {
 
 func NewUsecase() Usecase {
 	return &Interactor{
-		repository: di.Get("Repository").(Repository),
-		outputPort: di.Get("OutputPort").(OutputPort),
-		queue:      di.Get("Queue").(Queue),
+		repository: di.Get("enqueueevent.Repository").(Repository),
+		outputPort: di.Get("enqueueevent.OutputPort").(OutputPort),
+		queue:      di.Get("enqueueevent.Queue").(Queue),
 	}
 }
 

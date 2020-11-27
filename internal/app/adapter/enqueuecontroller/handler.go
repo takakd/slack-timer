@@ -7,7 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"slacktimer/internal/app/driver/di"
-	"slacktimer/internal/app/driver/di/container"
+	"slacktimer/internal/app/driver/di/container/dev"
+	"slacktimer/internal/app/driver/di/container/prod"
+	"slacktimer/internal/app/driver/di/container/test"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/pkg/config"
 	"slacktimer/internal/pkg/config/driver"
@@ -43,7 +45,7 @@ type HandlerResponse struct {
 // Create handler corresponding to input.
 func NewEventHandler() EventHandler {
 	h := &CloudWatchEventHandler{
-		usecase: di.Get("EnqueueNotification").(enqueueevent.Usecase),
+		usecase: di.Get("enqueuecontroller.EnqueueNotification").(enqueueevent.Usecase),
 	}
 	return h
 }
@@ -84,11 +86,11 @@ func setDi() {
 	log.Info(fmt.Sprintf("set di env=%s", env))
 
 	if env == "prod" {
-		di.SetDi(&container.Production{})
+		di.SetDi(&prod.Container{})
 	} else if env == "dev" {
-		di.SetDi(&container.Development{})
+		di.SetDi(&dev.Container{})
 	} else if env == "test" {
-		di.SetDi(&container.Test{})
+		di.SetDi(&test.Container{})
 	}
 }
 

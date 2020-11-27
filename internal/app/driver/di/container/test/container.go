@@ -1,15 +1,15 @@
-package container
+package test
 
 import (
 	"fmt"
 	"slacktimer/internal/pkg/log"
 )
 
-type Test struct {
+type Container struct {
 }
 
 // Returns interfaces in test environment.
-func (t *Test) Get(name string) interface{} {
+func (t *Container) Get(name string) interface{} {
 	log.Debug(fmt.Sprintf("call di.Get name=%s", name))
 	return nil
 }

@@ -109,7 +109,7 @@ func (r *DynamoDbRepository) FindTimerEvent(ctx context.Context, userId string) 
 			},
 		},
 		KeyConditionExpression: aws.String("UserId = :userid"),
-		TableName:              aws.String(config.Get("DYNAMODB_TABLE", "")),
+		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
 	}
 	result, err := r.wrp.Query(input)
 	if err != nil {
@@ -148,7 +148,7 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 			},
 		},
 		KeyConditionExpression: aws.String("NotificationTime >= :from and NotificationTime <= :to"),
-		TableName:              aws.String(config.Get("DYNAMODB_TABLE", "")),
+		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
 	}
 	result, err := r.wrp.Query(input)
 	if err != nil {
@@ -179,7 +179,7 @@ func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpri
 	}
 	input := &dynamodb.PutItemInput{
 		Item:      item,
-		TableName: aws.String(config.Get("DYNAMODB_TABLE", "")),
+		TableName: aws.String(config.MustGet("DYNAMODB_TABLE")),
 	}
 	_, err = r.wrp.PutItem(input)
 	if err != nil {
@@ -199,7 +199,7 @@ func (r *DynamoDbRepository) FindTimerEventsByTime(ctx context.Context, eventTim
 			},
 		},
 		KeyConditionExpression: aws.String("NotificationTime <= :eventTime"),
-		TableName:              aws.String(config.Get("DYNAMODB_TABLE", "")),
+		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
 	}
 	result, err := r.wrp.Query(input)
 	if err != nil {
