@@ -113,6 +113,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 				"mid1",
 			},
 		}
+		caseError := errors.New("error")
 
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
@@ -120,13 +121,13 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 
 		q := NewMockQueue(ctrl)
 		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[0])).Return(caseOutputData.QueueMessageIdList[0], nil)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[1])).Return("", errors.New("error"))
+		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[1])).Return("", caseError)
 
 		o := NewMockOutputPort(ctrl)
 		o.EXPECT().Output(gomock.Eq(caseOutputData))
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[ERROR] failed to enqueue user_id=%s", caseEvents[1].UserId))
+		l.EXPECT().Print(fmt.Sprintf("[ERROR] failed to enqueue user_id=%s: %s", caseEvents[1].UserId, caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{

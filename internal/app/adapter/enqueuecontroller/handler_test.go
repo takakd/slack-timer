@@ -18,7 +18,7 @@ func TestNewEventHandler(t *testing.T) {
 	m := di.NewMockDI(ctrl)
 
 	caseUseCase := &enqueueevent.Interactor{}
-	m.EXPECT().Get("EnqueueNotification").Return(caseUseCase)
+	m.EXPECT().Get("enqueuecontroller.EnqueueNotification").Return(caseUseCase)
 	di.SetDi(m)
 
 	h := NewEventHandler()
@@ -39,7 +39,7 @@ func TestLambdaHandleEvent(t *testing.T) {
 	u.EXPECT().EnqueueEvent(gomock.Eq(ctx), gomock.Any()).Return(caseResponse.Error)
 
 	m := di.NewMockDI(ctrl)
-	m.EXPECT().Get("EnqueueNotification").Return(u)
+	m.EXPECT().Get("enqueuecontroller.EnqueueNotification").Return(u)
 	di.SetDi(m)
 
 	os.Setenv("APP_ENV", "ignore set DI")

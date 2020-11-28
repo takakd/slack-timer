@@ -113,6 +113,8 @@ Resources:
         - CloudWatchPutMetricPolicy: {}
         - DynamoDBCrudPolicy:
             TableName: !Ref EventTimerTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt NotifyQueue.QueueName
 #      Environment:
 #        DYNAMODB_TABLE: ""
 #        SQS_URL: ""
@@ -145,6 +147,7 @@ Resources:
     Properties:
       FifoQueue: true
       QueueName: EventQueue.fifo
+      ContentBasedDeduplication: true
 #
 #  # SQS - Lambda
 #  NotifyFunction:

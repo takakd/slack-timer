@@ -127,8 +127,8 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		caseItem := &dynamodb.QueryOutput{
 			Items: []map[string]*dynamodb.AttributeValue{
 				{
-					"dummy": {
-						S: aws.String("dummy"),
+					":dummy": {
+						S: aws.String("1"),
 					},
 				},
 			},
@@ -198,8 +198,8 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		caseItem := &dynamodb.QueryOutput{
 			Items: []map[string]*dynamodb.AttributeValue{
 				{
-					"dummy": {
-						S: aws.String("dummy"),
+					":dummy": {
+						S: aws.String("1"),
 					},
 				},
 			},
@@ -239,7 +239,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
 		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return("dummy")
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), gomock.Eq("")).Return("dummy")
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
@@ -257,6 +259,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		caseTo := time.Now().Add(100)
 		caseInput := &dynamodb.QueryInput{
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":dummy": {
+					N: aws.String("1"),
+				},
 				":from": {
 					S: aws.String(caseFrom.String()),
 				},
@@ -264,8 +269,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 					S: aws.String(caseTo.String()),
 				},
 			},
-			KeyConditionExpression: aws.String("NotificationTime >= :from and NotificationTime <= :to"),
+			KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime >= :from AND NotificationTime <= :to"),
 			TableName:              aws.String(caseTableName),
+			IndexName:              aws.String("dummy"),
 		}
 		caseErr := errors.New("dummy error")
 		caseItem := &dynamodb.QueryOutput{}
@@ -274,7 +280,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
 		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), gomock.Eq("")).Return("dummy")
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
@@ -293,6 +301,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		caseTo := time.Now().Add(100)
 		caseInput := &dynamodb.QueryInput{
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":dummy": {
+					N: aws.String("1"),
+				},
 				":from": {
 					S: aws.String(caseFrom.String()),
 				},
@@ -300,8 +311,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 					S: aws.String(caseTo.String()),
 				},
 			},
-			KeyConditionExpression: aws.String("NotificationTime >= :from and NotificationTime <= :to"),
+			KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime >= :from AND NotificationTime <= :to"),
 			TableName:              aws.String(caseTableName),
+			IndexName:              aws.String("dummy"),
 		}
 		caseItem := &dynamodb.QueryOutput{
 			Items: []map[string]*dynamodb.AttributeValue{
@@ -312,9 +324,11 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		caseDbItems := []*TimerEventDbItem{
 			{
 				UserId: "abc1",
+				Dummy:  1,
 			},
 			{
 				UserId: "abc2",
+				Dummy:  1,
 			},
 		}
 		caseEvents := []*enterpriserule.TimerEvent{
@@ -326,7 +340,9 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
 		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), gomock.Eq("")).Return("dummy")
 		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
@@ -348,11 +364,17 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 
 func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 	t.Run("ng:MarshalMap", func(t *testing.T) {
-		caseItem := &TimerEventDbItem{}
+		caseItem := &TimerEventDbItem{
+			Dummy: 1,
+		}
 		caseErr := errors.New("dummy error")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
+		config.SetConfig(c)
 
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(nil, caseErr)
@@ -364,7 +386,9 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 	})
 
 	t.Run("ng:PutItem", func(t *testing.T) {
-		caseItem := &TimerEventDbItem{}
+		caseItem := &TimerEventDbItem{
+			Dummy: 1,
+		}
 		caseTableName := "disable"
 		caseErr := errors.New("dummy error")
 		caseInput := &dynamodb.PutItemInput{
@@ -380,6 +404,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
 		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
 		config.SetConfig(c)
 
@@ -394,7 +419,9 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		caseItem := &TimerEventDbItem{}
+		caseItem := &TimerEventDbItem{
+			Dummy: 1,
+		}
 		caseTableName := "disable"
 		caseInput := &dynamodb.PutItemInput{
 			Item: map[string]*dynamodb.AttributeValue{
@@ -409,6 +436,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
 		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
 		config.SetConfig(c)
 

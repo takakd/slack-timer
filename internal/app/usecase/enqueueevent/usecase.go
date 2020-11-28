@@ -61,7 +61,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 			UserId: e.UserId,
 		})
 		if err != nil {
-			log.Error(fmt.Sprintf("failed to enqueue user_id=%s", e.UserId))
+			log.Error(fmt.Sprintf("failed to enqueue user_id=%s: %s", e.UserId, err))
 			continue
 		}
 

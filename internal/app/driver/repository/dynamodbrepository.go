@@ -10,6 +10,7 @@ import (
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/pkg/config"
+	"strconv"
 	"time"
 )
 
@@ -68,6 +69,8 @@ type TimerEventDbItem struct {
 	UserId           string `dynamodbav:"UserId"`
 	NotificationTime int64  `dynamodbav:"NotificationTime"`
 	IntervalMin      int    `dynamodbav:"IntervalMin"`
+	// Not set a value to this field, because this is set by internal for sorting.
+	Dummy int `dynamodbav:"Dummy"`
 }
 
 func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
@@ -140,6 +143,9 @@ func (r *DynamoDbRepository) FindTimerEvent(ctx context.Context, userId string) 
 func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":dummy": {
+				N: aws.String(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE")),
+			},
 			":from": {
 				S: aws.String(aws.Time(from).String()),
 			},
@@ -147,8 +153,9 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 				S: aws.String(aws.Time(to).String()),
 			},
 		},
-		KeyConditionExpression: aws.String("NotificationTime >= :from and NotificationTime <= :to"),
+		KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime >= :from AND NotificationTime <= :to"),
 		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
+		IndexName:              aws.String(config.MustGet("DYNAMODB_INDEX_NAME")),
 	}
 	result, err := r.wrp.Query(input)
 	if err != nil {
@@ -173,10 +180,17 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 // Return error and saved event successfully.
 func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	dbItem := NewTimerEventDbItem(event)
+
+	dbItem.Dummy, err = strconv.Atoi(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"))
+	if err != nil {
+		return
+	}
+
 	item, err := r.wrp.MarshalMap(dbItem)
 	if err != nil {
 		return
 	}
+
 	input := &dynamodb.PutItemInput{
 		Item:      item,
 		TableName: aws.String(config.MustGet("DYNAMODB_TABLE")),
@@ -194,12 +208,16 @@ func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpri
 func (r *DynamoDbRepository) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":dummy": {
+				N: aws.String(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE")),
+			},
 			":eventTime": {
-				S: aws.String(aws.Time(eventTime).String()),
+				N: aws.String(fmt.Sprintf("%d", eventTime.Unix())),
 			},
 		},
-		KeyConditionExpression: aws.String("NotificationTime <= :eventTime"),
+		KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime <= :eventTime"),
 		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
+		IndexName:              aws.String(config.MustGet("DYNAMODB_INDEX_NAME")),
 	}
 	result, err := r.wrp.Query(input)
 	if err != nil {
