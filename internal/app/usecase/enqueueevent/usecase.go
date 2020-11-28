@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"slacktimer/internal/app/driver/di"
+	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/pkg/log"
 	"time"
 )
@@ -53,15 +54,25 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 		return fmt.Errorf("find %v: %w", eventTime, ErrFind)
 	}
 
-	//outputData.NotifiedUserIdList = make([]string, 0)
-	//outputData.QueueMessageIdList= make([]string, 0)
 	for _, e := range events {
+		if e.Queued() {
+			// Skip if it has aleady queued.
+			continue
+		}
+
 		// Enqueue notification message, and send notify by other lambda corresponded queue.
 		id, err := s.queue.Enqueue(&QueueMessage{
 			UserId: e.UserId,
 		})
 		if err != nil {
 			log.Error(fmt.Sprintf("failed to enqueue user_id=%s: %s", e.UserId, err))
+			continue
+		}
+
+		// Update state.
+		e.SetQueued()
+		if _, err := s.repository.SaveTimerEvent(ctx, e); err != nil {
+			log.Error(fmt.Sprintf("update error state=%v user_id=%s: %s", enterpriserule.TimerEventStateQueued, e.UserId, err))
 			continue
 		}
 

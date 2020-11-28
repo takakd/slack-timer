@@ -64,11 +64,14 @@ type DynamoDbRepository struct {
 	wrp DynamoDbWrapper
 }
 
+type DbItemState string
+
 // DAO for repository
 type TimerEventDbItem struct {
 	UserId           string `dynamodbav:"UserId"`
 	NotificationTime int64  `dynamodbav:"NotificationTime"`
 	IntervalMin      int    `dynamodbav:"IntervalMin"`
+
 	// Not set a value to this field, because this is set by internal for sorting.
 	Dummy int `dynamodbav:"Dummy"`
 }

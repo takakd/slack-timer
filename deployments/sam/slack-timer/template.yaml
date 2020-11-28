@@ -213,7 +213,8 @@ Resources:
             - AttributeName: NotificationTime
               KeyType: RANGE
           Projection:
-            ProjectionType: KEYS_ONLY
+            ProjectionType: INCLUDE
+            NonKeyAttributes: ["State"]
 
 Outputs:
   # Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
