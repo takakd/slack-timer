@@ -185,7 +185,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(gomock.Eq(caseOutputData))
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[ERROR] update error state=%s user_id=%s: %s", enterpriserule.TimerEventStateQueued, caseEvents[1].UserId, caseError))
+		l.EXPECT().Print(fmt.Sprintf("[ERROR] update error user_id=%s: %s", caseEvents[1].UserId, caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{

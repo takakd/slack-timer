@@ -17,8 +17,8 @@ type TimerEvent struct {
 type TimerEventState string
 
 const (
-	TimerEventStateWait   TimerEventState = "wait"
-	TimerEventStateQueued TimerEventState = "queued"
+	timerEventStateWait   TimerEventState = "wait"
+	timerEventStateQueued TimerEventState = "queued"
 )
 
 func NewTimerEvent(userId string) (*TimerEvent, error) {
@@ -28,7 +28,7 @@ func NewTimerEvent(userId string) (*TimerEvent, error) {
 
 	p := &TimerEvent{
 		UserId: userId,
-		State:  TimerEventStateWait,
+		State:  timerEventStateWait,
 	}
 	return p, nil
 }
@@ -42,9 +42,13 @@ func (p *TimerEvent) IncrementNotificationTime() {
 }
 
 func (p *TimerEvent) Queued() bool {
-	return p.State == TimerEventStateQueued
+	return p.State == timerEventStateQueued
 }
 
 func (p *TimerEvent) SetQueued() {
-	p.State = TimerEventStateQueued
+	p.State = timerEventStateQueued
+}
+
+func (p *TimerEvent) SetWait() {
+	p.State = timerEventStateWait
 }

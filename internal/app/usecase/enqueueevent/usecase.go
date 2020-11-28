@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"slacktimer/internal/app/driver/di"
-	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/pkg/log"
 	"time"
 )
@@ -72,7 +71,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 		// Update state.
 		e.SetQueued()
 		if _, err := s.repository.SaveTimerEvent(ctx, e); err != nil {
-			log.Error(fmt.Sprintf("update error state=%v user_id=%s: %s", enterpriserule.TimerEventStateQueued, e.UserId, err))
+			log.Error(fmt.Sprintf("update error user_id=%s: %s", e.UserId, err))
 			continue
 		}
 
