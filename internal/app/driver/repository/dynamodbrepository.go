@@ -10,6 +10,7 @@ import (
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/pkg/log"
 	"strconv"
 	"time"
 )
@@ -71,6 +72,8 @@ type TimerEventDbItem struct {
 	UserId           string `dynamodbav:"UserId"`
 	NotificationTime int64  `dynamodbav:"NotificationTime"`
 	IntervalMin      int    `dynamodbav:"IntervalMin"`
+	// Ref. https://forums.aws.amazon.com/thread.jspa?threadID=330244&tstart=0
+	State string `dynamodbav:"State"`
 
 	// Not set a value to this field, because this is set by internal for sorting.
 	Dummy int `dynamodbav:"Dummy"`
@@ -81,6 +84,7 @@ func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 		UserId:           event.UserId,
 		NotificationTime: event.NotificationTime.Unix(),
 		IntervalMin:      event.IntervalMin,
+		State:            string(event.State),
 	}
 	return t
 }
@@ -89,6 +93,7 @@ func (t *TimerEventDbItem) TimerEvent() *enterpriserule.TimerEvent {
 	e := &enterpriserule.TimerEvent{
 		UserId:      t.UserId,
 		IntervalMin: t.IntervalMin,
+		State:       enterpriserule.TimerEventState(t.State),
 	}
 	e.NotificationTime = time.Unix(t.NotificationTime, 0)
 	return e
@@ -189,11 +194,13 @@ func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpri
 		return
 	}
 
+	log.Debug(dbItem)
 	item, err := r.wrp.MarshalMap(dbItem)
 	if err != nil {
 		return
 	}
 
+	log.Debug(item)
 	input := &dynamodb.PutItemInput{
 		Item:      item,
 		TableName: aws.String(config.MustGet("DYNAMODB_TABLE")),
