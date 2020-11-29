@@ -10,10 +10,14 @@ type CloudWatchLogsPresenter struct {
 	Error error
 }
 
+func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
+	return &CloudWatchLogsPresenter{}
+}
+
 func (p *CloudWatchLogsPresenter) Output(data *notifyevent.OutputData) {
 	if data.Result == nil {
 		log.Info(fmt.Sprintf("notified user_id=%s", data.UserId))
 	} else {
-		log.Error(fmt.Sprintf("failed to notify user_id=%s", data.UserId))
+		log.Error(fmt.Sprintf("failed to notify user_id=%s: %v", data.UserId, data.Result))
 	}
 }

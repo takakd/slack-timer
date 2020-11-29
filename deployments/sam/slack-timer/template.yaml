@@ -148,35 +148,35 @@ Resources:
       FifoQueue: true
       QueueName: EventQueue.fifo
       ContentBasedDeduplication: true
-#
-#  # SQS - Lambda
-#  NotifyFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      CodeUri: ../../../cmd/lambda/notify
-#      Handler: notify
-#      # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
-#      Events:
-#        SQSEvent:
-#          Type: SQS
-#          Properties:
-#            Queue: !GetAtt NotifyQueue.Arn
-#            BatchSize: 10
-#      Policies:
-#        - CloudWatchPutMetricPolicy: {}
-#        - DynamoDBCrudPolicy:
-#            TableName: !Ref EventTimerTable
-#        - SQSPollerPolicy:
-#            QueueName: !Ref NotifyQueue
-#
-#  # SQS - Lambda - Permission
-#  NotifyFunctionPermission:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      Action: lambda:InvokeFunction
-#      FunctionName: !Ref NotifyFunction
-#      Principal: events.amazonaws.com
-#      SourceArn: !GetAtt NotifyQueue.Arn
+
+  # SQS - Lambda
+  NotifyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../../cmd/lambda/notify
+      Handler: notify
+      # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NotifyQueue.Arn
+            BatchSize: 10
+      Policies:
+        - CloudWatchPutMetricPolicy: {}
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
+        - SQSPollerPolicy:
+            QueueName: !Ref NotifyQueue
+
+  # SQS - Lambda - Permission
+  NotifyFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref NotifyFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt NotifyQueue.Arn
 
   # DynamoDB
   EventTimerTable:

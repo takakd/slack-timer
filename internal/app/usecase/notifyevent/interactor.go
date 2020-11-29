@@ -38,7 +38,7 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input *InputData) error {
 		return outputData.Result
 	}
 
-	// Update time.
+	// Update time and state.
 	var event *enterpriserule.TimerEvent
 	event, outputData.Result = s.repository.FindTimerEvent(ctx, input.UserId)
 	if outputData.Result != nil {
@@ -47,6 +47,7 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input *InputData) error {
 	}
 
 	event.IncrementNotificationTime()
+	event.SetWait()
 
 	_, outputData.Result = s.repository.SaveTimerEvent(ctx, event)
 	if outputData.Result != nil {
