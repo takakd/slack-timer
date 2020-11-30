@@ -187,15 +187,13 @@ Resources:
         - AttributeName: UserId
           AttributeType: S
         - AttributeName: NotificationTime
-          AttributeType: N
+          AttributeType: S
         - AttributeName: Dummy
           AttributeType: N
       BillingMode: PROVISIONED
       KeySchema:
         - AttributeName: UserId
           KeyType: HASH
-        - AttributeName: NotificationTime
-          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5

@@ -3,10 +3,10 @@ package slack
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"slacktimer/internal/pkg/config"
 	"slacktimer/internal/pkg/httputil"
-	"fmt"
 	"slacktimer/internal/pkg/log"
 )
 
@@ -30,12 +30,14 @@ type ConversationsOpenRequestBody struct {
 }
 
 type ConversationsOpenResponseBody struct {
-	Ok bool `json:"ok"`
-	Channel *struct {
-		Id string `json:"id"`
-	} `json:"channel,omitempty"`
+	Ok      bool `json:"ok"`
+	Channel ConversationsOpenResponseBodyChannel
 	// Be set if the response is error
 	Error string `json:"error,omitempty"`
+}
+
+type ConversationsOpenResponseBodyChannel struct {
+	Id string `json:"channel,omitempty"`
 }
 
 // Ref: https://api.slack.com/methods/conversations.open

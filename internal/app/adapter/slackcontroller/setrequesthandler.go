@@ -49,7 +49,10 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 	}
 
 	outputPort := &SetRequestOutputPort{}
+
+	// TODO: Get time from messageevent
 	now := time.Now().UTC()
+
 	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, now, sr.remindIntervalInMin, outputPort)
 	log.Debug(outputPort)
 	return outputPort.Resp

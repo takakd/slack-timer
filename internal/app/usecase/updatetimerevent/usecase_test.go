@@ -34,7 +34,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(ctx, userId, caseTime, 0)
+		data := interactor.saveTimerEventValue(ctx, userId, caseTime, caseEvent.IntervalMin)
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
 	})
@@ -80,7 +80,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 		interval := 1
 		caseEvent, _ := enterpriserule.NewTimerEvent(userId)
-		caseEvent.NotificationTime = caseTime
+		caseEvent.NotificationTime = caseTime.Add(time.Duration(interval) * time.Minute)
 		caseEvent.IntervalMin = interval
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvent)).
 			Return(nil, nil)

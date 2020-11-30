@@ -25,7 +25,7 @@ func TestNotifyLambdaHandler(t *testing.T) {
 	t.Run("ok:notify", func(t *testing.T) {
 		ctx := context.TODO()
 		caseInput := LambdaInput{
-			Records: []*SqsMessage{
+			Records: []SqsMessage{
 				{
 					Body: "test user",
 				},
@@ -54,7 +54,7 @@ func TestNotifyLambdaHandler(t *testing.T) {
 	t.Run("ok:notify", func(t *testing.T) {
 		ctx := context.TODO()
 		caseInput := LambdaInput{
-			Records: []*SqsMessage{
+			Records: []SqsMessage{
 				{
 					Body: "test_user",
 				},

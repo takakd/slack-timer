@@ -5,10 +5,10 @@ import (
 	"slacktimer/internal/app/adapter/slackhandler"
 	"slacktimer/internal/app/driver/queue"
 	"slacktimer/internal/app/driver/repository"
+	"slacktimer/internal/app/driver/slack"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/app/driver/slack"
 )
 
 type Container struct {

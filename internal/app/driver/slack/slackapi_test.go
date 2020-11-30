@@ -35,12 +35,11 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 			var reqBody ConversationsOpenRequestBody
 			err = json.Unmarshal(buf, &reqBody)
 			require.NoError(t, err)
-			assert.Equal(t, reqBody.Token, caseToken)
 			assert.Equal(t, reqBody.Users, caseUserId)
 
 			respBody := &ConversationsOpenResponseBody{
 				Ok:      true,
-				Channel: []string{caseChannelId},
+				Channel: ConversationsOpenResponseBodyChannel{caseChannelId},
 			}
 			resp, err := json.Marshal(respBody)
 			require.NoError(t, err)
@@ -63,28 +62,11 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("ng:token", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("")
-		config.SetConfig(c)
-
-		assert.Panics(t, func() {
-			d := NewSlackApiDriver()
-			d.ConversationsOpen("test")
-		})
-	})
-
 	t.Run("ng:url", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
 		c.EXPECT().Get(gomock.Eq(
 			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return("")
 		config.SetConfig(c)
@@ -157,36 +139,6 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 		assert.Empty(t, got)
 		assert.Error(t, err)
 	})
-
-	t.Run("ng:response wrong channel", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			respBody := &ConversationsOpenResponseBody{
-				Ok:      true,
-				Channel: []string{"unexpected1", "unexpected2"},
-			}
-			resp, err := json.Marshal(respBody)
-			require.NoError(t, err)
-
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, string(resp))
-		}))
-		defer server.Close()
-
-		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL)
-		config.SetConfig(c)
-
-		d := NewSlackApiDriver()
-		got, err := d.ConversationsOpen("test")
-		assert.Empty(t, got)
-		assert.Error(t, err)
-	})
 }
 
 func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
@@ -205,7 +157,6 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 			var reqBody ChatPostMessageRequestBody
 			err = json.Unmarshal(buf, &reqBody)
 			require.NoError(t, err)
-			assert.Equal(t, reqBody.Token, caseToken)
 			assert.Equal(t, reqBody.Channel, caseChannelId)
 			assert.Equal(t, reqBody.Text, caseText)
 
@@ -232,28 +183,11 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("ng:token", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("")
-		config.SetConfig(c)
-
-		assert.Panics(t, func() {
-			d := NewSlackApiDriver()
-			d.ChatPostMessage("test", "test")
-		})
-	})
-
 	t.Run("ng:url", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
 		c.EXPECT().Get(gomock.Eq(
 			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return("")
 		config.SetConfig(c)
@@ -325,11 +259,54 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 }
 
 func TestPostJson(t *testing.T) {
-	t.Run("ng:new request", func(t *testing.T) {
-		// Schema error
-		body := &ConversationsOpenRequestBody{}
-		resp, err := postJson("invalid url", body)
+	t.Run("ng:marshal", func(t *testing.T) {
+		invalidBody := make(chan int)
+		resp, err := postJson("http://localhost", invalidBody)
 		assert.Nil(t, resp)
 		assert.Error(t, err)
+	})
+
+	t.Run("ng:invalid url", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq(
+			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
+		config.SetConfig(c)
+
+		// Schema error
+		body := &ConversationsOpenRequestBody{}
+		resp, err := postJson("not support protocol schema url", body)
+		t.Log(err)
+		assert.Nil(t, resp)
+		assert.Error(t, err)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		caseResponse := "{}"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			// Check only if the request is success.
+			fmt.Fprint(w, caseResponse)
+		}))
+		defer server.Close()
+
+		c := config.NewMockConfig(ctrl)
+		c.EXPECT().Get(gomock.Eq(
+			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
+		config.SetConfig(c)
+
+		// Schema error
+		body := &ConversationsOpenRequestBody{}
+		resp, err := postJson(server.URL, body)
+		assert.NoError(t, err)
+
+		got, err := ioutil.ReadAll(resp.Body)
+		assert.Equal(t, string(got), caseResponse)
 	})
 }

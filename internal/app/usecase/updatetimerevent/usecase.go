@@ -74,10 +74,12 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 
 	if remindInterval != 0 {
 		event.IntervalMin = remindInterval
-	} else {
-		// Set next notify time.
-		event.NotificationTime = event.NotificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
 	}
+
+	// Set next notify time.
+	event.NotificationTime = event.NotificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
+
+	log.Debug(event.NotificationTime, event.IntervalMin, notificationTime)
 
 	if _, err = s.repository.SaveTimerEvent(ctx, event); err != nil {
 		log.Error(err)
