@@ -17,15 +17,17 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		userId := "abc"
 		caseTime := time.Now().UTC()
 
+		caseEvent, _ := enterpriserule.NewTimerEvent(userId)
+		caseEvent.IntervalMin = 10
+		caseEvent.NotificationTime = caseTime.Add(time.Duration(caseEvent.IntervalMin) * time.Minute)
+
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(userId)).
 			Return(nil, nil)
 
-		caseEvent, _ := enterpriserule.NewTimerEvent(userId)
-		caseEvent.NotificationTime = caseTime
-		caseEvent.NotificationTime.Add(time.Duration(caseEvent.IntervalMin) * time.Minute)
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(_ context.Context, event *enterpriserule.TimerEvent) (*enterpriserule.TimerEvent, error) {
 			return event, nil
 		})
@@ -41,10 +43,15 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 	t.Run("ok:next notify", func(t *testing.T) {
 		ctx := context.TODO()
+		caseTime := time.Now().UTC()
+
 		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
+		caseEvent.NotificationTime = caseTime
+		caseEvent.IntervalMin = 10
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvent.UserId)).
 			Return(caseEvent, nil)
@@ -55,11 +62,11 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		noUse := time.Now().UTC()
 		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserId)
-		want.NotificationTime = want.NotificationTime.Add(time.Duration(want.IntervalMin) * time.Minute)
+		want.IntervalMin = caseEvent.IntervalMin
+		want.NotificationTime = caseTime.Add(time.Duration(want.IntervalMin) * time.Minute)
 
-		data := interactor.saveTimerEventValue(ctx, caseEvent.UserId, noUse, 0)
+		data := interactor.saveTimerEventValue(ctx, caseEvent.UserId, caseTime, 0)
 
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
