@@ -55,7 +55,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		noUse := time.Now()
+		noUse := time.Now().UTC()
 		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserId)
 		want.NotificationTime = want.NotificationTime.Add(time.Duration(want.IntervalMin) * time.Minute)
 

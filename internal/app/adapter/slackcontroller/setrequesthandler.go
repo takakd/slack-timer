@@ -26,11 +26,11 @@ type SetRequestHandler struct {
 func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
-	var err error
-	sr.notificationTime, err = timeutil.ParseUnixStr(sr.messageEvent.EventTs)
+	eventTime, err := timeutil.ParseUnixStr(sr.messageEvent.EventTs)
 	if err != nil {
 		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
 	}
+	sr.notificationTime = eventTime.UTC()
 
 	// e.g. set 10
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)

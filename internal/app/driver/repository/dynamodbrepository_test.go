@@ -28,8 +28,7 @@ func TestNewTimerEventDbItem(t *testing.T) {
 
 func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
-
-		caseTime := time.Now().Truncate(time.Second)
+		caseTime := time.Now().UTC().Truncate(time.Second)
 		want := &enterpriserule.TimerEvent{
 			UserId:           "test_user",
 			NotificationTime: caseTime,
