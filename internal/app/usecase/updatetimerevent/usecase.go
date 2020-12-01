@@ -69,7 +69,6 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
 			return outputData
 		}
-		event.NotificationTime = notificationTime
 	}
 
 	if remindInterval != 0 {
@@ -77,7 +76,7 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 	}
 
 	// Set next notify time.
-	event.NotificationTime = event.NotificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
+	event.NotificationTime = notificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
 
 	log.Debug(event.NotificationTime, event.IntervalMin, notificationTime)
 

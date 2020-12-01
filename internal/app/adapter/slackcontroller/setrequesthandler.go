@@ -8,6 +8,7 @@ import (
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/pkg/timeutil"
 	"strconv"
 	"time"
 )
@@ -16,6 +17,7 @@ import (
 type SetRequestHandler struct {
 	messageEvent *MessageEvent
 	// Time to notify user next
+	notificationTime    time.Time
 	remindIntervalInMin int
 	usecase             updatetimerevent.Usecase
 }
@@ -24,6 +26,12 @@ type SetRequestHandler struct {
 func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
+	var err error
+	sr.notificationTime, err = timeutil.ParseUnixStr(sr.messageEvent.EventTs)
+	if err != nil {
+		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+	}
+
 	// e.g. set 10
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
 	m := re.FindStringSubmatch(sr.messageEvent.Text)
@@ -31,7 +39,6 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 		bag.SetError("interval", "invalid format", errors.New("invalid format"))
 		return bag
 	}
-
 	minutes, _ := strconv.Atoi(m[2])
 	sr.remindIntervalInMin = minutes
 
@@ -50,10 +57,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 
 	outputPort := &SetRequestOutputPort{}
 
-	// TODO: Get time from messageevent
-	now := time.Now().UTC()
-
-	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, now, sr.remindIntervalInMin, outputPort)
+	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin, outputPort)
 	log.Debug(outputPort)
 	return outputPort.Resp
 }
