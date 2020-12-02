@@ -3,7 +3,7 @@ package notifycontroller
 import (
 	"fmt"
 	"slacktimer/internal/app/usecase/notifyevent"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 )
 
 type CloudWatchLogsPresenter struct {

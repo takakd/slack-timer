@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/util/di"
 	"testing"
 	"time"
 )

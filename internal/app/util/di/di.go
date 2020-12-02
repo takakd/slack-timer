@@ -1,6 +1,6 @@
 package di
 
-import "slacktimer/internal/pkg/log"
+import "slacktimer/internal/app/util/log"
 
 var (
 	di DI

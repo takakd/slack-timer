@@ -6,10 +6,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/appinit"
 	"testing"
 )
 
 func TestCloudWatchEventHandler_Handler(t *testing.T) {
+	appinit.AppInit()
+
 	ctx := context.TODO()
 	caseError := errors.New("dummy")
 

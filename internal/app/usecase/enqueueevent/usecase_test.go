@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/enterpriserule"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 	"testing"
 	"time"
 )
@@ -71,15 +71,13 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		caseError := fmt.Errorf("find %v: %w", caseTime, ErrFind)
+		caseFindError := errors.New("repository error")
 
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
-			Return(nil, caseError)
+			Return(nil, caseFindError)
 
-		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[ERROR] %v", caseError))
-		log.SetDefaultLogger(l)
+		caseError := fmt.Errorf("find error time=%v: %w", caseTime, caseFindError)
 
 		interactor := &Interactor{
 			repository: m,
@@ -130,7 +128,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(gomock.Eq(caseOutputData))
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[ERROR] failed to enqueue user_id=%s: %s", caseEvents[1].UserId, caseError))
+		l.EXPECT().Error(fmt.Sprintf("enqueue error user_id=%s: %s", caseEvents[1].UserId, caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{
@@ -185,7 +183,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(gomock.Eq(caseOutputData))
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[ERROR] update error user_id=%s: %s", caseEvents[1].UserId, caseError))
+		l.EXPECT().Error(fmt.Sprintf("update error user_id=%s: %s", caseEvents[1].UserId, caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{

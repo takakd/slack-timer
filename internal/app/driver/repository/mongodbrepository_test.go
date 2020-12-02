@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slacktimer/internal/app/enterpriserule"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"slacktimer/internal/pkg/fileutil"
 	"testing"
 	"time"

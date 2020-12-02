@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/enterpriserule"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/di"
+	"slacktimer/internal/app/util/log"
 	"time"
 )
 

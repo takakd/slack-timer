@@ -9,6 +9,7 @@ import (
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/log/driver"
 )
 
 type Container struct {
@@ -16,6 +17,9 @@ type Container struct {
 
 // Returns interfaces in development environment.
 func (d *Container) Get(name string) interface{} {
+	if c, ok := getUtilConcrete(name); ok {
+		return c
+	}
 	if c, ok := getSetTimerConcrete(name); ok {
 		return c
 	}
@@ -26,6 +30,15 @@ func (d *Container) Get(name string) interface{} {
 		return c
 	}
 	return nil
+}
+
+func getUtilConcrete(name string) (interface{}, bool) {
+	var c interface{}
+	switch name {
+	case "Logger":
+		c = driver.NewCloudWatchLogger()
+	}
+	return c, c != nil
 }
 
 func getSetTimerConcrete(name string) (interface{}, bool) {

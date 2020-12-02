@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"slacktimer/internal/app/adapter/notifycontroller"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/notifyevent"
+	"slacktimer/internal/app/util/di"
 	"testing"
 )
 

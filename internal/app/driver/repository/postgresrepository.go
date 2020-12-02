@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"time"
 )
 

@@ -5,7 +5,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"slacktimer/internal/app/usecase/notifyevent"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 	"testing"
 )
 
@@ -20,7 +20,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[INFO] notified user_id=%s", caseData.UserId))
+		l.EXPECT().Info(fmt.Sprintf("notified user_id=%s", caseData.UserId))
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}
@@ -37,7 +37,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print(fmt.Sprintf("[ERROR] failed to notify user_id=%s: %v", caseData.UserId, caseData.Result))
+		l.EXPECT().Error(fmt.Sprintf("failed to notify user_id=%s: %v", caseData.UserId, caseData.Result))
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}

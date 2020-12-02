@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"slacktimer/internal/app/usecase/enqueueevent"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 )
 
 const (

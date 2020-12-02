@@ -2,7 +2,7 @@ package enqueueevent
 
 import (
 	"github.com/golang/mock/gomock"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 	"testing"
 )
 
@@ -15,7 +15,7 @@ func TestCloudWatchLogsOutputPort_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print("[INFO] no user, so did not enqueue")
+		l.EXPECT().Info("no user, so did not enqueue")
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsOutputPort{}
@@ -35,8 +35,8 @@ func TestCloudWatchLogsOutputPort_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Print("[INFO] enqueue user_id=id1 message_id=mid1")
-		l.EXPECT().Print("[INFO] enqueue user_id=id2 message_id=mid2")
+		l.EXPECT().Info("enqueue user_id=id1 message_id=mid1")
+		l.EXPECT().Info("enqueue user_id=id2 message_id=mid2")
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsOutputPort{}

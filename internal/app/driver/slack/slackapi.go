@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
+	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/httputil"
-	"slacktimer/internal/pkg/log"
 )
 
 type SlackApi interface {

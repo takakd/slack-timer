@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/enterpriserule"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"testing"
 	"time"
 )
@@ -283,13 +283,13 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 					N: aws.String("1"),
 				},
 				":from": {
-					S: aws.String(caseFrom.String()),
+					S: aws.String(caseFrom.Format(time.RFC3339)),
 				},
 				":to": {
-					S: aws.String(caseTo.String()),
+					S: aws.String(caseTo.Format(time.RFC3339)),
 				},
 			},
-			KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime >= :from AND NotificationTime <= :to"),
+			KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime BETWEEN :from AND :to"),
 			TableName:              aws.String(caseTableName),
 			IndexName:              aws.String("dummy"),
 		}
@@ -325,13 +325,13 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 					N: aws.String("1"),
 				},
 				":from": {
-					S: aws.String(caseFrom.String()),
+					S: aws.String(caseFrom.Format(time.RFC3339)),
 				},
 				":to": {
-					S: aws.String(caseTo.String()),
+					S: aws.String(caseTo.Format(time.RFC3339)),
 				},
 			},
-			KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime >= :from AND NotificationTime <= :to"),
+			KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime BETWEEN :from AND :to"),
 			TableName:              aws.String(caseTableName),
 			IndexName:              aws.String("dummy"),
 		}

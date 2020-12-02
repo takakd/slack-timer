@@ -3,15 +3,9 @@ package enqueueevent
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"slacktimer/internal/app/driver/di"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/di"
+	"slacktimer/internal/app/util/log"
 	"time"
-)
-
-// Errors that this usecase returns.
-var (
-	ErrFind = errors.New("could not find")
 )
 
 // Input port
@@ -49,8 +43,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 
 	events, err := s.repository.FindTimerEventsByTime(ctx, eventTime)
 	if err != nil {
-		log.Error(err)
-		return fmt.Errorf("find %v: %w", eventTime, ErrFind)
+		return fmt.Errorf("find error time=%v: %w", eventTime, err)
 	}
 
 	for _, e := range events {
@@ -64,7 +57,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 			UserId: e.UserId,
 		})
 		if err != nil {
-			log.Error(fmt.Sprintf("failed to enqueue user_id=%s: %s", e.UserId, err))
+			log.Error(fmt.Sprintf("enqueue error user_id=%s: %s", e.UserId, err))
 			continue
 		}
 
@@ -78,6 +71,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 		outputData.NotifiedUserIdList = append(outputData.NotifiedUserIdList, e.UserId)
 		outputData.QueueMessageIdList = append(outputData.QueueMessageIdList, id)
 	}
+
 	s.outputPort.Output(outputData)
 
 	return nil

@@ -3,8 +3,8 @@ package notifyevent
 import (
 	"context"
 	"github.com/pkg/errors"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/util/di"
 )
 
 // Errors this usecase returns.

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 )
 
 var (

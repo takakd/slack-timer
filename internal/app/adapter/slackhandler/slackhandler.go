@@ -2,8 +2,8 @@
 package slackhandler
 
 import (
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/driver/slack"
+	"slacktimer/internal/app/util/di"
 )
 
 type SlackHandler struct {

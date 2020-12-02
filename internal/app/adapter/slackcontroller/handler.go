@@ -8,19 +8,11 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
-	"os"
-	"path/filepath"
 	"regexp"
-	"slacktimer/internal/app/driver/di"
-	"slacktimer/internal/app/driver/di/container/dev"
-	"slacktimer/internal/app/driver/di/container/prod"
-	"slacktimer/internal/app/driver/di/container/test"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/config"
-	"slacktimer/internal/pkg/config/driver"
-	"slacktimer/internal/pkg/errorutil"
-	"slacktimer/internal/pkg/fileutil"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/di"
+	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/typeutil"
 )
 
@@ -152,7 +144,6 @@ func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 
 	usecase := di.Get("UpdateTimerEvent").(updatetimerevent.Usecase)
 
-	log.Info(fmt.Sprintf("set event text=%s", data.MessageEvent.Text))
 	req := &SetRequestHandler{
 		messageEvent: &data.MessageEvent,
 		usecase:      usecase,
@@ -179,52 +170,12 @@ func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
 	}
 }
 
-// Setup config.
-func setConfig() {
-	configType := os.Getenv("APP_CONFIG_TYPE")
-	if configType == "" {
-		configType = "env"
-	}
-
-	log.Info(fmt.Sprintf("set config type=%s", configType))
-
-	if configType == "env" {
-		// Get .env path
-		appDir, err := fileutil.GetAppDir()
-		if err != nil {
-			panic(errorutil.MakePanicMessage("need app directory path."))
-		}
-		names := make([]string, 0)
-		path := filepath.Join(appDir, ".env")
-		if fileutil.FileExists(path) {
-			names = append(names, path)
-		}
-		config.SetConfig(driver.NewEnvConfig(names...))
-	}
-}
-
-// Setup DI container by env.
-func setDi() {
-	env := config.Get("APP_ENV", "dev")
-
-	log.Info(fmt.Sprintf("set di env=%s", env))
-
-	if env == "prod" {
-		di.SetDi(&prod.Container{})
-	} else if env == "dev" {
-		di.SetDi(&dev.Container{})
-	} else if env == "test" {
-		di.SetDi(&test.Container{})
-	}
-}
-
 // Lambda callback
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, error) {
-	log.Debug(fmt.Sprintf("handler, input=%v", input))
+	appinit.AppInit()
 
-	setConfig()
-	setDi()
+	log.Info("handler input", input)
 
 	var body EventCallbackData
 	err := json.Unmarshal([]byte(input.Body), &body)
@@ -261,7 +212,7 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 		Body:            respBody,
 	}
 
-	log.Debug(fmt.Sprintf("handler, output=%v", output))
+	log.Info("handler output", input)
 
 	return output, nil
 }

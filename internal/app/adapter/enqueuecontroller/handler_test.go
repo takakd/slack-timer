@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"os"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/di"
 	"testing"
 )
 

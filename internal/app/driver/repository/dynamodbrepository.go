@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/config"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/config"
+	"slacktimer/internal/app/util/log"
 	"strconv"
 	"time"
 )
@@ -161,13 +161,13 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 				N: aws.String(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE")),
 			},
 			":from": {
-				S: aws.String(aws.Time(from).String()),
+				S: aws.String(aws.Time(from).Format(time.RFC3339)),
 			},
 			":to": {
-				S: aws.String(aws.Time(to).String()),
+				S: aws.String(aws.Time(to).Format(time.RFC3339)),
 			},
 		},
-		KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime >= :from AND NotificationTime <= :to"),
+		KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime BETWEEN :from AND :to"),
 		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
 		IndexName:              aws.String(config.MustGet("DYNAMODB_INDEX_NAME")),
 	}
@@ -231,7 +231,7 @@ func (r *DynamoDbRepository) FindTimerEventsByTime(ctx context.Context, eventTim
 				N: aws.String(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE")),
 			},
 			":eventTime": {
-				N: aws.String(fmt.Sprintf("%d", eventTime.Unix())),
+				S: aws.String(eventTime.Format(time.RFC3339)),
 			},
 		},
 		KeyConditionExpression: aws.String("Dummy = :dummy AND NotificationTime <= :eventTime"),

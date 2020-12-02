@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 )
 
 type Container struct {

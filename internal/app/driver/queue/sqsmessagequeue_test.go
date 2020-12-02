@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/enqueueevent"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"testing"
 )
 

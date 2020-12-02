@@ -9,8 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/di"
 	"testing"
 )
 
@@ -39,6 +40,8 @@ func TestNewRequestHandler(t *testing.T) {
 			Type: "url_verification",
 		}
 
+		appinit.AppInit()
+
 		h, err := NewRequestHandler(caseData)
 		assert.NoError(t, err)
 		_, ok := h.(*UrlVerificationRequestHandler)
@@ -53,6 +56,8 @@ func TestNewRequestHandler(t *testing.T) {
 			},
 		}
 		caseErr := fmt.Errorf("invalid event type, type=%s", caseData.MessageEvent.Type)
+
+		appinit.AppInit()
 
 		h, err := NewRequestHandler(caseData)
 		assert.Nil(t, h)
@@ -70,6 +75,7 @@ func TestNewRequestHandler(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
 		m := di.NewMockDI(ctrl)
 		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(caseUsecase)
 		di.SetDi(m)
@@ -99,6 +105,8 @@ func TestNewRequestHandler(t *testing.T) {
 					Text: c.text,
 				},
 			}
+
+			appinit.AppInit()
 
 			h, err := NewRequestHandler(caseData)
 			assert.Nil(t, h)

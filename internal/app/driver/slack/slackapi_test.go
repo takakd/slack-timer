@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"testing"
 )
 

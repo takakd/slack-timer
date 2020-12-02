@@ -3,11 +3,12 @@ package slackcontroller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/timeutil"
 	"strconv"
 	"time"
@@ -57,8 +58,12 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 
 	outputPort := &SetRequestOutputPort{}
 
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin user=%s notificationtime=%s interval=%d", sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin))
+
 	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin, outputPort)
-	log.Debug(outputPort)
+
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output=%v", outputPort))
+
 	return outputPort.Resp
 }
 
@@ -78,7 +83,7 @@ func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 	}
 
 	if errRaised {
-		log.Error(err)
+		log.Error(fmt.Sprintf("SetRequestOutputPort.Output error=%v", err))
 		s.Resp = makeErrorHandlerResponse("failed to save event", ErrSaveEvent)
 		return
 	}
@@ -87,4 +92,6 @@ func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 		StatusCode: http.StatusOK,
 		Body:       "success",
 	}
+
+	log.Info(fmt.Sprintf("SetRequestOutputPort.Output resp=%v", s.Resp))
 }
