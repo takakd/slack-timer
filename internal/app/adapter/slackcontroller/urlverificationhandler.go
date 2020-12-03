@@ -34,7 +34,7 @@ func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) *HandlerRe
 		},
 	}
 
-	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", resp))
+	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", *resp))
 
 	return resp
 }

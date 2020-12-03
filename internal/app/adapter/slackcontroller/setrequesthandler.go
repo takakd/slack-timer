@@ -62,7 +62,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 
 	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin, outputPort)
 
-	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output=%v", outputPort))
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output=%v", *outputPort))
 
 	return outputPort.Resp
 }
