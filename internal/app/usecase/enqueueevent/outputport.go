@@ -15,10 +15,10 @@ func NewCloudWatchLogsOutputPort() *CloudWatchLogsOutputPort {
 
 func (c *CloudWatchLogsOutputPort) Output(data *OutputData) {
 	if len(data.NotifiedUserIdList) == 0 {
-		log.Info("no user, so did not enqueue")
+		log.Info("no items to be enqueued")
 	} else {
 		for i, v := range data.NotifiedUserIdList {
-			log.Info(fmt.Sprintf("enqueue user_id=%s message_id=%s", v, data.QueueMessageIdList[i]))
+			log.Info(fmt.Sprintf("enqueued user_id=%s message_id=%s", v, data.QueueMessageIdList[i]))
 		}
 	}
 }

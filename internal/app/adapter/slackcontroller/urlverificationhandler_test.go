@@ -42,7 +42,7 @@ func TestUrlVerificationHandler_Handler(t *testing.T) {
 			l := log.NewMockLogger(ctrl)
 			l.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", caseData.Challenge)))
 			if caseData.Challenge != "" {
-				l.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", c.resp)))
+				l.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", *c.resp)))
 			}
 			log.SetDefaultLogger(l)
 

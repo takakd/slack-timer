@@ -2,7 +2,6 @@ package enqueuecontroller
 
 import (
 	"context"
-	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -33,10 +32,11 @@ func TestLambdaHandleEvent(t *testing.T) {
 	defer ctrl.Finish()
 
 	caseResponse := &HandlerResponse{
-		Error: errors.New("test error"),
+		// TODO: modify along codes.
+		Error: nil,
 	}
 	u := enqueueevent.NewMockUsecase(ctrl)
-	u.EXPECT().EnqueueEvent(gomock.Eq(ctx), gomock.Any()).Return(caseResponse.Error)
+	u.EXPECT().EnqueueEvent(gomock.Eq(ctx), gomock.Any())
 
 	m := di.NewMockDI(ctrl)
 	m.EXPECT().Get("enqueuecontroller.EnqueueNotification").Return(u)

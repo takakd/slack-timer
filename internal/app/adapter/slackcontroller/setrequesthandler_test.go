@@ -179,10 +179,6 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 			Body:       "success",
 		}
 
-		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info(gomock.Eq(fmt.Sprintf("SetRequestOutputPort.Output resp=%v", wantResp)))
-		log.SetDefaultLogger(l)
-
 		outputPort := &SetRequestOutputPort{}
 		outputPort.Output(caseData)
 

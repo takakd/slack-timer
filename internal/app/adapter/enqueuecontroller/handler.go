@@ -51,12 +51,12 @@ type EventHandler interface {
 func LambdaHandleEvent(ctx context.Context, input LambdaInput) error {
 	appinit.AppInit()
 
-	log.Info("handler input", input)
+	log.Info("handler called", input)
 
 	h := NewEventHandler()
 	resp := h.Handler(ctx)
 
-	log.Info("handler output", resp)
+	log.Info("handler output", *resp)
 
 	return resp.Error
 }

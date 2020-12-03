@@ -35,11 +35,9 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 }
 
 // EnqueueEvent mocks base method
-func (m *MockUsecase) EnqueueEvent(ctx context.Context, eventTime time.Time) error {
+func (m *MockUsecase) EnqueueEvent(ctx context.Context, eventTime time.Time) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnqueueEvent", ctx, eventTime)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "EnqueueEvent", ctx, eventTime)
 }
 
 // EnqueueEvent indicates an expected call of EnqueueEvent

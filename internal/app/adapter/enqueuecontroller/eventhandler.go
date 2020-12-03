@@ -16,16 +16,15 @@ type CloudWatchEventHandler struct {
 func (ce *CloudWatchEventHandler) Handler(ctx context.Context) *HandlerResponse {
 	now := time.Now().UTC()
 
-	log.Info("")
+	log.Info(fmt.Sprintf("Usecase.EnqueueEvent time=%s", now))
 
-	log.Info(fmt.Sprintf("Usecase.EnqueueEvent now=%s ", now))
-
-	err := ce.usecase.EnqueueEvent(ctx, now)
+	ce.usecase.EnqueueEvent(ctx, now)
 	resp := &HandlerResponse{
-		Error: err,
+		// TODO: modify structures along notification feature
+		Error: nil,
 	}
 
-	log.Info(fmt.Sprintf("Usecase.EnqueueEvent output=%s ", resp))
+	log.Info(fmt.Sprintf("Usecase.EnqueueEvent output=%s", *resp))
 
 	return resp
 }

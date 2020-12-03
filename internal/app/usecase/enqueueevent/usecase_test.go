@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/log"
 	"testing"
@@ -60,8 +59,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			queue:      q,
 		}
 
-		err := interactor.EnqueueEvent(ctx, caseTime)
-		assert.NoError(t, err)
+		interactor.EnqueueEvent(ctx, caseTime)
 	})
 
 	t.Run("ng:failed find", func(t *testing.T) {
@@ -72,19 +70,22 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		caseFindError := errors.New("repository error")
-
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
 			Return(nil, caseFindError)
 
-		caseError := fmt.Errorf("find error time=%v: %w", caseTime, caseFindError)
+		caseOutputData := &OutputData{
+			Result: fmt.Errorf("find error time=%v: %w", caseTime, caseFindError),
+		}
+		o := NewMockOutputPort(ctrl)
+		o.EXPECT().Output(gomock.Eq(caseOutputData))
 
 		interactor := &Interactor{
 			repository: m,
+			outputPort: o,
 		}
 
-		err := interactor.EnqueueEvent(ctx, caseTime)
-		assert.Equal(t, caseError, err)
+		interactor.EnqueueEvent(ctx, caseTime)
 	})
 
 	t.Run("ng:exist failed enqueue", func(t *testing.T) {
@@ -137,8 +138,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			queue:      q,
 		}
 
-		err := interactor.EnqueueEvent(ctx, caseTime)
-		assert.NoError(t, err)
+		interactor.EnqueueEvent(ctx, caseTime)
 	})
 
 	t.Run("ng:update error", func(t *testing.T) {
@@ -192,7 +192,6 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			queue:      q,
 		}
 
-		err := interactor.EnqueueEvent(ctx, caseTime)
-		assert.NoError(t, err)
+		interactor.EnqueueEvent(ctx, caseTime)
 	})
 }

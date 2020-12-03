@@ -62,7 +62,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 
 	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin, outputPort)
 
-	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output=%v", *outputPort))
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output.resp=%v", *outputPort.Resp))
 
 	return outputPort.Resp
 }
@@ -83,6 +83,4 @@ func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 		StatusCode: http.StatusOK,
 		Body:       "success",
 	}
-
-	log.Info(fmt.Sprintf("SetRequestOutputPort.Output resp=%v", s.Resp))
 }

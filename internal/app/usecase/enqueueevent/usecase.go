@@ -11,7 +11,7 @@ import (
 // Input port
 type Usecase interface {
 	// Enqueue notification event, which notification time overs eventTime.
-	EnqueueEvent(ctx context.Context, eventTime time.Time) error
+	EnqueueEvent(ctx context.Context, eventTime time.Time)
 }
 
 type OutputData struct {
@@ -38,12 +38,14 @@ func NewUsecase() Usecase {
 	}
 }
 
-func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) error {
+func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) {
 	outputData := &OutputData{}
 
 	events, err := s.repository.FindTimerEventsByTime(ctx, eventTime)
 	if err != nil {
-		return fmt.Errorf("find error time=%v: %w", eventTime, err)
+		outputData.Result = fmt.Errorf("find error time=%v: %w", eventTime, err)
+		s.outputPort.Output(outputData)
+		return
 	}
 
 	for _, e := range events {
@@ -57,14 +59,14 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 			UserId: e.UserId,
 		})
 		if err != nil {
-			log.Error(fmt.Sprintf("enqueue error user_id=%s: %s", e.UserId, err))
+			log.Error(fmt.Sprintf("enqueue error user_id=%s: %v", e.UserId, err))
 			continue
 		}
 
 		// Update state.
 		e.SetQueued()
 		if _, err := s.repository.SaveTimerEvent(ctx, e); err != nil {
-			log.Error(fmt.Sprintf("update error user_id=%s: %s", e.UserId, err))
+			log.Error(fmt.Sprintf("update error user_id=%s: %v", e.UserId, err))
 			continue
 		}
 
@@ -73,6 +75,4 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) erro
 	}
 
 	s.outputPort.Output(outputData)
-
-	return nil
 }
