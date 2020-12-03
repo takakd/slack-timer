@@ -53,7 +53,7 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 			firstError = v
 			break
 		}
-		return makeErrorHandlerResponse(firstError.Summary, ErrInvalidParameters)
+		return makeErrorHandlerResponse("invalid parameter", firstError.Summary)
 	}
 
 	outputPort := &SetRequestOutputPort{}
@@ -73,18 +73,9 @@ type SetRequestOutputPort struct {
 
 func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 	err := data.Result
-	errRaised := false
-	if errors.Is(err, updatetimerevent.ErrFind) {
-		errRaised = true
-	} else if errors.Is(err, updatetimerevent.ErrCreate) {
-		errRaised = true
-	} else if errors.Is(err, updatetimerevent.ErrSave) {
-		errRaised = true
-	}
-
-	if errRaised {
-		log.Error(fmt.Sprintf("SetRequestOutputPort.Output error=%v", err))
-		s.Resp = makeErrorHandlerResponse("failed to save event", ErrSaveEvent)
+	if err != nil {
+		log.Info(fmt.Sprintf("SetRequestOutputPort.Output error=%v", err))
+		s.Resp = makeErrorHandlerResponse("failed to set timer", "internal server error")
 		return
 	}
 

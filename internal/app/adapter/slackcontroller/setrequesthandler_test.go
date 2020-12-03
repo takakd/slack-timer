@@ -2,10 +2,13 @@ package slackcontroller
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/log"
 	"testing"
 )
 
@@ -81,15 +84,15 @@ func TestSetRequestHandler_Handler(t *testing.T) {
 		{"timestamp validate error", "set 10", "", &HandlerResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body: &HandlerResponseErrorBody{
-				Message: "invalid format",
-				Detail:  "invalid parameters",
+				Message: "invalid parameter",
+				Detail:  "invalid format",
 			},
 		}},
 		{"set command validate error", "", "1606830655", &HandlerResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body: &HandlerResponseErrorBody{
-				Message: "invalid format",
-				Detail:  "invalid parameters",
+				Message: "invalid parameter",
+				Detail:  "invalid format",
 			},
 		}},
 		{"ok", "set 10", "1606830655", &HandlerResponse{
@@ -138,22 +141,27 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 	cases := []struct {
 		name string
 		err  error
-		msg  string
 	}{
-		{name: "ng:find", err: updatetimerevent.ErrFind, msg: "failed to find event"},
-		{name: "ng:create", err: updatetimerevent.ErrCreate, msg: "failed to create event"},
-		{name: "ng:save", err: updatetimerevent.ErrSave, msg: "failed to save event"},
+		{name: "ng:find", err: errors.New("find error")},
+		{name: "ng:create", err: errors.New("create error")},
+		{name: "ng:save", err: errors.New("save error")},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 			caseData := &updatetimerevent.OutputData{
 				Result: c.err,
 			}
-			wantResp := makeErrorHandlerResponse("failed to save event", ErrSaveEvent)
+
+			l := log.NewMockLogger(ctrl)
+			l.EXPECT().Info(gomock.Eq(fmt.Sprintf("SetRequestOutputPort.Output error=%v", c.err)))
+			log.SetDefaultLogger(l)
 
 			outputPort := &SetRequestOutputPort{}
 			outputPort.Output(caseData)
 
+			wantResp := makeErrorHandlerResponse("failed to set timer", "internal server error")
 			assert.Equal(t, wantResp, outputPort.Resp)
 		})
 	}
@@ -162,10 +170,18 @@ func TestSetRequestOutputPort_Output(t *testing.T) {
 		caseData := &updatetimerevent.OutputData{
 			Result: nil,
 		}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
 		wantResp := &HandlerResponse{
 			StatusCode: http.StatusOK,
 			Body:       "success",
 		}
+
+		l := log.NewMockLogger(ctrl)
+		l.EXPECT().Info(gomock.Eq(fmt.Sprintf("SetRequestOutputPort.Output resp=%v", wantResp)))
+		log.SetDefaultLogger(l)
 
 		outputPort := &SetRequestOutputPort{}
 		outputPort.Output(caseData)

@@ -3,25 +3,16 @@ package updatetimerevent
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"time"
 )
 
-// Errors that this usecase returns.
-var (
-	ErrFind   = errors.New("could not find")
-	ErrCreate = errors.New("failed to create event")
-	ErrSave   = errors.New("failed to save")
-)
-
 type Usecase interface {
 	// Set notificationTime to the notification time of the event which corresponds to userId.
 	// Pass OutputPort interface if overwrite presenter implementation.
 	//		e.g. HTTPResponse that needs http.ResponseWrite
-	// userId
 	UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort)
 
 	// Set notification interval to the event which corresponds to userId.
@@ -58,15 +49,13 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 
 	event, err := s.repository.FindTimerEvent(ctx, userId)
 	if err != nil {
-		log.Error(err)
-		outputData.Result = fmt.Errorf("find %v: %w", userId, ErrFind)
+		outputData.Result = fmt.Errorf("finding timer event error userId=%v: %w", userId, err)
 		return outputData
 	}
 
 	if event == nil {
 		if event, err = enterpriserule.NewTimerEvent(userId); err != nil {
-			log.Error(err)
-			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
+			outputData.Result = fmt.Errorf("creating timer event error userId=%v: %w", userId, err)
 			return outputData
 		}
 	}
@@ -81,8 +70,7 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 	log.Debug(event.NotificationTime, event.IntervalMin, notificationTime)
 
 	if _, err = s.repository.SaveTimerEvent(ctx, event); err != nil {
-		log.Error(err)
-		outputData.Result = fmt.Errorf("save %v: %w", userId, ErrSave)
+		outputData.Result = fmt.Errorf("saving timer event error userId=%v: %w", userId, err)
 		return outputData
 	}
 

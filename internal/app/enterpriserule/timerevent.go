@@ -1,7 +1,7 @@
 package enterpriserule
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"reflect"
 	"time"
 )

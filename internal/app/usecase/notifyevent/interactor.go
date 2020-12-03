@@ -2,7 +2,7 @@ package notifyevent
 
 import (
 	"context"
-	"github.com/pkg/errors"
+	"errors"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/di"
 )

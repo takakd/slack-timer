@@ -1,11 +1,11 @@
 package queue
 
 import (
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/config"

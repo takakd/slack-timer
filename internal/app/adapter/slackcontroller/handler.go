@@ -5,8 +5,8 @@ package slackcontroller
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	"regexp"
 	"slacktimer/internal/app/usecase/updatetimerevent"
@@ -157,12 +157,12 @@ type RequestHandler interface {
 	Handler(ctx context.Context) *HandlerResponse
 }
 
-func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
+func makeErrorHandlerResponse(message string, detail string) *HandlerResponse {
 	body := &HandlerResponseErrorBody{
 		Message: message,
 	}
-	if err != nil {
-		body.Detail = err.Error()
+	if detail != "" {
+		body.Detail = detail
 	}
 	return &HandlerResponse{
 		StatusCode: http.StatusInternalServerError,
@@ -180,26 +180,24 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 	var body EventCallbackData
 	err := json.Unmarshal([]byte(input.Body), &body)
 	if err != nil {
-		log.Error(err.Error())
-		return makeErrorHandlerResponse("invalid request", ErrInvalidRequest), nil
+		log.Info(fmt.Errorf("invalid request: %w", err))
+		return makeErrorHandlerResponse("invalid request", "parameters are wrong"), nil
 	}
 
 	h, err := NewRequestHandler(&body)
 	if err != nil {
-		log.Error(err.Error())
-		return makeErrorHandlerResponse("parameter error", ErrInvalidParameters), nil
+		log.Info(fmt.Errorf("invalid parameter: %w", err))
+		return makeErrorHandlerResponse("invalid parameter", ""), nil
 	}
 
 	resp := h.Handler(ctx)
-	if resp == nil {
-		return nil, errors.New("no response")
-	}
 
 	var respBody string
 	if typeutil.IsStruct(resp.Body) {
 		body, err := json.Marshal(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create response: %w", err)
+			log.Info(fmt.Errorf("internal sesrver error: %w", err))
+			return nil, errors.New("internal server error")
 		}
 		respBody = string(body)
 	} else {
@@ -212,7 +210,7 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 		Body:            respBody,
 	}
 
-	log.Info("handler output", input)
+	log.Info("handler output", output)
 
 	return output, nil
 }

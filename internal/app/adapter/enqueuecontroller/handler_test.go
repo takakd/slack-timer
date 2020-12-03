@@ -2,8 +2,8 @@ package enqueuecontroller
 
 import (
 	"context"
+	"errors"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"slacktimer/internal/app/usecase/enqueueevent"

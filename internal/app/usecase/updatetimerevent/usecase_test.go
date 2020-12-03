@@ -3,6 +3,7 @@ package updatetimerevent
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/enterpriserule"
@@ -117,18 +118,19 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 		noUse := time.Now()
 		data := interactor.saveTimerEventValue(context.TODO(), userId, noUse, 0)
-		assert.True(t, errors.Is(data.Result, ErrCreate))
+		assert.Equal(t, fmt.Errorf("creating timer event error userId=%v: %w", userId, errors.New("must set userId")), data.Result)
 	})
 
 	t.Run("ng:update", func(t *testing.T) {
 		ctx := context.TODO()
 		userId := ""
+		err := errors.New("error")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := NewMockRepository(ctrl)
 		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(userId)).
-			Return(nil, errors.New("error"))
+			Return(nil, err)
 
 		interactor := &Interactor{
 			repository: m,
@@ -136,6 +138,6 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 		noUse := time.Now()
 		data := interactor.saveTimerEventValue(context.TODO(), userId, noUse, 0)
-		assert.True(t, errors.Is(data.Result, ErrFind))
+		assert.Equal(t, fmt.Errorf("finding timer event error userId=%v: %w", userId, err), data.Result)
 	})
 }

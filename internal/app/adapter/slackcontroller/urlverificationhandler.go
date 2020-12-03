@@ -23,7 +23,7 @@ func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) *HandlerRe
 	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", ur.Data.Challenge))
 
 	if ur.Data.Challenge == "" {
-		return makeErrorHandlerResponse("invalid challenge", nil)
+		return makeErrorHandlerResponse("invalid challenge", "empty")
 	}
 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.

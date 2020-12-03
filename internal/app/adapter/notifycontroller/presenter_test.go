@@ -1,9 +1,9 @@
 package notifycontroller
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/log"
 	"testing"

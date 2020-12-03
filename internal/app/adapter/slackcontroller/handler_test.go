@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -119,25 +118,25 @@ func TestMakeErrorHandleResponse(t *testing.T) {
 	cases := []struct {
 		name    string
 		message string
-		err     error
+		detail  string
 	}{
-		{"no error", "test", nil},
-		{"error", "test", errors.New("test err")},
+		{"no error", "test", ""},
+		{"error", "test", "test err"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			wantBody := &HandlerResponseErrorBody{
 				Message: c.message,
 			}
-			if c.err != nil {
-				wantBody.Detail = c.err.Error()
+			if c.detail != "" {
+				wantBody.Detail = c.detail
 			}
 			want := &HandlerResponse{
 				StatusCode: http.StatusInternalServerError,
 				Body:       wantBody,
 			}
 
-			got := makeErrorHandlerResponse(c.message, c.err)
+			got := makeErrorHandlerResponse(c.message, c.detail)
 			assert.Equal(t, want, got)
 		})
 	}
@@ -151,7 +150,7 @@ func TestHandler(t *testing.T) {
 		caseInput := LambdaInput{
 			Body: string(caseJson),
 		}
-		want := makeErrorHandlerResponse("parameter error", ErrInvalidParameters)
+		want := makeErrorHandlerResponse("invalid parameter", "")
 		got, err := LambdaHandleRequest(context.TODO(), caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
