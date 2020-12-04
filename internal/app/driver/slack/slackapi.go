@@ -30,7 +30,7 @@ type ConversationsOpenRequestBody struct {
 }
 
 type ConversationsOpenResponseBody struct {
-	Ok      bool `json:"ok"`
+	Ok      bool                                 `json:"ok"`
 	Channel ConversationsOpenResponseBodyChannel `json:"channel,omitempty"`
 	// Be set if the response is error
 	Error string `json:"error,omitempty"`

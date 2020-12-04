@@ -11,8 +11,8 @@ import (
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/timeutil"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 )
 
 // SetRequestHandler represents the API command "Set".

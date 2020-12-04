@@ -3,9 +3,9 @@ package notifyevent
 import (
 	"context"
 	"fmt"
+	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
-	"slacktimer/internal/app/enterpriserule"
 )
 
 type Interactor struct {
@@ -27,7 +27,6 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 		UserId: input.UserId,
 	}
 
-	// Check item to be notified
 	var event *enterpriserule.TimerEvent
 	event, outputData.Result = s.repository.FindTimerEvent(ctx, input.UserId)
 	if outputData.Result != nil {
@@ -37,7 +36,8 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 
 	log.Info(fmt.Sprintf("found event %s", input.UserId))
 
-	if ! event.Queued() {
+	// Check item to be notified
+	if !event.Queued() {
 		log.Info(fmt.Sprintf("already notified %s", input.UserId))
 		s.outputPort.Output(outputData)
 		return nil
@@ -51,7 +51,6 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 	}
 
 	log.Info(fmt.Sprintf("notified %s", input.UserId))
-
 
 	event.IncrementNotificationTime()
 	event.SetWait()

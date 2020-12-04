@@ -40,7 +40,7 @@ func (s *SqsMessage) HandlerInput() notifycontroller.HandlerInput {
 func NotifyLambdaHandler(ctx context.Context, input LambdaInput) error {
 	appinit.AppInit()
 
-	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%d", len(input.Records), input.Records))
+	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%v", len(input.Records), input.Records))
 
 	count := 0
 	for _, m := range input.Records {

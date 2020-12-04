@@ -14,8 +14,8 @@ import (
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/typeutil"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // Errors
@@ -104,7 +104,7 @@ type MessageEvent struct {
 	Text    string `json:"text"`
 }
 
-func(m MessageEvent)EventUnixTimeStamp() (ts int64, err error) {
+func (m MessageEvent) EventUnixTimeStamp() (ts int64, err error) {
 	s := strings.Split(m.EventTs, ".")
 	if len(s) < 1 {
 		err = fmt.Errorf("invalid format %s", m.EventTs)

@@ -11,7 +11,7 @@ import (
 
 func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
-		caseData := &notifyevent.OutputData{
+		caseData := notifyevent.OutputData{
 			UserId: "test user",
 			Result: nil,
 		}
@@ -28,7 +28,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("ng", func(t *testing.T) {
-		caseData := &notifyevent.OutputData{
+		caseData := notifyevent.OutputData{
 			UserId: "test user",
 			Result: errors.New("error"),
 		}
