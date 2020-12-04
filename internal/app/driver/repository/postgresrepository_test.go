@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slacktimer/internal/app/enterpriserule"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"slacktimer/internal/pkg/fileutil"
 	"testing"
 	"time"
@@ -47,7 +47,7 @@ func cleanupPostgresTestDb(t *testing.T) {
 
 func makePostgresTestEvent() *enterpriserule.TimerEvent {
 	return &enterpriserule.TimerEvent{
-		"id1", time.Now().UTC(), 0,
+		UserId: "id1", NotificationTime: time.Now().UTC(), IntervalMin: 0,
 	}
 }
 
@@ -231,13 +231,13 @@ func TestPostgresRepository_FindTimerEventByTime(t *testing.T) {
 		now := time.Now().UTC()
 		events := []*enterpriserule.TimerEvent{
 			{
-				"tid1", now, 2,
+				UserId: "tid1", NotificationTime: now, IntervalMin: 2,
 			},
 			{
-				"tid2", now, 2,
+				UserId: "tid2", NotificationTime: now, IntervalMin: 2,
 			},
 			{
-				"tid3", now, 2,
+				UserId: "tid3", NotificationTime: now, IntervalMin: 2,
 			},
 		}
 

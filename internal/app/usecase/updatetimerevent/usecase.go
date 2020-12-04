@@ -3,25 +3,15 @@ package updatetimerevent
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/enterpriserule"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/di"
 	"time"
-)
-
-// Errors that this usecase returns.
-var (
-	ErrFind   = errors.New("could not find")
-	ErrCreate = errors.New("failed to create event")
-	ErrSave   = errors.New("failed to save")
 )
 
 type Usecase interface {
 	// Set notificationTime to the notification time of the event which corresponds to userId.
 	// Pass OutputPort interface if overwrite presenter implementation.
 	//		e.g. HTTPResponse that needs http.ResponseWrite
-	// userId
 	UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort)
 
 	// Set notification interval to the event which corresponds to userId.
@@ -48,7 +38,6 @@ type Interactor struct {
 func NewUsecase() Usecase {
 	return &Interactor{
 		repository: di.Get("Repository").(Repository),
-		//outputPort: di.Get("UpdateTimerEventOutputPort").(OutputPort),
 	}
 }
 
@@ -59,30 +48,26 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 
 	event, err := s.repository.FindTimerEvent(ctx, userId)
 	if err != nil {
-		log.Error(err)
-		outputData.Result = fmt.Errorf("find %v: %w", userId, ErrFind)
+		outputData.Result = fmt.Errorf("finding timer event error userId=%v: %w", userId, err)
 		return outputData
 	}
 
 	if event == nil {
 		if event, err = enterpriserule.NewTimerEvent(userId); err != nil {
-			log.Error(err)
-			outputData.Result = fmt.Errorf("new %v: %w", userId, ErrCreate)
+			outputData.Result = fmt.Errorf("creating timer event error userId=%v: %w", userId, err)
 			return outputData
 		}
-		event.NotificationTime = notificationTime
 	}
 
 	if remindInterval != 0 {
 		event.IntervalMin = remindInterval
-	} else {
-		// Set next notify time.
-		event.NotificationTime = event.NotificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
 	}
 
+	// Set next notify time.
+	event.NotificationTime = notificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
+
 	if _, err = s.repository.SaveTimerEvent(ctx, event); err != nil {
-		log.Error(err)
-		outputData.Result = fmt.Errorf("save %v: %w", userId, ErrSave)
+		outputData.Result = fmt.Errorf("saving timer event error userId=%v: %w", userId, err)
 		return outputData
 	}
 

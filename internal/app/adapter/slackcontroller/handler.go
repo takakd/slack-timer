@@ -5,21 +5,17 @@ package slackcontroller
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
-	"os"
-	"path/filepath"
 	"regexp"
-	"slacktimer/internal/app/driver/di"
-	"slacktimer/internal/app/driver/di/container"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/config"
-	"slacktimer/internal/pkg/config/driver"
-	"slacktimer/internal/pkg/errorutil"
-	"slacktimer/internal/pkg/fileutil"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/di"
+	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/typeutil"
+	"strconv"
+	"strings"
 )
 
 // Errors
@@ -108,6 +104,17 @@ type MessageEvent struct {
 	Text    string `json:"text"`
 }
 
+func (m MessageEvent) EventUnixTimeStamp() (ts int64, err error) {
+	s := strings.Split(m.EventTs, ".")
+	if len(s) < 1 {
+		err = fmt.Errorf("invalid format %s", m.EventTs)
+		return
+	}
+
+	ts, err = strconv.ParseInt(s[0], 10, 64)
+	return
+}
+
 type HandlerResponse struct {
 	StatusCode      int
 	Body            interface{}
@@ -150,7 +157,6 @@ func NewRequestHandler(data *EventCallbackData) (RequestHandler, error) {
 
 	usecase := di.Get("UpdateTimerEvent").(updatetimerevent.Usecase)
 
-	log.Info(fmt.Sprintf("set event text=%s", data.MessageEvent.Text))
 	req := &SetRequestHandler{
 		messageEvent: &data.MessageEvent,
 		usecase:      usecase,
@@ -164,12 +170,12 @@ type RequestHandler interface {
 	Handler(ctx context.Context) *HandlerResponse
 }
 
-func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
+func makeErrorHandlerResponse(message string, detail string) *HandlerResponse {
 	body := &HandlerResponseErrorBody{
 		Message: message,
 	}
-	if err != nil {
-		body.Detail = err.Error()
+	if detail != "" {
+		body.Detail = detail
 	}
 	return &HandlerResponse{
 		StatusCode: http.StatusInternalServerError,
@@ -177,76 +183,34 @@ func makeErrorHandlerResponse(message string, err error) *HandlerResponse {
 	}
 }
 
-// Setup config.
-func setConfig() {
-	configType := os.Getenv("APP_CONFIG_TYPE")
-	if configType == "" {
-		configType = "env"
-	}
-
-	log.Info(fmt.Sprintf("set config type=%s", configType))
-
-	if configType == "env" {
-		// Get .env path
-		appDir, err := fileutil.GetAppDir()
-		if err != nil {
-			panic(errorutil.MakePanicMessage("need app directory path."))
-		}
-		names := make([]string, 0)
-		path := filepath.Join(appDir, ".env")
-		if fileutil.FileExists(path) {
-			names = append(names, path)
-		}
-		config.SetConfig(driver.NewEnvConfig(names...))
-	}
-}
-
-// Setup DI container by env.
-func setDi() {
-	env := config.Get("APP_ENV", "dev")
-
-	log.Info(fmt.Sprintf("set di env=%s", env))
-
-	if env == "prod" {
-		di.SetDi(&container.Production{})
-	} else if env == "dev" {
-		di.SetDi(&container.Development{})
-	} else if env == "test" {
-		di.SetDi(&container.Test{})
-	}
-}
-
 // Lambda callback
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, error) {
-	log.Debug(fmt.Sprintf("handler, input=%v", input))
+	appinit.AppInit()
 
-	setConfig()
-	setDi()
+	log.Info("handler input", input)
 
 	var body EventCallbackData
 	err := json.Unmarshal([]byte(input.Body), &body)
 	if err != nil {
-		log.Error(err.Error())
-		return makeErrorHandlerResponse("invalid request", ErrInvalidRequest), nil
+		log.Info(fmt.Errorf("invalid request: %w", err))
+		return makeErrorHandlerResponse("invalid request", "parameters are wrong"), nil
 	}
 
 	h, err := NewRequestHandler(&body)
 	if err != nil {
-		log.Error(err.Error())
-		return makeErrorHandlerResponse("parameter error", ErrInvalidParameters), nil
+		log.Info(fmt.Errorf("invalid parameter: %w", err))
+		return makeErrorHandlerResponse("invalid parameter", ""), nil
 	}
 
 	resp := h.Handler(ctx)
-	if resp == nil {
-		return nil, errors.New("no response")
-	}
 
 	var respBody string
 	if typeutil.IsStruct(resp.Body) {
 		body, err := json.Marshal(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create response: %w", err)
+			log.Info(fmt.Errorf("internal sesrver error: %w", err))
+			return nil, errors.New("internal server error")
 		}
 		respBody = string(body)
 	} else {
@@ -259,7 +223,7 @@ func LambdaHandleRequest(ctx context.Context, input LambdaInput) (interface{}, e
 		Body:            respBody,
 	}
 
-	log.Debug(fmt.Sprintf("handler, output=%v", output))
+	log.Info("handler output", output)
 
 	return output, nil
 }

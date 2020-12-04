@@ -3,12 +3,15 @@ package slackcontroller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/log"
+	"slacktimer/internal/app/util/log"
+	"slacktimer/internal/pkg/timeutil"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,6 +19,7 @@ import (
 type SetRequestHandler struct {
 	messageEvent *MessageEvent
 	// Time to notify user next
+	notificationTime    time.Time
 	remindIntervalInMin int
 	usecase             updatetimerevent.Usecase
 }
@@ -24,6 +28,19 @@ type SetRequestHandler struct {
 func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
+	// Extract second part. e.g.1607054661.000200 -> 160705466.
+	s := strings.Split(sr.messageEvent.EventTs, ".")
+	if len(s) < 1 {
+		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+		return bag
+	}
+
+	eventTime, err := timeutil.ParseUnixStr(s[0])
+	if err != nil {
+		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+	}
+	sr.notificationTime = eventTime.UTC()
+
 	// e.g. set 10
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
 	m := re.FindStringSubmatch(sr.messageEvent.Text)
@@ -31,7 +48,6 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 		bag.SetError("interval", "invalid format", errors.New("invalid format"))
 		return bag
 	}
-
 	minutes, _ := strconv.Atoi(m[2])
 	sr.remindIntervalInMin = minutes
 
@@ -45,13 +61,17 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 			firstError = v
 			break
 		}
-		return makeErrorHandlerResponse(firstError.Summary, ErrInvalidParameters)
+		return makeErrorHandlerResponse("invalid parameter", firstError.Summary)
 	}
 
 	outputPort := &SetRequestOutputPort{}
-	now := time.Now().UTC()
-	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, now, sr.remindIntervalInMin, outputPort)
-	log.Debug(outputPort)
+
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin user=%s notificationtime=%s interval=%d", sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin))
+
+	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin, outputPort)
+
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output.resp=%v", *outputPort.Resp))
+
 	return outputPort.Resp
 }
 
@@ -61,18 +81,9 @@ type SetRequestOutputPort struct {
 
 func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
 	err := data.Result
-	errRaised := false
-	if errors.Is(err, updatetimerevent.ErrFind) {
-		errRaised = true
-	} else if errors.Is(err, updatetimerevent.ErrCreate) {
-		errRaised = true
-	} else if errors.Is(err, updatetimerevent.ErrSave) {
-		errRaised = true
-	}
-
-	if errRaised {
-		log.Error(err)
-		s.Resp = makeErrorHandlerResponse("failed to save event", ErrSaveEvent)
+	if err != nil {
+		log.Info(fmt.Sprintf("SetRequestOutputPort.Output error=%v", err))
+		s.Resp = makeErrorHandlerResponse("failed to set timer", "internal server error")
 		return
 	}
 

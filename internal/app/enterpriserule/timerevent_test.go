@@ -12,7 +12,7 @@ func TestNewTimerEvent(t *testing.T) {
 		userId string
 		want   *TimerEvent
 	}{
-		{name: "ok", userId: "id1234", want: &TimerEvent{UserId: "id1234"}},
+		{name: "ok", userId: "id1234", want: &TimerEvent{UserId: "id1234", State: timerEventStateWait}},
 		{name: "ng", userId: "", want: nil},
 	}
 	for _, c := range cases {
@@ -32,9 +32,9 @@ func TestTimerEvent_Equal(t *testing.T) {
 	now := time.Now().UTC()
 	sec := 10
 	event := &TimerEvent{
-		"id1",
-		now,
-		sec,
+		UserId:           "id1",
+		NotificationTime: now,
+		IntervalMin:      sec,
 	}
 	cases := []struct {
 		name   string
@@ -44,9 +44,12 @@ func TestTimerEvent_Equal(t *testing.T) {
 	}{
 		{name: "ok", lhs: event, rhs: event, result: true},
 		{name: "ng:nil", lhs: event, rhs: nil, result: false},
-		{name: "ng:user_id", lhs: event, rhs: &TimerEvent{"id2", now, sec}, result: false},
-		{name: "ng:utc_time", lhs: event, rhs: &TimerEvent{"id1", now.Add(time.Second * 1), sec}, result: false},
-		{name: "ng:time_interval_sec", lhs: event, rhs: &TimerEvent{"id1", now, sec + 1}, result: false},
+		{name: "ng:user_id", lhs: event, rhs: &TimerEvent{
+			UserId: "id2", NotificationTime: now, IntervalMin: sec}, result: false},
+		{name: "ng:utc_time", lhs: event, rhs: &TimerEvent{
+			UserId: "id1", NotificationTime: now.Add(time.Second * 1), IntervalMin: sec}, result: false},
+		{name: "ng:time_interval_sec", lhs: event, rhs: &TimerEvent{
+			UserId: "id1", NotificationTime: now, IntervalMin: sec + 1}, result: false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -58,3 +61,5 @@ func TestTimerEvent_Equal(t *testing.T) {
 		})
 	}
 }
+
+// TODO: add unit test

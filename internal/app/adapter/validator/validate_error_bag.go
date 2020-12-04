@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"slacktimer/internal/pkg/collection"
 )
 

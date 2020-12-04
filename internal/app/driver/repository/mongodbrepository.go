@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
-	"slacktimer/internal/pkg/config"
+	"slacktimer/internal/app/util/config"
 	"strings"
 	"time"
 )

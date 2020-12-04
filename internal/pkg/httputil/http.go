@@ -2,7 +2,7 @@ package httputil
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -13,7 +13,7 @@ import (
 // Ref: https://developer.twitter.com/en/docs/basics/response-codes
 func GetRequestBody(req *http.Request) ([]byte, error) {
 	if req == nil {
-		return nil, errors.Errorf("arguments should not be nil.")
+		return nil, errors.New("arguments should not be nil.")
 	}
 
 	body := make([]byte, req.ContentLength)
@@ -27,7 +27,7 @@ func GetRequestBody(req *http.Request) ([]byte, error) {
 // More about details are https://golang.org/pkg/net/http/
 func GetResponseBody(resp *http.Response) ([]byte, error) {
 	if resp == nil {
-		return nil, errors.Errorf("arguments should not be nil.")
+		return nil, errors.New("arguments should not be nil.")
 	}
 
 	defer resp.Body.Close()

@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
-	"slacktimer/internal/app/driver/di"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/di"
 	"testing"
 )
 
@@ -39,6 +39,8 @@ func TestNewRequestHandler(t *testing.T) {
 			Type: "url_verification",
 		}
 
+		appinit.AppInit()
+
 		h, err := NewRequestHandler(caseData)
 		assert.NoError(t, err)
 		_, ok := h.(*UrlVerificationRequestHandler)
@@ -53,6 +55,8 @@ func TestNewRequestHandler(t *testing.T) {
 			},
 		}
 		caseErr := fmt.Errorf("invalid event type, type=%s", caseData.MessageEvent.Type)
+
+		appinit.AppInit()
 
 		h, err := NewRequestHandler(caseData)
 		assert.Nil(t, h)
@@ -70,6 +74,7 @@ func TestNewRequestHandler(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
 		m := di.NewMockDI(ctrl)
 		m.EXPECT().Get(gomock.Eq("UpdateTimerEvent")).Return(caseUsecase)
 		di.SetDi(m)
@@ -100,6 +105,8 @@ func TestNewRequestHandler(t *testing.T) {
 				},
 			}
 
+			appinit.AppInit()
+
 			h, err := NewRequestHandler(caseData)
 			assert.Nil(t, h)
 			assert.Equal(t, c.err, err)
@@ -111,25 +118,25 @@ func TestMakeErrorHandleResponse(t *testing.T) {
 	cases := []struct {
 		name    string
 		message string
-		err     error
+		detail  string
 	}{
-		{"no error", "test", nil},
-		{"error", "test", errors.New("test err")},
+		{"no error", "test", ""},
+		{"error", "test", "test err"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			wantBody := &HandlerResponseErrorBody{
 				Message: c.message,
 			}
-			if c.err != nil {
-				wantBody.Detail = c.err.Error()
+			if c.detail != "" {
+				wantBody.Detail = c.detail
 			}
 			want := &HandlerResponse{
 				StatusCode: http.StatusInternalServerError,
 				Body:       wantBody,
 			}
 
-			got := makeErrorHandlerResponse(c.message, c.err)
+			got := makeErrorHandlerResponse(c.message, c.detail)
 			assert.Equal(t, want, got)
 		})
 	}
@@ -143,7 +150,7 @@ func TestHandler(t *testing.T) {
 		caseInput := LambdaInput{
 			Body: string(caseJson),
 		}
-		want := makeErrorHandlerResponse("parameter error", ErrInvalidParameters)
+		want := makeErrorHandlerResponse("invalid parameter", "")
 		got, err := LambdaHandleRequest(context.TODO(), caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
