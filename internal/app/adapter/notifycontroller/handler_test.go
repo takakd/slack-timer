@@ -16,7 +16,7 @@ func TestNewHandler(t *testing.T) {
 
 	i := notifyevent.NewMockInputPort(ctrl)
 	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get("notifycontroller.InputPort").Return(i)
+	d.EXPECT().Get(gomock.Eq("notifycontroller.InputPort")).Return(i)
 
 	di.SetDi(d)
 

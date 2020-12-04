@@ -31,7 +31,7 @@ func NewHandler() Handler {
 	return h
 }
 
-func (s *SqsEventHandler) Handler(ctx context.Context, input HandlerInput) *Response {
+func (s SqsEventHandler) Handler(ctx context.Context, input HandlerInput) *Response {
 	log.Info("handler input", input)
 
 	data := notifyevent.InputData{

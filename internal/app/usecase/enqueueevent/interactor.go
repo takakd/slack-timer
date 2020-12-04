@@ -5,24 +5,7 @@ import (
 	"fmt"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
-	"time"
 )
-
-// Input port
-type Usecase interface {
-	// Enqueue notification event, which notification time overs eventTime.
-	EnqueueEvent(ctx context.Context, eventTime time.Time)
-}
-
-type OutputData struct {
-	Result             error
-	NotifiedUserIdList []string
-	QueueMessageIdList []string
-}
-
-type OutputPort interface {
-	Output(data *OutputData)
-}
 
 type Interactor struct {
 	repository Repository
@@ -30,7 +13,7 @@ type Interactor struct {
 	queue      Queue
 }
 
-func NewUsecase() Usecase {
+func NewInteractor() InputPort {
 	return &Interactor{
 		repository: di.Get("enqueueevent.Repository").(Repository),
 		outputPort: di.Get("enqueueevent.OutputPort").(OutputPort),
@@ -38,12 +21,12 @@ func NewUsecase() Usecase {
 	}
 }
 
-func (s *Interactor) EnqueueEvent(ctx context.Context, eventTime time.Time) {
-	outputData := &OutputData{}
+func (s *Interactor) EnqueueEvent(ctx context.Context, data InputData) {
+	outputData := OutputData{}
 
-	events, err := s.repository.FindTimerEventsByTime(ctx, eventTime)
+	events, err := s.repository.FindTimerEventsByTime(ctx, data.EventTime)
 	if err != nil {
-		outputData.Result = fmt.Errorf("find error time=%v: %w", eventTime, err)
+		outputData.Result = fmt.Errorf("find error time=%v: %w", data.EventTime, err)
 		s.outputPort.Output(outputData)
 		return
 	}

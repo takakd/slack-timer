@@ -1,4 +1,4 @@
-package lambdahandler
+package notify
 
 import (
 	"context"

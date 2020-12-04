@@ -5,16 +5,40 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"testing"
 	"time"
 )
 
+func TestNewInteractor(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := NewMockRepository(ctrl)
+	o := NewMockOutputPort(ctrl)
+	q := NewMockQueue(ctrl)
+	d := di.NewMockDI(ctrl)
+
+	d.EXPECT().Get("enqueueevent.OutputPort").Return(o)
+	d.EXPECT().Get("enqueueevent.Repository").Return(r)
+	d.EXPECT().Get("enqueueevent.Queue").Return(q)
+	di.SetDi(d)
+
+	i := NewInteractor().(*Interactor)
+	assert.Equal(t, o, i.outputPort)
+	assert.Equal(t, r, i.repository)
+	assert.Equal(t, q, i.queue)
+}
+
 func TestInteractor_EnqueueEvent(t *testing.T) {
 	t.Run("ok:enqueue", func(t *testing.T) {
 		ctx := context.TODO()
-		caseTime := time.Now().UTC()
+		caseInput := InputData{
+			EventTime: time.Now().UTC(),
+		}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -30,7 +54,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 				caseEvents[1].UserId,
 			},
 		}
-		caseOutputData := &OutputData{
+		caseOutputData := OutputData{
 			NotifiedUserIdList: []string{
 				caseEvents[0].UserId,
 				caseEvents[1].UserId,
@@ -41,7 +65,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		}
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
+		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseInput.EventTime)).
 			Return(caseEvents, nil)
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvents[0])).Return(caseEvents[0], nil)
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvents[1])).Return(caseEvents[1], nil)
@@ -59,23 +83,25 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			queue:      q,
 		}
 
-		interactor.EnqueueEvent(ctx, caseTime)
+		interactor.EnqueueEvent(ctx, caseInput)
 	})
 
 	t.Run("ng:failed find", func(t *testing.T) {
 		ctx := context.TODO()
-		caseTime := time.Now().UTC()
+		caseInput := InputData{
+			EventTime: time.Now().UTC(),
+		}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		caseFindError := errors.New("repository error")
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
+		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseInput.EventTime)).
 			Return(nil, caseFindError)
 
-		caseOutputData := &OutputData{
-			Result: fmt.Errorf("find error time=%v: %w", caseTime, caseFindError),
+		caseOutputData := OutputData{
+			Result: fmt.Errorf("find error time=%v: %w", caseInput.EventTime, caseFindError),
 		}
 		o := NewMockOutputPort(ctrl)
 		o.EXPECT().Output(gomock.Eq(caseOutputData))
@@ -85,12 +111,14 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			outputPort: o,
 		}
 
-		interactor.EnqueueEvent(ctx, caseTime)
+		interactor.EnqueueEvent(ctx, caseInput)
 	})
 
 	t.Run("ng:exist failed enqueue", func(t *testing.T) {
 		ctx := context.TODO()
-		caseTime := time.Now().UTC()
+		caseInput := InputData{
+			EventTime: time.Now().UTC(),
+		}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -106,7 +134,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 				caseEvents[1].UserId,
 			},
 		}
-		caseOutputData := &OutputData{
+		caseOutputData := OutputData{
 			NotifiedUserIdList: []string{
 				caseEvents[0].UserId,
 			},
@@ -117,7 +145,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseError := errors.New("error")
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
+		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseInput.EventTime)).
 			Return(caseEvents, nil)
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvents[0])).Return(caseEvents[0], nil)
 
@@ -138,12 +166,14 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			queue:      q,
 		}
 
-		interactor.EnqueueEvent(ctx, caseTime)
+		interactor.EnqueueEvent(ctx, caseInput)
 	})
 
 	t.Run("ng:update error", func(t *testing.T) {
 		ctx := context.TODO()
-		caseTime := time.Now().UTC()
+		caseInput := InputData{
+			EventTime: time.Now().UTC(),
+		}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -159,7 +189,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 				caseEvents[1].UserId,
 			},
 		}
-		caseOutputData := &OutputData{
+		caseOutputData := OutputData{
 			NotifiedUserIdList: []string{
 				caseEvents[0].UserId,
 			},
@@ -170,7 +200,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseError := errors.New("error")
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseTime)).
+		m.EXPECT().FindTimerEventsByTime(gomock.Eq(ctx), gomock.Eq(caseInput.EventTime)).
 			Return(caseEvents, nil)
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvents[0])).Return(caseEvents[0], nil)
 		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvents[1])).Return(nil, caseError)
@@ -192,6 +222,6 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 			queue:      q,
 		}
 
-		interactor.EnqueueEvent(ctx, caseTime)
+		interactor.EnqueueEvent(ctx, caseInput)
 	})
 }

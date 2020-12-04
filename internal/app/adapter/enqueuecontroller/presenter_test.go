@@ -1,14 +1,15 @@
-package enqueueevent
+package enqueuecontroller
 
 import (
 	"github.com/golang/mock/gomock"
+	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/log"
 	"testing"
 )
 
 func TestCloudWatchLogsOutputPort_Output(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		caseData := &OutputData{}
+		caseData := enqueueevent.OutputData{}
 		caseData.NotifiedUserIdList = make([]string, 0)
 
 		ctrl := gomock.NewController(t)
@@ -23,7 +24,7 @@ func TestCloudWatchLogsOutputPort_Output(t *testing.T) {
 	})
 
 	t.Run("exist", func(t *testing.T) {
-		caseData := &OutputData{}
+		caseData := enqueueevent.OutputData{}
 		caseData.NotifiedUserIdList = []string{
 			"id1", "id2",
 		}

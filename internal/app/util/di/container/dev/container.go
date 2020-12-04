@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"slacktimer/internal/app/adapter/enqueuecontroller"
 	"slacktimer/internal/app/adapter/notifycontroller"
 	"slacktimer/internal/app/adapter/slackhandler"
 	"slacktimer/internal/app/driver/queue"
@@ -58,12 +59,12 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 func getEnqueueConcrete(name string) (interface{}, bool) {
 	var c interface{}
 	switch name {
-	case "enqueuecontroller.EnqueueNotification":
-		c = enqueueevent.NewUsecase()
+	case "enqueuecontroller.InputPort":
+		c = enqueueevent.NewInteractor()
+	case "enqueueevent.OutputPort":
+		c = enqueuecontroller.NewCloudWatchLogsOutputPort()
 	case "enqueueevent.Repository":
 		c = repository.NewDynamoDbRepository(nil)
-	case "enqueueevent.OutputPort":
-		c = enqueueevent.NewCloudWatchLogsOutputPort()
 	case "enqueueevent.Queue":
 		c = queue.NewSQSMessageQueue(nil)
 	}

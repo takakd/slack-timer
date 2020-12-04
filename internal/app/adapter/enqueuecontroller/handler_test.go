@@ -4,45 +4,44 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/di"
 	"testing"
 )
 
-func TestNewEventHandler(t *testing.T) {
+func TestNewHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	m := di.NewMockDI(ctrl)
+	i := enqueueevent.NewMockInputPort(ctrl)
+	d := di.NewMockDI(ctrl)
+	d.EXPECT().Get(gomock.Eq("enqueueevent.InputPort")).Return(i)
 
-	caseUseCase := &enqueueevent.Interactor{}
-	m.EXPECT().Get("enqueuecontroller.EnqueueNotification").Return(caseUseCase)
-	di.SetDi(m)
+	di.SetDi(d)
 
-	h := NewEventHandler()
-	assert.Equal(t, &CloudWatchEventHandler{caseUseCase}, h)
+	h := NewHandler().(*CloudWatchEventHandler)
+	assert.Equal(t, i, h.InputPort)
 }
 
-func TestLambdaHandleEvent(t *testing.T) {
+func TestCloudWatchEventHandler_Handler(t *testing.T) {
 	ctx := context.TODO()
-	caseInput := LambdaInput{}
+	caseInput := HandlerInput{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	caseResponse := &HandlerResponse{
-		// TODO: modify along codes.
-		Error: nil,
-	}
-	u := enqueueevent.NewMockUsecase(ctrl)
-	u.EXPECT().EnqueueEvent(gomock.Eq(ctx), gomock.Any())
+	i := enqueueevent.NewMockInputPort(ctrl)
+	i.EXPECT().EnqueueEvent(gomock.Eq(ctx), gomock.Any())
 
-	m := di.NewMockDI(ctrl)
-	m.EXPECT().Get("enqueuecontroller.EnqueueNotification").Return(u)
-	di.SetDi(m)
+	d := di.NewMockDI(ctrl)
+	d.EXPECT().Get("enqueueevent.InputPort").Return(i)
+	di.SetDi(d)
 
-	os.Setenv("APP_ENV", "ignore set DI")
-	err := LambdaHandleEvent(ctx, caseInput)
-	assert.Equal(t, caseResponse.Error, err)
+	h := NewHandler().(*CloudWatchEventHandler)
+	resp := h.Handler(ctx, caseInput)
+	assert.Equal(t, &Response{}, resp)
+
+	//os.Setenv("APP_ENV", "ignore set DI")
+	//err := LambdaHandleEvent(ctx, caseInput)
+	//assert.Equal(t, caseResponse.Error, err)
 }
