@@ -34,7 +34,7 @@ func TestNewInteractor(t *testing.T) {
 func TestInteractor_NotifyEvent(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		ctx := context.TODO()
-		caseInput := &InputData{
+		caseInput := InputData{
 			UserId:  "test",
 			Message: "message",
 		}
@@ -52,7 +52,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(gomock.Eq(&OutputData{
+		o.EXPECT().Output(gomock.Eq(OutputData{
 			Result: nil,
 			UserId: caseInput.UserId,
 		}))
@@ -76,7 +76,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 	t.Run("ng:notify", func(t *testing.T) {
 		ctx := context.TODO()
-		caseInput := &InputData{
+		caseInput := InputData{
 			UserId:  "test",
 			Message: "message",
 		}
@@ -90,7 +90,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(gomock.Eq(&OutputData{
+		o.EXPECT().Output(gomock.Eq(OutputData{
 			Result: caseError,
 			UserId: caseInput.UserId,
 		}))
@@ -109,7 +109,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 	t.Run("ng:find", func(t *testing.T) {
 		ctx := context.TODO()
-		caseInput := &InputData{
+		caseInput := InputData{
 			UserId:  "test",
 			Message: "message",
 		}
@@ -123,7 +123,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(gomock.Eq(&OutputData{
+		o.EXPECT().Output(gomock.Eq(OutputData{
 			Result: caseError,
 			UserId: caseInput.UserId,
 		}))
@@ -145,7 +145,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 	t.Run("ng:save", func(t *testing.T) {
 		ctx := context.TODO()
-		caseInput := &InputData{
+		caseInput := InputData{
 			UserId:  "test",
 			Message: "message",
 		}
@@ -164,7 +164,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(gomock.Eq(&OutputData{
+		o.EXPECT().Output(gomock.Eq(OutputData{
 			Result: caseError,
 			UserId: caseInput.UserId,
 		}))

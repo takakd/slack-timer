@@ -26,7 +26,7 @@ func TestNewHandler(t *testing.T) {
 
 func TestSqsEventHandler_Handler(t *testing.T) {
 	ctx := context.TODO()
-	caseInput := &HandlerInput{
+	caseInput := HandlerInput{
 		UserId:  "test user",
 		Message: "test message",
 	}
@@ -36,7 +36,7 @@ func TestSqsEventHandler_Handler(t *testing.T) {
 	defer ctrl.Finish()
 
 	i := notifyevent.NewMockInputPort(ctrl)
-	i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Eq(&notifyevent.InputData{
+	i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Eq(notifyevent.InputData{
 		UserId:  caseInput.UserId,
 		Message: caseInput.Message,
 	})).Return(caseError)

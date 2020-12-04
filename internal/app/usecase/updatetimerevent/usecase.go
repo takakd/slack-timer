@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/di"
-	"slacktimer/internal/app/util/log"
 	"time"
 )
 
@@ -66,8 +65,6 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 
 	// Set next notify time.
 	event.NotificationTime = notificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
-
-	log.Debug(event.NotificationTime, event.IntervalMin, notificationTime)
 
 	if _, err = s.repository.SaveTimerEvent(ctx, event); err != nil {
 		outputData.Result = fmt.Errorf("saving timer event error userId=%v: %w", userId, err)

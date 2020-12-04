@@ -8,7 +8,7 @@ import (
 )
 
 type Handler interface {
-	Handler(ctx context.Context, input *HandlerInput) *Response
+	Handler(ctx context.Context, input HandlerInput) *Response
 }
 
 type Response struct {
@@ -31,19 +31,21 @@ func NewHandler() Handler {
 	return h
 }
 
-func (s *SqsEventHandler) Handler(ctx context.Context, input *HandlerInput) *Response {
+func (s *SqsEventHandler) Handler(ctx context.Context, input HandlerInput) *Response {
 	log.Info("handler input", input)
 
-	data := &notifyevent.InputData{
+	data := notifyevent.InputData{
 		UserId:  input.UserId,
 		Message: input.Message,
 	}
+
 	err := s.InputPort.NotifyEvent(ctx, data)
+
 	resp := &Response{
 		Error: err,
 	}
 
-	log.Info("handler output", resp)
+	log.Info("handler output", *resp)
 
 	return resp
 }

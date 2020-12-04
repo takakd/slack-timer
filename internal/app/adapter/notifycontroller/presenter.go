@@ -14,10 +14,10 @@ func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
 	return &CloudWatchLogsPresenter{}
 }
 
-func (p *CloudWatchLogsPresenter) Output(data *notifyevent.OutputData) {
+func (p *CloudWatchLogsPresenter) Output(data notifyevent.OutputData) {
 	if data.Result == nil {
-		log.Info(fmt.Sprintf("notified user_id=%s", data.UserId))
+		log.Info(fmt.Sprintf("done notified user_id=%s", data.UserId))
 	} else {
-		log.Error(fmt.Sprintf("failed to notify user_id=%s: %v", data.UserId, data.Result))
+		log.Error(fmt.Sprintf("notify user_id=%s: %v", data.UserId, data.Result))
 	}
 }

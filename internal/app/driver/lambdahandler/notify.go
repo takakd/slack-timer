@@ -27,8 +27,8 @@ type SqsMessage struct {
 	AwsRegion         string                 `json:"awsRegion"`
 }
 
-func (s *SqsMessage) HandlerInput() *notifycontroller.HandlerInput {
-	return &notifycontroller.HandlerInput{
+func (s *SqsMessage) HandlerInput() notifycontroller.HandlerInput {
+	return notifycontroller.HandlerInput{
 		UserId: s.Body,
 		// TODO: Get userid and message from body.
 		Message: "test",
@@ -40,23 +40,24 @@ func (s *SqsMessage) HandlerInput() *notifycontroller.HandlerInput {
 func NotifyLambdaHandler(ctx context.Context, input LambdaInput) error {
 	appinit.AppInit()
 
-	log.Debug(fmt.Sprintf("handler, input.Records=%v", input.Records))
+	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%d", len(input.Records), input.Records))
 
 	count := 0
 	for _, m := range input.Records {
-		log.Debug(fmt.Sprintf("record %v", m))
-
 		h := notifycontroller.NewHandler()
-		i := m.HandlerInput()
-		resp := h.Handler(ctx, i)
+		resp := h.Handler(ctx, m.HandlerInput())
 		if resp.Error != nil {
 			count++
 		}
 	}
 
+	var err error
+
 	if count > 0 {
-		return fmt.Errorf("error happend count=%d", count)
+		err = fmt.Errorf("count=%d", count)
 	}
 
-	return nil
+	log.Info("lambda handler output", err)
+
+	return err
 }

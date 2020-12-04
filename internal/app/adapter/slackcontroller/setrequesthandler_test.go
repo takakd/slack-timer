@@ -20,7 +20,8 @@ func TestSetRequestHandler_validateTs(t *testing.T) {
 		min   int
 		valid bool
 	}{
-		{"ok", "set 10", "1606830655", 10, true},
+		{"ok", "set 10", "1606830655.000003", 10, true},
+		{"ng", "set 10", "1606830655", 10, true},
 		{"ng", "set 10", "", 10, false},
 	}
 	for _, c := range cases {

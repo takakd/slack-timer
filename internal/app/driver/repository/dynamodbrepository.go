@@ -10,7 +10,6 @@ import (
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/config"
-	"slacktimer/internal/app/util/log"
 	"strconv"
 	"time"
 )
@@ -204,7 +203,6 @@ func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpri
 		return
 	}
 
-	log.Debug(dbItem)
 	item, err := r.wrp.MarshalMap(dbItem)
 	if err != nil {
 		return

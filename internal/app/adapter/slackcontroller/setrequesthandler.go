@@ -12,6 +12,7 @@ import (
 	"slacktimer/internal/pkg/timeutil"
 	"strconv"
 	"time"
+	"strings"
 )
 
 // SetRequestHandler represents the API command "Set".
@@ -27,7 +28,14 @@ type SetRequestHandler struct {
 func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
-	eventTime, err := timeutil.ParseUnixStr(sr.messageEvent.EventTs)
+	// Extract second part. e.g.1607054661.000200 -> 160705466.
+	s := strings.Split(sr.messageEvent.EventTs, ".")
+	if len(s) < 1 {
+		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+		return bag
+	}
+
+	eventTime, err := timeutil.ParseUnixStr(s[0])
 	if err != nil {
 		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
 	}

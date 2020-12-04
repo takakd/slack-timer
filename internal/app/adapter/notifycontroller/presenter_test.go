@@ -20,7 +20,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info(fmt.Sprintf("notified user_id=%s", caseData.UserId))
+		l.EXPECT().Info(fmt.Sprintf("done notified user_id=%s", caseData.UserId))
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}
@@ -37,7 +37,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Error(fmt.Sprintf("failed to notify user_id=%s: %v", caseData.UserId, caseData.Result))
+		l.EXPECT().Error(fmt.Sprintf("notify user_id=%s: %v", caseData.UserId, caseData.Result))
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}

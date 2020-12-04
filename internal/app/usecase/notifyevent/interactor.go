@@ -2,14 +2,10 @@ package notifyevent
 
 import (
 	"context"
-	"errors"
-	"slacktimer/internal/app/enterpriserule"
+	"fmt"
 	"slacktimer/internal/app/util/di"
-)
-
-// Errors this usecase returns.
-var (
-	ErrFind = errors.New("could not find")
+	"slacktimer/internal/app/util/log"
+	"slacktimer/internal/app/enterpriserule"
 )
 
 type Interactor struct {
@@ -26,9 +22,25 @@ func NewInteractor() InputPort {
 	}
 }
 
-func (s *Interactor) NotifyEvent(ctx context.Context, input *InputData) error {
-	outputData := &OutputData{
+func (s *Interactor) NotifyEvent(ctx context.Context, input InputData) error {
+	outputData := OutputData{
 		UserId: input.UserId,
+	}
+
+	// Check item to be notified
+	var event *enterpriserule.TimerEvent
+	event, outputData.Result = s.repository.FindTimerEvent(ctx, input.UserId)
+	if outputData.Result != nil {
+		s.outputPort.Output(outputData)
+		return outputData.Result
+	}
+
+	log.Info(fmt.Sprintf("found event %s", input.UserId))
+
+	if ! event.Queued() {
+		log.Info(fmt.Sprintf("already notified %s", input.UserId))
+		s.outputPort.Output(outputData)
+		return nil
 	}
 
 	// Send notify.
@@ -38,13 +50,8 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input *InputData) error {
 		return outputData.Result
 	}
 
-	// Update time and state.
-	var event *enterpriserule.TimerEvent
-	event, outputData.Result = s.repository.FindTimerEvent(ctx, input.UserId)
-	if outputData.Result != nil {
-		s.outputPort.Output(outputData)
-		return outputData.Result
-	}
+	log.Info(fmt.Sprintf("notified %s", input.UserId))
+
 
 	event.IncrementNotificationTime()
 	event.SetWait()
@@ -54,6 +61,8 @@ func (s *Interactor) NotifyEvent(ctx context.Context, input *InputData) error {
 		s.outputPort.Output(outputData)
 		return outputData.Result
 	}
+
+	log.Info(fmt.Sprintf("updated event %s", input.UserId))
 
 	outputData.Result = nil
 	s.outputPort.Output(outputData)

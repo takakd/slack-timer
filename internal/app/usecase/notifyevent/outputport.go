@@ -1,7 +1,7 @@
 package notifyevent
 
 type OutputPort interface {
-	Output(data *OutputData)
+	Output(data OutputData)
 }
 
 type OutputData struct {

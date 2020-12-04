@@ -31,13 +31,13 @@ type ConversationsOpenRequestBody struct {
 
 type ConversationsOpenResponseBody struct {
 	Ok      bool `json:"ok"`
-	Channel ConversationsOpenResponseBodyChannel
+	Channel ConversationsOpenResponseBodyChannel `json:"channel,omitempty"`
 	// Be set if the response is error
 	Error string `json:"error,omitempty"`
 }
 
 type ConversationsOpenResponseBodyChannel struct {
-	Id string `json:"channel,omitempty"`
+	Id string `json:"id"`
 }
 
 // Ref: https://api.slack.com/methods/conversations.open
