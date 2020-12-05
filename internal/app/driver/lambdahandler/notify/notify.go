@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slacktimer/internal/app/adapter/notifycontroller"
-	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/appinitializer"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -57,7 +57,7 @@ func (s *SqsMessage) HandlerInput() notifycontroller.HandlerInput {
 // SQS calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (n *NotifyLambdaHandler) LambdaHandler(ctx context.Context, input LambdaInput) error {
-	appinit.AppInit()
+	appinitializer.AppInit()
 
 	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%v", len(input.Records), input.Records))
 

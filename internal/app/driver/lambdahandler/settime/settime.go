@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"slacktimer/internal/app/adapter/slackcontroller"
-	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/appinitializer"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/typeutil"
@@ -102,7 +102,7 @@ type LambdaOutput struct {
 // API Gateway calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (s *SetTimerLambdaHandler) LambdaHandler(ctx context.Context, input LambdaInput) (*LambdaOutput, error) {
-	appinit.AppInit()
+	appinitializer.AppInit()
 
 	log.Info("lambda handler input", input)
 

@@ -3,7 +3,7 @@ package enqueue
 import (
 	"context"
 	"slacktimer/internal/app/adapter/enqueuecontroller"
-	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/appinitializer"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -51,7 +51,7 @@ func (s *LambdaInput) HandlerInput() enqueuecontroller.HandlerInput {
 // CloudWatchEvent calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (e *EnqueueLambdaHandler) LambdaHandler(ctx context.Context, input LambdaInput) {
-	appinit.AppInit()
+	appinitializer.AppInit()
 
 	log.Info("handler called", input)
 

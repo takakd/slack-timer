@@ -1,4 +1,4 @@
-package appinit
+package appinitializer
 
 import (
 	"os"
