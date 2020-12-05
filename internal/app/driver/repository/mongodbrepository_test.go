@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/config"
-	"slacktimer/internal/pkg/fileutil"
+	"slacktimer/internal/pkg/helper"
 	"testing"
 	"time"
 )
@@ -65,7 +65,7 @@ func getTestMongoDbEnv() (url, collection string) {
 	_, filePath, _, _ := runtime.Caller(0)
 	// e.g. internal/configs/.env.test
 	envPath := filepath.Join(filepath.Dir(filePath), "../../../configs/.env.test")
-	if fileutil.FileExists(envPath) {
+	if helper.FileExists(envPath) {
 		godotenv.Load(envPath)
 	}
 	url = os.Getenv("MONGODB_URI")
@@ -257,8 +257,8 @@ func TestMongoDbRepository_FindTimerEventByTime(t *testing.T) {
 		// TODO: check
 		assert.Equal(t, wants, got)
 		//if len(got) != 2 || !wants[0].Equal(got[0]) || !wants[1].Equal(got[1]) {
-		//	t.Error(testutil.MakeTestMessageWithGotWant(got[0], wants[0]))
-		//	t.Error(testutil.MakeTestMessageWithGotWant(got[1], wants[1]))
+		//	t.Error(helper.MakeTestMessageWithGotWant(got[0], wants[0]))
+		//	t.Error(helper.MakeTestMessageWithGotWant(got[1], wants[1]))
 		//}
 
 		for _, event := range events {

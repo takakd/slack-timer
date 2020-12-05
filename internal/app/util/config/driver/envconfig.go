@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"os"
-	"slacktimer/internal/pkg/errorutil"
+	"slacktimer/internal/pkg/helper"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ type EnvConfig struct {
 func NewEnvConfig(filepathList ...string) *EnvConfig {
 	if len(filepathList) > 0 {
 		if err := godotenv.Load(filepathList...); err != nil {
-			panic(errorutil.MakePanicMessage(fmt.Sprintf("failed to load .env files. %v", filepathList)))
+			panic(helper.MakePanicMessage(fmt.Sprintf("failed to load .env files. %v", filepathList)))
 		}
 	}
 	return &EnvConfig{}

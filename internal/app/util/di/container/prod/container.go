@@ -1,8 +1,8 @@
 package prod
 
 import (
-	"slacktimer/internal/app/adapter/enqueuecontroller"
-	"slacktimer/internal/app/adapter/notifycontroller"
+	"slacktimer/internal/app/adapter/enqueue"
+	"slacktimer/internal/app/adapter/notify"
 	"slacktimer/internal/app/adapter/slackhandler"
 	"slacktimer/internal/app/driver/queue"
 	"slacktimer/internal/app/driver/repository"
@@ -61,7 +61,7 @@ func getEnqueueConcrete(name string) (interface{}, bool) {
 	case "enqueuecontroller.InputPort":
 		c = enqueueevent.NewInteractor()
 	case "enqueueevent.OutputPort":
-		c = enqueuecontroller.NewCloudWatchLogsOutputPort()
+		c = enqueue.NewCloudWatchLogsPresenter()
 	case "enqueueevent.Repository":
 		c = repository.NewDynamoDb(nil)
 	case "enqueueevent.Queue":
@@ -76,7 +76,7 @@ func getNotifyConcrete(name string) (interface{}, bool) {
 	case "notifycontroller.InputPort":
 		c = notifyevent.NewInteractor()
 	case "notifyevent.OutputPort":
-		c = notifycontroller.NewCloudWatchLogsPresenter()
+		c = notify.NewCloudWatchLogsPresenter()
 	case "notifyevent.Repository":
 		c = repository.NewDynamoDb(nil)
 	case "notifyevent.Notifier":

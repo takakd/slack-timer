@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"slacktimer/internal/app/util/config"
 	"slacktimer/internal/app/util/log"
-	"slacktimer/internal/pkg/httputil"
+	"slacktimer/internal/pkg/helper"
 )
 
 type SlackApi interface {
@@ -56,7 +56,7 @@ func (s *SlackApiDriver) ConversationsOpen(userId string) (string, error) {
 		return "", fmt.Errorf("request error slack conversations.open user_id=%s: %w", userId, err)
 	}
 
-	respBuf, err := httputil.GetResponseBody(resp)
+	respBuf, err := helper.GetResponseBody(resp)
 	if err != nil {
 		return "", fmt.Errorf("response reading error slack conversations.open user_id=%s: %w", userId, err)
 	}
@@ -109,7 +109,7 @@ func (s *SlackApiDriver) ChatPostMessage(channelId string, message string) error
 		return fmt.Errorf("request error slack chat.postMessage channel_id=%s message=%s: %w", channelId, message, err)
 	}
 
-	respBuf, err := httputil.GetResponseBody(resp)
+	respBuf, err := helper.GetResponseBody(resp)
 	if err != nil {
 		return fmt.Errorf("response reading error slack chat.postMessage channel_id=%s message=%s: %w", channelId, message, err)
 	}

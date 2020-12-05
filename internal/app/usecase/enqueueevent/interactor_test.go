@@ -46,7 +46,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
 		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
 		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
-		caseQueueMsg := []*QueueMessage{
+		caseQueueMsg := []QueueMessage{
 			{
 				caseEvents[0].UserId,
 			},
@@ -126,7 +126,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
 		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
 		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
-		caseQueueMsg := []*QueueMessage{
+		caseQueueMsg := []QueueMessage{
 			{
 				caseEvents[0].UserId,
 			},
@@ -181,7 +181,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
 		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
 		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
-		caseQueueMsg := []*QueueMessage{
+		caseQueueMsg := []QueueMessage{
 			{
 				caseEvents[0].UserId,
 			},

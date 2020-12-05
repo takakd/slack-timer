@@ -38,7 +38,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 		}
 
 		// Enqueue notification message, and send notify by other lambda corresponded queue.
-		id, err := s.queue.Enqueue(&QueueMessage{
+		id, err := s.queue.Enqueue(QueueMessage{
 			UserId: e.UserId,
 		})
 		if err != nil {

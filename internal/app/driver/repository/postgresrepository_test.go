@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/config"
-	"slacktimer/internal/pkg/fileutil"
+	"slacktimer/internal/pkg/helper"
 	"testing"
 	"time"
 )
@@ -82,7 +82,7 @@ func getTestPostgresEnv(t *testing.T) (dsn, tableName string) {
 	_, filePath, _, _ := runtime.Caller(0)
 	// e.g. internal/configs/.env.test
 	envPath := filepath.Join(filepath.Dir(filePath), "../../../../configs/.env.test")
-	if fileutil.FileExists(envPath) {
+	if helper.FileExists(envPath) {
 		godotenv.Load(envPath)
 	}
 	dsn = os.Getenv("DATABASE_URL")

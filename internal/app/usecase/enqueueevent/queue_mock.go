@@ -33,7 +33,7 @@ func (m *MockQueue) EXPECT() *MockQueueMockRecorder {
 }
 
 // Enqueue mocks base method
-func (m *MockQueue) Enqueue(message *QueueMessage) (string, error) {
+func (m *MockQueue) Enqueue(message QueueMessage) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Enqueue", message)
 	ret0, _ := ret[0].(string)

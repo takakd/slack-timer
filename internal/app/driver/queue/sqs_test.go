@@ -34,7 +34,7 @@ func TestNewSqs(t *testing.T) {
 
 func TestSqs_Enqueue(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
-		caseMessage := &enqueueevent.QueueMessage{
+		caseMessage := enqueueevent.QueueMessage{
 			"id1",
 		}
 		caseSQSUrl := "sqs"
@@ -64,7 +64,7 @@ func TestSqs_Enqueue(t *testing.T) {
 	})
 
 	t.Run("ng:failed", func(t *testing.T) {
-		caseMessage := &enqueueevent.QueueMessage{
+		caseMessage := enqueueevent.QueueMessage{
 			"id1",
 		}
 		caseSQSUrl := "sqs"

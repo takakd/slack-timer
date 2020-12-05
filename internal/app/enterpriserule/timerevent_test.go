@@ -56,7 +56,7 @@ func TestTimerEvent_Equal(t *testing.T) {
 			// TODO
 			assert.Equal(t, c.lhs.Equal(c.rhs), c.result)
 			//if c.lhs.Equal(c.rhs) != c.result {
-			//	t.Error(testutil.MakeTestMessageWithGotWant(c.lhs, c.rhs))
+			//	t.Error(helper.MakeTestMessageWithGotWant(c.lhs, c.rhs))
 			//}
 		})
 	}
