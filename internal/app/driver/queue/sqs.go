@@ -13,35 +13,35 @@ const (
 	messageGroupId = "fifo"
 )
 
-type SQSWrapper interface {
+type SqsWrapper interface {
 	SendMessage(input *sqs.SendMessageInput) (*sqs.SendMessageOutput, error)
 }
 
-type SQSWrapperAdapter struct {
+type SqsWrapperAdapter struct {
 	sqs *sqs.SQS
 }
 
-func (s *SQSWrapperAdapter) SendMessage(input *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
+func (s *SqsWrapperAdapter) SendMessage(input *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
 	return s.sqs.SendMessage(input)
 }
 
-type SQSMessageQueue struct {
-	wrp SQSWrapper
+type Sqs struct {
+	wrp SqsWrapper
 }
 
 // Set wrp to null. In case unit test, set mock interface.
-func NewSQSMessageQueue(wrp SQSWrapper) enqueueevent.Queue {
+func NewSqs(wrp SqsWrapper) enqueueevent.Queue {
 	if wrp == nil {
-		wrp = &SQSWrapperAdapter{
+		wrp = &SqsWrapperAdapter{
 			sqs: sqs.New(session.New()),
 		}
 	}
-	return &SQSMessageQueue{
+	return &Sqs{
 		wrp: wrp,
 	}
 }
 
-func (s *SQSMessageQueue) Enqueue(message *enqueueevent.QueueMessage) (string, error) {
+func (s *Sqs) Enqueue(message *enqueueevent.QueueMessage) (string, error) {
 	r, err := s.wrp.SendMessage(&sqs.SendMessageInput{
 		MessageBody:    aws.String(message.UserId),
 		MessageGroupId: aws.String(messageGroupId),

@@ -45,7 +45,7 @@ func setConfig() {
 
 // Setup DI container by env.
 func setDi() {
-	env := config.Get("APP_ENV", "dev")
+	env := config.Get("APP_ENV", "test")
 
 	if env == "prod" {
 		di.SetDi(&prod.Container{})

@@ -5,15 +5,33 @@ import (
 	"fmt"
 	"slacktimer/internal/app/adapter/notifycontroller"
 	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
 
+type LambdaHandler interface {
+	LambdaHandler(ctx context.Context, input LambdaInput) error
+}
+
+type NotifyLambdaHandler struct {
+	ctrl notifycontroller.Handler
+}
+
+func NewNotifyLambdaHandler() LambdaHandler {
+	h := &NotifyLambdaHandler{}
+	h.ctrl = di.Get("notify.Handler").(notifycontroller.Handler)
+	return h
+}
+
 // Lambda handler input data
+// SQS passes this.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
 type LambdaInput struct {
+	// Lambda handler parameters include multiple SQS messages.
 	Records []SqsMessage `json:"records"`
 }
 
+// One SQS message in handler parameters.
 type SqsMessage struct {
 	MessageId     string            `json:"messageId"`
 	ReceiptHandle string            `json:"receiptHandle"`
@@ -27,6 +45,7 @@ type SqsMessage struct {
 	AwsRegion         string                 `json:"awsRegion"`
 }
 
+// To a controller input data.
 func (s *SqsMessage) HandlerInput() notifycontroller.HandlerInput {
 	return notifycontroller.HandlerInput{
 		UserId: s.Body,
@@ -35,17 +54,16 @@ func (s *SqsMessage) HandlerInput() notifycontroller.HandlerInput {
 	}
 }
 
-// Lambda callback
+// SQS calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func NotifyLambdaHandler(ctx context.Context, input LambdaInput) error {
+func (n *NotifyLambdaHandler) LambdaHandler(ctx context.Context, input LambdaInput) error {
 	appinit.AppInit()
 
 	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%v", len(input.Records), input.Records))
 
 	count := 0
 	for _, m := range input.Records {
-		h := notifycontroller.NewHandler()
-		resp := h.Handler(ctx, m.HandlerInput())
+		resp := n.ctrl.Handler(ctx, m.HandlerInput())
 		if resp.Error != nil {
 			count++
 		}

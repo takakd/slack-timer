@@ -54,10 +54,10 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	})
 }
 
-func TestNewDynamoDbRepository(t *testing.T) {
+func TestNewDynamoDb(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		repo := NewDynamoDbRepository(nil)
-		concrete, ok := repo.(*DynamoDbRepository)
+		repo := NewDynamoDb(nil)
+		concrete, ok := repo.(*DynamoDb)
 		assert.True(t, ok)
 		assert.IsType(t, &DynamoDbWrapperAdapter{}, concrete.wrp)
 	})
@@ -67,14 +67,14 @@ func TestNewDynamoDbRepository(t *testing.T) {
 		defer ctrl.Finish()
 
 		mock := NewMockDynamoDbWrapper(ctrl)
-		repo := NewDynamoDbRepository(mock)
-		concrete, ok := repo.(*DynamoDbRepository)
+		repo := NewDynamoDb(mock)
+		concrete, ok := repo.(*DynamoDb)
 		assert.True(t, ok)
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }
 
-func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
+func TestDynamoDb_FindTimerEvent(t *testing.T) {
 	t.Run("ng:Query error", func(t *testing.T) {
 		caseErr := errors.New("dummy error")
 
@@ -88,7 +88,7 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
@@ -131,7 +131,7 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
 		assert.Nil(t, got)
 		assert.Error(t, err)
@@ -160,7 +160,7 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		s.EXPECT().Query(gomock.Any()).Return(caseItem, nil)
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
@@ -192,7 +192,7 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
 		assert.Nil(t, got)
 		assert.NoError(t, err)
@@ -241,7 +241,7 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 			return nil
 		})
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
 		assert.NoError(t, err)
 
@@ -251,7 +251,7 @@ func TestDynamoDbRepository_FindTimerEvent(t *testing.T) {
 	})
 }
 
-func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
+func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 	t.Run("ng:Query", func(t *testing.T) {
 		caseErr := errors.New("dummy error")
 
@@ -267,7 +267,7 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEventByTime(context.TODO(), time.Now(), time.Now().Add(100))
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
@@ -309,7 +309,7 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
@@ -381,14 +381,14 @@ func TestDynamoDbRepository_FindTimerEventByTime(t *testing.T) {
 			return nil
 		})
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
 		assert.NoError(t, err)
 		assert.EqualValues(t, caseEvents, got)
 	})
 }
 
-func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
+func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 	t.Run("ng:MarshalMap", func(t *testing.T) {
 		caseItem := &TimerEventDbItem{
 			UserId:           "test user",
@@ -407,7 +407,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		s := NewMockDynamoDbWrapper(ctrl)
 		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(nil, caseErr)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		event, err := caseItem.TimerEvent()
 		assert.NoError(t, err)
 		got, err := repo.SaveTimerEvent(context.TODO(), event)
@@ -444,7 +444,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(caseInput.Item, nil)
 		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, caseErr)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		event, err := caseItem.TimerEvent()
 		got, err := repo.SaveTimerEvent(context.TODO(), event)
 		assert.Nil(t, got)
@@ -479,7 +479,7 @@ func TestDynamoDbRepository_SaveTimerEvent(t *testing.T) {
 		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(caseInput.Item, nil)
 		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, nil)
 
-		repo := NewDynamoDbRepository(s)
+		repo := NewDynamoDb(s)
 		event, err := caseItem.TimerEvent()
 		assert.NoError(t, err)
 		got, err := repo.SaveTimerEvent(context.TODO(), event)

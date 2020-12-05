@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-	lambda.Start(notify.NotifyLambdaHandler)
+	h := notify.NewNotifyLambdaHandler()
+	lambda.Start(h.LambdaHandler)
 }

@@ -10,20 +10,26 @@ import (
 	"testing"
 )
 
+func TestNewUrlVerificationController(t *testing.T) {
+	assert.NotPanics(t, func() {
+		NewUrlVerificationController()
+	})
+}
+
 func TestUrlVerificationHandler_Handler(t *testing.T) {
 	cases := []struct {
 		name      string
 		challenge string
-		resp      *HandlerResponse
+		resp      *Response
 	}{
-		{"empty challenge", "", &HandlerResponse{
-			Body: &HandlerResponseErrorBody{
+		{"empty challenge", "", &Response{
+			Body: &ResponseErrorBody{
 				Message: "invalid challenge",
 				Detail:  "empty",
 			},
 			StatusCode: http.StatusInternalServerError,
 		}},
-		{"ok", "valid token", &HandlerResponse{
+		{"ok", "valid token", &Response{
 			StatusCode: http.StatusOK,
 			Body: UrlVerificationResponseBody{
 				"valid token",
@@ -32,24 +38,22 @@ func TestUrlVerificationHandler_Handler(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			caseData := &EventCallbackData{
+			caseData := EventCallbackData{
 				Challenge: c.challenge,
 			}
 
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			l := log.NewMockLogger(ctrl)
-			l.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", caseData.Challenge)))
+			ml := log.NewMockLogger(ctrl)
+			ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", caseData.Challenge)))
 			if caseData.Challenge != "" {
-				l.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", *c.resp)))
+				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", *c.resp)))
 			}
-			log.SetDefaultLogger(l)
+			log.SetDefaultLogger(ml)
 
-			h := UrlVerificationRequestHandler{
-				Data: caseData,
-			}
-			got := h.Handler(context.TODO())
+			h := NewUrlVerificationController()
+			got := h.Handler(context.TODO(), caseData)
 			assert.Equal(t, c.resp, got)
 		})
 	}

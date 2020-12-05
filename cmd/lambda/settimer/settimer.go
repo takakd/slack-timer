@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/aws/aws-lambda-go/lambda"
-	"slacktimer/internal/app/adapter/slackcontroller"
+	"slacktimer/internal/app/driver/lambdahandler/settime"
 )
 
 func main() {
-	lambda.Start(slackcontroller.LambdaHandleRequest)
+	h := settime.NewSetTimerLambdaHandler()
+	lambda.Start(h.LambdaHandler)
 }

@@ -13,14 +13,14 @@ func TestNewHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := enqueueevent.NewMockInputPort(ctrl)
-	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get(gomock.Eq("enqueueevent.InputPort")).Return(i)
+	mi := enqueueevent.NewMockInputPort(ctrl)
+	md := di.NewMockDI(ctrl)
+	md.EXPECT().Get(gomock.Eq("enqueueevent.InputPort")).Return(mi)
 
-	di.SetDi(d)
+	di.SetDi(md)
 
 	h := NewHandler().(*CloudWatchEventHandler)
-	assert.Equal(t, i, h.InputPort)
+	assert.Equal(t, mi, h.InputPort)
 }
 
 func TestCloudWatchEventHandler_Handler(t *testing.T) {
@@ -37,11 +37,8 @@ func TestCloudWatchEventHandler_Handler(t *testing.T) {
 	d.EXPECT().Get("enqueueevent.InputPort").Return(i)
 	di.SetDi(d)
 
-	h := NewHandler().(*CloudWatchEventHandler)
-	resp := h.Handler(ctx, caseInput)
-	assert.Equal(t, &Response{}, resp)
-
-	//os.Setenv("APP_ENV", "ignore set DI")
-	//err := LambdaHandleEvent(ctx, caseInput)
-	//assert.Equal(t, caseResponse.Error, err)
+	assert.NotPanics(t, func() {
+		h := NewHandler()
+		h.Handler(ctx, caseInput)
+	})
 }

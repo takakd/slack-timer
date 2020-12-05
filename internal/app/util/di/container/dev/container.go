@@ -46,12 +46,11 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 	var c interface{}
 	switch name {
 	case "UpdateTimerEvent":
-		c = updatetimerevent.NewUsecase()
+		c = updatetimerevent.NewInteractor()
 	case "Repository":
-		c = repository.NewDynamoDbRepository(nil)
+		c = repository.NewDynamoDb(nil)
 	case "Queue":
-		c = queue.NewSQSMessageQueue(nil)
-		//case "UpdateTimerEventOutputPort":
+		c = queue.NewSqs(nil)
 	}
 	return c, c != nil
 }
@@ -64,9 +63,9 @@ func getEnqueueConcrete(name string) (interface{}, bool) {
 	case "enqueueevent.OutputPort":
 		c = enqueuecontroller.NewCloudWatchLogsOutputPort()
 	case "enqueueevent.Repository":
-		c = repository.NewDynamoDbRepository(nil)
+		c = repository.NewDynamoDb(nil)
 	case "enqueueevent.Queue":
-		c = queue.NewSQSMessageQueue(nil)
+		c = queue.NewSqs(nil)
 	}
 	return c, c != nil
 }
@@ -79,7 +78,7 @@ func getNotifyConcrete(name string) (interface{}, bool) {
 	case "notifyevent.OutputPort":
 		c = notifycontroller.NewCloudWatchLogsPresenter()
 	case "notifyevent.Repository":
-		c = repository.NewDynamoDbRepository(nil)
+		c = repository.NewDynamoDb(nil)
 	case "notifyevent.Notifier":
 		c = slackhandler.NewSlackHandler()
 	case "slackhandler.SlackApi":

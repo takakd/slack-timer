@@ -12,27 +12,27 @@ import (
 	"testing"
 )
 
-func TestNewSQSMessageQueue(t *testing.T) {
+func TestNewSqs(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		q := NewSQSMessageQueue(nil)
-		concrete, ok := q.(*SQSMessageQueue)
+		q := NewSqs(nil)
+		concrete, ok := q.(*Sqs)
 		assert.True(t, ok)
-		assert.IsType(t, &SQSWrapperAdapter{}, concrete.wrp)
+		assert.IsType(t, &SqsWrapperAdapter{}, concrete.wrp)
 	})
 
 	t.Run("mock", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mock := NewMockSQSWrapper(ctrl)
-		repo := NewSQSMessageQueue(mock)
-		concrete, ok := repo.(*SQSMessageQueue)
+		mock := NewMockSqsWrapper(ctrl)
+		repo := NewSqs(mock)
+		concrete, ok := repo.(*Sqs)
 		assert.True(t, ok)
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }
 
-func TestSQSMessageQueue_Enqueue(t *testing.T) {
+func TestSqs_Enqueue(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseMessage := &enqueueevent.QueueMessage{
 			"id1",
@@ -54,10 +54,10 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 		c.EXPECT().Get(gomock.Eq("SQS_URL"), "").Return(caseSQSUrl)
 		config.SetConfig(c)
 
-		w := NewMockSQSWrapper(ctrl)
+		w := NewMockSqsWrapper(ctrl)
 		w.EXPECT().SendMessage(caseMessageInput).Return(caseMessageOutput, nil)
 
-		q := NewSQSMessageQueue(w)
+		q := NewSqs(w)
 		r, err := q.Enqueue(caseMessage)
 		assert.Equal(t, *caseMessageOutput.MessageId, r)
 		assert.NoError(t, err)
@@ -82,10 +82,10 @@ func TestSQSMessageQueue_Enqueue(t *testing.T) {
 		c.EXPECT().Get(gomock.Eq("SQS_URL"), "").Return(caseSQSUrl)
 		config.SetConfig(c)
 
-		w := NewMockSQSWrapper(ctrl)
+		w := NewMockSqsWrapper(ctrl)
 		w.EXPECT().SendMessage(caseMessageInput).Return(nil, caseError)
 
-		q := NewSQSMessageQueue(w)
+		q := NewSqs(w)
 		r, err := q.Enqueue(caseMessage)
 		assert.Empty(t, r)
 		assert.Equal(t, fmt.Errorf("failed to enqueue %w", caseError), err)

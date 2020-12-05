@@ -5,9 +5,7 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"slacktimer/internal/app/adapter/notifycontroller"
-	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/di"
 	"testing"
 )
@@ -21,9 +19,13 @@ func TestSqsMessage_HandlerInput(t *testing.T) {
 	assert.Equal(t, "test user", h.UserId)
 }
 
-func TestNotifyLambdaHandler(t *testing.T) {
+func TestLambdaHandler(t *testing.T) {
 	t.Run("ok:notify", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
 		ctx := context.TODO()
+
 		caseInput := LambdaInput{
 			Records: []SqsMessage{
 				{
@@ -31,28 +33,28 @@ func TestNotifyLambdaHandler(t *testing.T) {
 				},
 			},
 		}
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
 		caseResponse := &notifycontroller.Response{
 			Error: nil,
 		}
 
-		i := notifyevent.NewMockInputPort(ctrl)
-		i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Any()).Return(caseResponse.Error)
+		mi := notifycontroller.NewMockHandler(ctrl)
+		mi.EXPECT().Handler(gomock.Eq(ctx), gomock.Any()).Return(caseResponse)
 
-		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get("notifycontroller.InputPort").Return(i)
-		di.SetDi(m)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("notify.Handler").Return(mi)
+		di.SetDi(md)
 
-		os.Setenv("APP_ENV", "ignore set DI")
-		err := NotifyLambdaHandler(ctx, caseInput)
+		h := NewNotifyLambdaHandler()
+		err := h.LambdaHandler(ctx, caseInput)
 		assert.NoError(t, err)
 	})
 
-	t.Run("ok:notify", func(t *testing.T) {
+	t.Run("ng:notify", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
 		ctx := context.TODO()
+
 		caseInput := LambdaInput{
 			Records: []SqsMessage{
 				{
@@ -61,22 +63,19 @@ func TestNotifyLambdaHandler(t *testing.T) {
 			},
 		}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
 		caseResponse := &notifycontroller.Response{
 			Error: errors.New("test error"),
 		}
 
-		i := notifyevent.NewMockInputPort(ctrl)
-		i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Any()).Return(caseResponse.Error)
+		mi := notifycontroller.NewMockHandler(ctrl)
+		mi.EXPECT().Handler(gomock.Eq(ctx), gomock.Any()).Return(caseResponse)
 
-		m := di.NewMockDI(ctrl)
-		m.EXPECT().Get("notifycontroller.InputPort").Return(i)
-		di.SetDi(m)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("notify.Handler").Return(mi)
+		di.SetDi(md)
 
-		os.Setenv("APP_ENV", "ignore set DI")
-		err := NotifyLambdaHandler(ctx, caseInput)
+		h := NewNotifyLambdaHandler()
+		err := h.LambdaHandler(ctx, caseInput)
 		assert.Error(t, errors.New("error happend count=1"), err)
 	})
 }

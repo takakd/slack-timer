@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-	lambda.Start(enqueue.LambdaHandleEvent)
+	h := enqueue.NewEnqueueLambdaHandler()
+	lambda.Start(h.LambdaHandler)
 }

@@ -4,10 +4,26 @@ import (
 	"context"
 	"slacktimer/internal/app/adapter/enqueuecontroller"
 	"slacktimer/internal/app/util/appinit"
+	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
 
+type LambdaHandler interface {
+	LambdaHandler(ctx context.Context, input LambdaInput)
+}
+
+type EnqueueLambdaHandler struct {
+	ctrl enqueuecontroller.Handler
+}
+
+func NewEnqueueLambdaHandler() LambdaHandler {
+	h := &EnqueueLambdaHandler{}
+	h.ctrl = di.Get("enqueue.Handler").(enqueuecontroller.Handler)
+	return h
+}
+
 // Lambda handler input data
+// CloudWatchEvent passes this.
 type LambdaInput struct {
 	Version    string   `json:"version"`
 	Id         string   `json:"id"`
@@ -27,21 +43,19 @@ type LambdaInput struct {
 	} `json:"detail"`
 }
 
+// To a controller input data.
 func (s *LambdaInput) HandlerInput() enqueuecontroller.HandlerInput {
 	return enqueuecontroller.HandlerInput{}
 }
 
-// Lambda callback
+// CloudWatchEvent calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func LambdaHandleEvent(ctx context.Context, input LambdaInput) error {
+func (e *EnqueueLambdaHandler) LambdaHandler(ctx context.Context, input LambdaInput) {
 	appinit.AppInit()
 
 	log.Info("handler called", input)
 
-	h := enqueuecontroller.NewHandler()
-	resp := h.Handler(ctx, input.HandlerInput())
+	e.ctrl.Handler(ctx, input.HandlerInput())
 
-	log.Info("handler output", *resp)
-
-	return resp.Error
+	log.Info("handler done")
 }

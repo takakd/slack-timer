@@ -24,7 +24,7 @@ type DynamoDbWrapper interface {
 	MarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, error)
 }
 
-// Use this if the argument of "NewDynamoDbRepository" is not passed.
+// Use this if the argument of "NewDynamoDb" is not passed.
 type DynamoDbWrapperAdapter struct {
 	svc *dynamodb.DynamoDB
 }
@@ -60,7 +60,7 @@ func (d *DynamoDbWrapperAdapter) MarshalMap(in interface{}) (map[string]*dynamod
 }
 
 // Implements Repository interface with DynamoDB.
-type DynamoDbRepository struct {
+type DynamoDb struct {
 	wrp DynamoDbWrapper
 }
 
@@ -105,19 +105,19 @@ func (t *TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 }
 
 // Set wrp to null. In case unit test, set mock interface.
-func NewDynamoDbRepository(wrp DynamoDbWrapper) updatetimerevent.Repository {
+func NewDynamoDb(wrp DynamoDbWrapper) updatetimerevent.Repository {
 	if wrp == nil {
 		wrp = &DynamoDbWrapperAdapter{
 			svc: dynamodb.New(session.New()),
 		}
 	}
-	return &DynamoDbRepository{
+	return &DynamoDb{
 		wrp: wrp,
 	}
 }
 
 // Find timer event by user id.
-func (r *DynamoDbRepository) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
+func (r *DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":userid": {
@@ -153,7 +153,7 @@ func (r *DynamoDbRepository) FindTimerEvent(ctx context.Context, userId string) 
 }
 
 // Find timer event from "from" to "to".
-func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
+func (r *DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":dummy": {
@@ -195,7 +195,7 @@ func (r *DynamoDbRepository) FindTimerEventByTime(ctx context.Context, from, to 
 
 // Save TimerEvent to DB.
 // Return error and saved event successfully.
-func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
+func (r *DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	dbItem := NewTimerEventDbItem(event)
 
 	dbItem.Dummy, err = strconv.Atoi(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"))
@@ -222,7 +222,7 @@ func (r *DynamoDbRepository) SaveTimerEvent(ctx context.Context, event *enterpri
 }
 
 // Find timer event before eventTime.
-func (r *DynamoDbRepository) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
+func (r *DynamoDb) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":dummy": {

@@ -7,30 +7,37 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
+type UrlVerificationRequestHandler interface {
+	Handler(ctx context.Context, data EventCallbackData) *Response
+}
+
 // UrlVerificationRequestHandler represents url_verification event
 // Ref. https://api.slack.com/events/url_verification
-type UrlVerificationRequestHandler struct {
-	Data *EventCallbackData
+type UrlVerificationController struct {
 }
 
 type UrlVerificationResponseBody struct {
 	Challenge string `json:"challenge"`
 }
 
+func NewUrlVerificationController() UrlVerificationRequestHandler {
+	return &UrlVerificationController{}
+}
+
 // URL verification process just depends on Slack Event API, so no usecase and outputport.
-func (ur *UrlVerificationRequestHandler) Handler(ctx context.Context) *HandlerResponse {
+func (ur *UrlVerificationController) Handler(ctx context.Context, data EventCallbackData) *Response {
 
-	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", ur.Data.Challenge))
+	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", data.Challenge))
 
-	if ur.Data.Challenge == "" {
+	if data.Challenge == "" {
 		return makeErrorHandlerResponse("invalid challenge", "empty")
 	}
 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.
-	resp := &HandlerResponse{
+	resp := &Response{
 		StatusCode: http.StatusOK,
 		Body: UrlVerificationResponseBody{
-			ur.Data.Challenge,
+			data.Challenge,
 		},
 	}
 

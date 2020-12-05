@@ -10,11 +10,7 @@ import (
 )
 
 type Handler interface {
-	Handler(ctx context.Context, input HandlerInput) *Response
-}
-
-type Response struct {
-	Error error
+	Handler(ctx context.Context, input HandlerInput)
 }
 
 type CloudWatchEventHandler struct {
@@ -31,7 +27,7 @@ func NewHandler() Handler {
 	return h
 }
 
-func (c CloudWatchEventHandler) Handler(ctx context.Context, input HandlerInput) *Response {
+func (c CloudWatchEventHandler) Handler(ctx context.Context, input HandlerInput) {
 	log.Info("handler called", input)
 
 	data := enqueueevent.InputData{
@@ -40,9 +36,5 @@ func (c CloudWatchEventHandler) Handler(ctx context.Context, input HandlerInput)
 
 	c.InputPort.EnqueueEvent(ctx, data)
 
-	resp := &Response{}
-
-	log.Info("handler output", *resp)
-
-	return resp
+	log.Info("handler done")
 }

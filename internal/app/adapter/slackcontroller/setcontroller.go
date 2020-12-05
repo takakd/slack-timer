@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"regexp"
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/timeutil"
 	"strconv"
@@ -15,21 +15,31 @@ import (
 	"time"
 )
 
+type SetRequestHandler interface {
+	Handler(ctx context.Context, data EventCallbackData) *Response
+}
+
 // SetRequestHandler represents the API command "Set".
-type SetRequestHandler struct {
-	messageEvent *MessageEvent
+type SetRequestController struct {
 	// Time to notify user next
 	notificationTime    time.Time
 	remindIntervalInMin int
-	usecase             updatetimerevent.Usecase
+	inputPort           updatetimerevent.InputPort
+}
+
+func NewSetRequestController() SetRequestHandler {
+	return &SetRequestController{
+		inputPort: di.Get("slackcontroller.InputPort").(updatetimerevent.InputPort),
+	}
 }
 
 // Validate parameters.
-func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
+// TODO: naming parse? because set remindinterval value.
+func (sr *SetRequestController) validate(data EventCallbackData) *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
 	// Extract second part. e.g.1607054661.000200 -> 160705466.
-	s := strings.Split(sr.messageEvent.EventTs, ".")
+	s := strings.Split(data.MessageEvent.EventTs, ".")
 	if len(s) < 1 {
 		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
 		return bag
@@ -43,7 +53,7 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 
 	// e.g. set 10
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
-	m := re.FindStringSubmatch(sr.messageEvent.Text)
+	m := re.FindStringSubmatch(data.MessageEvent.Text)
 	if m == nil {
 		bag.SetError("interval", "invalid format", errors.New("invalid format"))
 		return bag
@@ -54,8 +64,8 @@ func (sr *SetRequestHandler) validate() *validator.ValidateErrorBag {
 	return bag
 }
 
-func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
-	if validateErrors := sr.validate(); len(validateErrors.GetErrors()) > 0 {
+func (sr *SetRequestController) Handler(ctx context.Context, data EventCallbackData) *Response {
+	if validateErrors := sr.validate(data); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError
 		for _, v := range validateErrors.GetErrors() {
 			firstError = v
@@ -64,31 +74,12 @@ func (sr *SetRequestHandler) Handler(ctx context.Context) *HandlerResponse {
 		return makeErrorHandlerResponse("invalid parameter", firstError.Summary)
 	}
 
-	outputPort := &SetRequestOutputPort{}
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin user=%s notificationtime=%s interval=%d", data.MessageEvent.User, sr.notificationTime, sr.remindIntervalInMin))
 
-	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin user=%s notificationtime=%s interval=%d", sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin))
+	presenter := NewLambdaResponseAdaptPresenter()
+	sr.inputPort.SaveIntervalMin(ctx, data.MessageEvent.User, sr.notificationTime, sr.remindIntervalInMin, presenter)
 
-	sr.usecase.SaveIntervalMin(ctx, sr.messageEvent.User, sr.notificationTime, sr.remindIntervalInMin, outputPort)
+	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output.resp=%v", *presenter.Resp))
 
-	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output.resp=%v", *outputPort.Resp))
-
-	return outputPort.Resp
-}
-
-type SetRequestOutputPort struct {
-	Resp *HandlerResponse
-}
-
-func (s *SetRequestOutputPort) Output(data *updatetimerevent.OutputData) {
-	err := data.Result
-	if err != nil {
-		log.Info(fmt.Sprintf("SetRequestOutputPort.Output error=%v", err))
-		s.Resp = makeErrorHandlerResponse("failed to set timer", "internal server error")
-		return
-	}
-
-	s.Resp = &HandlerResponse{
-		StatusCode: http.StatusOK,
-		Body:       "success",
-	}
+	return presenter.Resp
 }

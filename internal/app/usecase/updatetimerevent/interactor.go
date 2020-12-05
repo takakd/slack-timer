@@ -8,34 +8,11 @@ import (
 	"time"
 )
 
-type Usecase interface {
-	// Set notificationTime to the notification time of the event which corresponds to userId.
-	// Pass OutputPort interface if overwrite presenter implementation.
-	//		e.g. HTTPResponse that needs http.ResponseWrite
-	UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort)
-
-	// Set notification interval to the event which corresponds to userId.
-	// Use currentTime in calculating notification time if the event is not created.
-	// Pass OutputPort interface if overwrite presenter implementation.
-	//		e.g. HTTPResponse that needs http.ResponseWrite
-	SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, overWriteOutputPort OutputPort)
-}
-
-type OutputData struct {
-	Result     error
-	SavedEvent *enterpriserule.TimerEvent
-}
-
-type OutputPort interface {
-	Output(data *OutputData)
-}
-
 type Interactor struct {
 	repository Repository
-	//outputPort OutputPort
 }
 
-func NewUsecase() Usecase {
+func NewInteractor() InputPort {
 	return &Interactor{
 		repository: di.Get("Repository").(Repository),
 	}
@@ -76,18 +53,18 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 }
 
 // See Usecase interface for details.
-func (s *Interactor) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, overWriteOutputPort OutputPort) {
+func (s *Interactor) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, presenter OutputPort) {
 	data := s.saveTimerEventValue(ctx, userId, notificationTime, 0)
-	if overWriteOutputPort != nil {
-		overWriteOutputPort.Output(data)
+	if presenter != nil {
+		presenter.Output(*data)
 	}
 }
 
 // Save the remind interval second for user.
 // See Usecase interface for details.
-func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, overWriteOutputPort OutputPort) {
+func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, presetner OutputPort) {
 	data := s.saveTimerEventValue(ctx, userId, currentTime, minutes)
-	if overWriteOutputPort != nil {
-		overWriteOutputPort.Output(data)
+	if presetner != nil {
+		presetner.Output(*data)
 	}
 }
