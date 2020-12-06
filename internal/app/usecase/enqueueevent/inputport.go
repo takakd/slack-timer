@@ -1,3 +1,4 @@
+// Package enqueueevent provides usecase that enqueue event.
 package enqueueevent
 
 import (

@@ -20,7 +20,7 @@ func NewEnqueueLambdaHandler() LambdaHandler {
 
 // CloudWatchEvent calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func (e *EnqueueLambdaHandler) Handle(ctx context.Context, input LambdaInput) {
+func (e EnqueueLambdaHandler) Handle(ctx context.Context, input LambdaInput) {
 	appinitializer.AppInit()
 
 	log.Info("handler called", input)

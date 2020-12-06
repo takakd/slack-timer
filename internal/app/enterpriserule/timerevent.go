@@ -1,3 +1,4 @@
+// Package enterpriserule provides entities.
 package enterpriserule
 
 import (
@@ -6,7 +7,7 @@ import (
 	"time"
 )
 
-// Holds the time to drink a timer event and the interval of drinking.
+// Holds notification properties and notification state.
 type TimerEvent struct {
 	UserId           string          `dynamodbav:"UserId" db:"user_id" bson:"user_id"`
 	NotificationTime time.Time       `dynamodbav:"NotificationTime" db:"notification_time_utc" bson:"notification_time_utc"`
@@ -33,7 +34,7 @@ func NewTimerEvent(userId string) (*TimerEvent, error) {
 	return p, nil
 }
 
-func (p *TimerEvent) Equal(another *TimerEvent) bool {
+func (p TimerEvent) Equal(another TimerEvent) bool {
 	return reflect.DeepEqual(p, another)
 }
 
@@ -41,7 +42,7 @@ func (p *TimerEvent) IncrementNotificationTime() {
 	p.NotificationTime = p.NotificationTime.Add(time.Duration(p.IntervalMin) * time.Minute)
 }
 
-func (p *TimerEvent) Queued() bool {
+func (p TimerEvent) Queued() bool {
 	return p.State == timerEventStateQueued
 }
 

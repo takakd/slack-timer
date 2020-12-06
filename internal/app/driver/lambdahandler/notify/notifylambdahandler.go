@@ -21,7 +21,7 @@ func NewNotifyLambdaHandler() LambdaHandler {
 
 // SQS calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func (n *NotifyLambdaHandler) Handle(ctx context.Context, input LambdaInput) error {
+func (n NotifyLambdaHandler) Handle(ctx context.Context, input LambdaInput) error {
 	appinitializer.AppInit()
 
 	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%v", len(input.Records), input.Records))

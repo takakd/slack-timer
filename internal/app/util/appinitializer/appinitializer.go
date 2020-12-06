@@ -1,3 +1,4 @@
+// Package appinitializer set up the base packages in the app.
 package appinitializer
 
 import (
@@ -14,6 +15,7 @@ import (
 	"slacktimer/internal/pkg/helper"
 )
 
+// Call this first when the app launch.
 func AppInit() {
 	setConfig()
 	setDi()
@@ -42,7 +44,7 @@ func setConfig() {
 	}
 }
 
-// Setup DI container by env.
+// Setup DI container.
 func setDi() {
 	env := config.Get("APP_ENV", "test")
 
@@ -55,6 +57,7 @@ func setDi() {
 	}
 }
 
+// Setup logger.
 func setLogger() {
 	log.SetDefaultLogger(driver2.NewCloudWatchLogger())
 	log.SetLevel(config.Get("APP_LOG_LEVEL", "debug"))

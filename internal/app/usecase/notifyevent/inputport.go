@@ -1,3 +1,4 @@
+// Package notifyevent provides usecase that notify an event to the user.
 package notifyevent
 
 import (
@@ -5,7 +6,7 @@ import (
 )
 
 type InputPort interface {
-	// Notify an event to user and update entity.
+	// Notify an event to the user and update the entity.
 	NotifyEvent(ctx context.Context, input InputData) error
 }
 

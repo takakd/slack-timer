@@ -29,7 +29,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get(gomock.Eq("slackcontroller.InputPort")).Return(mi)
+			md.EXPECT().Get(gomock.Eq("updatetimerevent.InputPort")).Return(mi)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -72,7 +72,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get(gomock.Eq("slackcontroller.InputPort")).Return(mi)
+			md.EXPECT().Get(gomock.Eq("updatetimerevent.InputPort")).Return(mi)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -147,7 +147,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			}
 
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get("slackcontroller.InputPort").Return(mu)
+			md.EXPECT().Get("updatetimerevent.InputPort").Return(mu)
 			di.SetDi(md)
 
 			h := NewSaveEventHandlerFunctor()

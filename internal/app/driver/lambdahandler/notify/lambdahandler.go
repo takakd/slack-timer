@@ -1,3 +1,4 @@
+// Package notify the entry point of the notify lambda function.
 package notify
 
 import (
@@ -9,15 +10,14 @@ type LambdaHandler interface {
 	Handle(ctx context.Context, input LambdaInput) error
 }
 
-// Lambda handler input data
 // SQS passes this.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
 type LambdaInput struct {
-	// Lambda handler parameters include multiple SQS messages.
+	// Parameters include multiple SQS messages.
 	Records []SqsMessage `json:"records"`
 }
 
-// One SQS message in handler parameters.
+// A SQS message in handler parameters.
 type SqsMessage struct {
 	MessageId     string            `json:"messageId"`
 	ReceiptHandle string            `json:"receiptHandle"`
@@ -31,8 +31,8 @@ type SqsMessage struct {
 	AwsRegion         string                 `json:"awsRegion"`
 }
 
-// To a controller input data.
-func (s *SqsMessage) HandleInput() notify.HandleInput {
+// To input data for controller.
+func (s SqsMessage) HandleInput() notify.HandleInput {
 	return notify.HandleInput{
 		UserId: s.Body,
 		// TODO: Get userid and message from body.

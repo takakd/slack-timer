@@ -1,3 +1,4 @@
+// package slack is Slack API adapter.
 package slack
 
 import (

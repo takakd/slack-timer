@@ -33,7 +33,7 @@ func (s *Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 
 	for _, e := range events {
 		if e.Queued() {
-			// Skip if it has aleady queued.
+			// Skip if it has already queued.
 			continue
 		}
 

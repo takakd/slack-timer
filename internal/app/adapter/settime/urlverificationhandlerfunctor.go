@@ -24,13 +24,12 @@ func NewUrlVerificationRequestHandlerFunctor() UrlVerificationRequestHandler {
 	return &UrlVerificationRequestHandlerFunctor{}
 }
 
-// URL verification process just depends on Slack Event API, so no usecase and outputport.
-func (ur *UrlVerificationRequestHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
+func (ur UrlVerificationRequestHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
 
 	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", data.Challenge))
 
 	if data.Challenge == "" {
-		return makeErrorHandlerResponse("invalid challenge", "empty")
+		return newErrorHandlerResponse("invalid challenge", "empty")
 	}
 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.

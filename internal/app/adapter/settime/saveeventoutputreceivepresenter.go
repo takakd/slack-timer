@@ -8,6 +8,7 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
+// Pass the output data to the controller.
 type SaveEventOutputReceivePresenter struct {
 	Resp       *Response
 	Error      error
@@ -26,7 +27,7 @@ func (p *SaveEventOutputReceivePresenter) Output(data updatetimerevent.OutputDat
 	}
 
 	if data.Result != nil {
-		log.Info(fmt.Sprintf("SetRequestOutputPort.Output error=%v", data.Result))
+		log.Info(fmt.Sprintf("SaveEventOutputReceivePresenter.Output error=%v", data.Result))
 		p.Resp.StatusCode = http.StatusInternalServerError
 		p.Resp.Body = "internal server error"
 		return

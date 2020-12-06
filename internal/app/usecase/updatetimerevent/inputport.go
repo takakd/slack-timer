@@ -1,3 +1,4 @@
+// Package updatetimerevent provides usecase that finding or saving event entity.
 package updatetimerevent
 
 import (

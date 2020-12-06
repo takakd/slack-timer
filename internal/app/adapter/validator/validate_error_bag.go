@@ -1,3 +1,4 @@
+// Package validator provides features that validate request parameters.
 package validator
 
 import (
@@ -52,7 +53,7 @@ func (b *ValidateErrorBag) SetError(name, summary string, err error) {
 
 // Check if error exists.
 // true: exist, false: not exist.
-func (b *ValidateErrorBag) ContainsError(name string, err error) bool {
+func (b ValidateErrorBag) ContainsError(name string, err error) bool {
 	error, errorExists := b.errors[name]
 	if !errorExists {
 		return false
@@ -62,13 +63,13 @@ func (b *ValidateErrorBag) ContainsError(name string, err error) bool {
 }
 
 //
-func (b *ValidateErrorBag) GetError(name string) (*ValidateError, bool) {
+func (b ValidateErrorBag) GetError(name string) (*ValidateError, bool) {
 	error, errorExists := b.errors[name]
 	return error, errorExists
 }
 
 //
-func (b *ValidateErrorBag) GetErrors() []*ValidateError {
+func (b ValidateErrorBag) GetErrors() []*ValidateError {
 	errors := make([]*ValidateError, 0, len(b.errors))
 	for _, v := range b.errors {
 		errors = append(errors, v)

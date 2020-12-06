@@ -14,12 +14,12 @@ type Interactor struct {
 
 func NewInteractor() InputPort {
 	return &Interactor{
-		repository: di.Get("Repository").(Repository),
+		repository: di.Get("updatetimerevent.Repository").(Repository),
 	}
 }
 
 // Common processing.
-func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, notificationTime time.Time, remindInterval int) *OutputData {
+func (s Interactor) saveTimerEventValue(ctx context.Context, userId string, notificationTime time.Time, remindInterval int) *OutputData {
 
 	outputData := &OutputData{}
 
@@ -52,17 +52,14 @@ func (s *Interactor) saveTimerEventValue(ctx context.Context, userId string, not
 	return outputData
 }
 
-// See Usecase interface for details.
-func (s *Interactor) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, presenter OutputPort) {
+func (s Interactor) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, presenter OutputPort) {
 	data := s.saveTimerEventValue(ctx, userId, notificationTime, 0)
 	if presenter != nil {
 		presenter.Output(*data)
 	}
 }
 
-// Save the remind interval second for user.
-// See Usecase interface for details.
-func (s *Interactor) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, presetner OutputPort) {
+func (s Interactor) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, presetner OutputPort) {
 	data := s.saveTimerEventValue(ctx, userId, currentTime, minutes)
 	if presetner != nil {
 		presetner.Output(*data)

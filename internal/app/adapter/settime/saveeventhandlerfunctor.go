@@ -19,9 +19,8 @@ type SaveEventHandler interface {
 	Handle(ctx context.Context, data EventCallbackData) *Response
 }
 
-// SetRequestHandler represents the API command "Set".
+// Handle "Set" command
 type SaveEventHandlerFunctor struct {
-	// Time to notify user next
 	notificationTime    time.Time
 	remindIntervalInMin int
 	inputPort           updatetimerevent.InputPort
@@ -29,7 +28,7 @@ type SaveEventHandlerFunctor struct {
 
 func NewSaveEventHandlerFunctor() SaveEventHandler {
 	return &SaveEventHandlerFunctor{
-		inputPort: di.Get("slackcontroller.InputPort").(updatetimerevent.InputPort),
+		inputPort: di.Get("updatetimerevent.InputPort").(updatetimerevent.InputPort),
 	}
 }
 
@@ -64,22 +63,22 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	return bag
 }
 
-func (se *SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
+func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
 	if validateErrors := se.validate(data); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError
 		for _, v := range validateErrors.GetErrors() {
 			firstError = v
 			break
 		}
-		return makeErrorHandlerResponse("invalid parameter", firstError.Summary)
+		return newErrorHandlerResponse("invalid parameter", firstError.Summary)
 	}
 
-	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin user=%s notificationtime=%s interval=%d", data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin))
+	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin))
 
 	presenter := NewSaveEventOutputReceivePresenter()
 	se.inputPort.SaveIntervalMin(ctx, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
 
-	log.Info(fmt.Sprintf("Usecase.SaveIntervalMin output.resp=%v", *presenter.Resp))
+	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", *presenter.Resp))
 
 	return presenter.Resp
 }

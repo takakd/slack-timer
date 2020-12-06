@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// Command types entered by users.
+const (
+	cmdSet = "set"
+)
+
 // Called by Lambda handler.
 type Controller interface {
 	Handle(ctx context.Context, input HandleInput) *Response
@@ -27,10 +32,10 @@ type HandleInput struct {
 // The data contained in Slack EventAPI Request.
 // Ref: https://api.slack.com/events-api#the-events-api__receiving-events
 type EventCallbackData struct {
-	Token  string `json:"token"`
-	TeamId string `json:"team_id"`
-	Type         string       `json:"type"`
-	EventTime    int          `json:"event_time"`
+	Token     string `json:"token"`
+	TeamId    string `json:"team_id"`
+	Type      string `json:"type"`
+	EventTime int    `json:"event_time"`
 
 	// This field is only included in Message Event.
 	// Ref: https://api.slack.com/events
@@ -65,8 +70,7 @@ func (m MessageEvent) eventUnixTimeStamp() (ts int64, err error) {
 	return
 }
 
-// TODO: change name "isSetEvnet" to "isSetTimeEvent"
-func (m MessageEvent) isSetEvent() bool {
+func (m MessageEvent) isSetTimeEvent() bool {
 	if m.Type != "message" {
 		return false
 	}
@@ -74,7 +78,7 @@ func (m MessageEvent) isSetEvent() bool {
 	// e.g. set 10
 	re := regexp.MustCompile(`^([^\s]*)\s*`)
 	matches := re.FindStringSubmatch(m.Text)
-	if matches == nil || matches[1] != CmdSet {
+	if matches == nil || matches[1] != cmdSet {
 		return false
 	}
 

@@ -1,3 +1,4 @@
+// Package settime the entry point of setting event time lambda function.
 package settime
 
 import (
@@ -10,7 +11,6 @@ type LambdaHandler interface {
 	Handle(ctx context.Context, input LambdaInput) (*LambdaOutput, error)
 }
 
-// Lambda handler input data
 // API Gateway passes this.
 type LambdaInput struct {
 	Resource                        string                `json:"resource,omitempty"`
@@ -48,8 +48,8 @@ type LambdaInput struct {
 	IsBase64Encoded bool   `json:"isBase64Encoded,omitempty"`
 }
 
-// To a controller input data.
-func (s *LambdaInput) HandleInput() (data *settime.HandleInput, err error) {
+// To input data for controller.
+func (s LambdaInput) HandleInput() (data *settime.HandleInput, err error) {
 	// Extract Slack event data.
 	var body settime.EventCallbackData
 	err = json.Unmarshal([]byte(s.Body), &body)
@@ -64,8 +64,7 @@ func (s *LambdaInput) HandleInput() (data *settime.HandleInput, err error) {
 	return
 }
 
-// Lambda handler output data
-// this lambda function returns this.
+// Lambda function returns this.
 // Ref: Output format of a Lambda function for proxy integration
 // 	https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
 type LambdaOutput struct {

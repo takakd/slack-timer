@@ -1,5 +1,3 @@
-// Package slackcontroller provides the slack Event API callback handler.
-// Ref: https://api.slack.com/events-api#the-events-api__receiving-events
 package settime
 
 import (
@@ -8,11 +6,6 @@ import (
 	"net/http"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
-)
-
-// Command types entered by users.
-const (
-	CmdSet = "set"
 )
 
 type SetTimeController struct {
@@ -24,21 +17,19 @@ func NewSetTimeController() Controller {
 }
 
 func (c SetTimeController) Handle(ctx context.Context, input HandleInput) *Response {
-	// Create request struct corresponding to input.
-
 	// URL verification event
 	if input.EventData.isVerificationEvent() {
 		log.Info("url verification event")
-		rh := di.Get("slackcontroller.urlverificationhandler").(UrlVerificationRequestHandler)
+		rh := di.Get("settime.UrlVerificationRequestHandler").(UrlVerificationRequestHandler)
 		return rh.Handle(ctx, input.EventData)
 	}
 
 	// Set interval minutes event
-	if !input.EventData.MessageEvent.isSetEvent() {
-		return makeErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", input.EventData.MessageEvent.Type))
+	if !input.EventData.MessageEvent.isSetTimeEvent() {
+		return newErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", input.EventData.MessageEvent.Type))
 	}
 
-	rh := di.Get("slackcontroller.setcontroller").(SaveEventHandler)
+	rh := di.Get("settime.SaveEventHandler").(SaveEventHandler)
 	return rh.Handle(ctx, input.EventData)
 }
 
@@ -47,7 +38,7 @@ type ResponseErrorBody struct {
 	Detail  string
 }
 
-func makeErrorHandlerResponse(message string, detail string) *Response {
+func newErrorHandlerResponse(message string, detail string) *Response {
 	body := &ResponseErrorBody{
 		Message: message,
 	}

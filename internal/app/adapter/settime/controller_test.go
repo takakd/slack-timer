@@ -47,7 +47,7 @@ func TestMessageEvent_isSetEvent(t *testing.T) {
 				Type: c.eventType,
 				Text: c.text,
 			}
-			got := d.isSetEvent()
+			got := d.isSetTimeEvent()
 			assert.Equal(t, c.isSet, got)
 		})
 	}

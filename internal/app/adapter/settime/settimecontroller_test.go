@@ -41,7 +41,7 @@ func TestSetTimeController_Handle(t *testing.T) {
 		mu.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(caseInput.EventData)).Return(wantResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("slackcontroller.urlverificationhandler")).Return(mu)
+		md.EXPECT().Get(gomock.Eq("settime.UrlVerificationRequestHandler")).Return(mu)
 		di.SetDi(md)
 
 		h := NewSetTimeController()
@@ -64,7 +64,7 @@ func TestSetTimeController_Handle(t *testing.T) {
 			},
 		}
 
-		wantResp := makeErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", caseInput.EventData.Type))
+		wantResp := newErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", caseInput.EventData.Type))
 
 		h := NewSetTimeController()
 		got := h.Handle(ctx, caseInput)
@@ -95,7 +95,7 @@ func TestSetTimeController_Handle(t *testing.T) {
 		mu.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(caseInput.EventData)).Return(wantResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("slackcontroller.setcontroller")).Return(mu)
+		md.EXPECT().Get(gomock.Eq("settime.SaveEventHandler")).Return(mu)
 		di.SetDi(md)
 
 		h := NewSetTimeController()
@@ -127,7 +127,7 @@ func TestMakeErrorHandleResponse(t *testing.T) {
 				Body:       wantBody,
 			}
 
-			got := makeErrorHandlerResponse(c.message, c.detail)
+			got := newErrorHandlerResponse(c.message, c.detail)
 			assert.Equal(t, want, got)
 		})
 	}

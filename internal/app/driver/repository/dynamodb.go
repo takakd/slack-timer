@@ -1,3 +1,4 @@
+// package repository provides features that persist data.
 package repository
 
 import (
@@ -42,7 +43,7 @@ func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 	return t
 }
 
-func (t *TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
+func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 	e := &enterpriserule.TimerEvent{
 		UserId:      t.UserId,
 		IntervalMin: t.IntervalMin,
@@ -71,7 +72,7 @@ func NewDynamoDb(wrp DynamoDbWrapper) updatetimerevent.Repository {
 }
 
 // Find timer event by user id.
-func (r *DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":userid": {
@@ -107,7 +108,7 @@ func (r *DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *en
 }
 
 // Find timer event from "from" to "to".
-func (r *DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":dummy": {
@@ -149,7 +150,7 @@ func (r *DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time)
 
 // Save TimerEvent to DB.
 // Return error and saved event successfully.
-func (r *DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	dbItem := NewTimerEventDbItem(event)
 
 	dbItem.Dummy, err = strconv.Atoi(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"))
@@ -176,7 +177,7 @@ func (r *DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.Tim
 }
 
 // Find timer event before eventTime.
-func (r *DynamoDb) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":dummy": {

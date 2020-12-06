@@ -16,7 +16,7 @@ type Response struct {
 
 type HandleInput struct {
 	// Notify users identified this ID.
-	UserId  string
+	UserId string
 	// Notified message
 	Message string
 }

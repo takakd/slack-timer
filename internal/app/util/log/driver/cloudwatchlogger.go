@@ -1,3 +1,4 @@
+// Package driver provides implementation of logger.
 package driver
 
 import (

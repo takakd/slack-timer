@@ -26,7 +26,7 @@ func (c NotifyController) Handle(ctx context.Context, input HandleInput) *Respon
 		UserId:  input.UserId,
 		Message: input.Message,
 	}
-	err := s.InputPort.NotifyEvent(ctx, data)
+	err := c.InputPort.NotifyEvent(ctx, data)
 
 	resp := &Response{
 		Error: err,

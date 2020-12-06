@@ -1,3 +1,4 @@
+// Package helper provides shared helper function.
 package helper
 
 import (

@@ -1,4 +1,4 @@
-// Gateway role
+// Package slackhandler provides features that control slack API.
 package slackhandler
 
 import (
@@ -12,7 +12,7 @@ type SlackHandler struct {
 
 func NewSlackHandler() *SlackHandler {
 	s := &SlackHandler{
-		api: di.Get("slackhandler.SlackApi").(slack.SlackApi),
+		api: di.Get("slack.SlackApi").(slack.SlackApi),
 	}
 	return s
 }

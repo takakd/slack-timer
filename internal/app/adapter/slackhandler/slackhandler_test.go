@@ -15,7 +15,7 @@ func TestNewSlackHandler(t *testing.T) {
 
 	s := slack.NewMockSlackApi(ctrl)
 	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get(gomock.Eq("slackhandler.SlackApi")).Return(s)
+	d.EXPECT().Get(gomock.Eq("slack.SlackApi")).Return(s)
 	di.SetDi(d)
 
 	h := NewSlackHandler()
@@ -36,7 +36,7 @@ func TestSlackApi_Notify(t *testing.T) {
 		s.EXPECT().ChatPostMessage(gomock.Eq(caseChannelId), gomock.Eq(caseMessage)).Return(nil)
 
 		d := di.NewMockDI(ctrl)
-		d.EXPECT().Get(gomock.Eq("slackhandler.SlackApi")).Return(s)
+		d.EXPECT().Get(gomock.Eq("slack.SlackApi")).Return(s)
 		di.SetDi(d)
 
 		h := NewSlackHandler()
@@ -53,7 +53,7 @@ func TestSlackApi_Notify(t *testing.T) {
 		s.EXPECT().ConversationsOpen(gomock.Eq(caseUserId)).Return("", caseError)
 
 		d := di.NewMockDI(ctrl)
-		d.EXPECT().Get(gomock.Eq("slackhandler.SlackApi")).Return(s)
+		d.EXPECT().Get(gomock.Eq("slack.SlackApi")).Return(s)
 		di.SetDi(d)
 
 		h := NewSlackHandler()
@@ -71,7 +71,7 @@ func TestSlackApi_Notify(t *testing.T) {
 		s.EXPECT().ChatPostMessage(gomock.Eq(caseChannelId), gomock.Eq(caseMessage)).Return(caseError)
 
 		d := di.NewMockDI(ctrl)
-		d.EXPECT().Get(gomock.Eq("slackhandler.SlackApi")).Return(s)
+		d.EXPECT().Get(gomock.Eq("slack.SlackApi")).Return(s)
 		di.SetDi(d)
 
 		h := NewSlackHandler()

@@ -17,7 +17,7 @@ func TestNewNotifyController(t *testing.T) {
 
 	i := notifyevent.NewMockInputPort(ctrl)
 	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get(gomock.Eq("notifycontroller.InputPort")).Return(i)
+	d.EXPECT().Get(gomock.Eq("notifyevent.InputPort")).Return(i)
 
 	di.SetDi(d)
 
@@ -50,7 +50,7 @@ func TestNotifyController_Handle(t *testing.T) {
 	})).Return(caseError)
 
 	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get("notifycontroller.InputPort").Return(i)
+	d.EXPECT().Get("notifyevent.InputPort").Return(i)
 
 	di.SetDi(d)
 

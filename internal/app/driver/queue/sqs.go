@@ -1,3 +1,4 @@
+// package queue provides features of AWS SQS that are used in the app.
 package queue
 
 import (
@@ -17,6 +18,7 @@ type Sqs struct {
 	wrp SqsWrapper
 }
 
+// TODO: not null parameter, get from DI in the function
 // Set wrp to null. In case unit test, set mock interface.
 func NewSqs(wrp SqsWrapper) enqueueevent.Queue {
 	if wrp == nil {
@@ -29,7 +31,7 @@ func NewSqs(wrp SqsWrapper) enqueueevent.Queue {
 	}
 }
 
-func (s *Sqs) Enqueue(message enqueueevent.QueueMessage) (string, error) {
+func (s Sqs) Enqueue(message enqueueevent.QueueMessage) (string, error) {
 	r, err := s.wrp.SendMessage(&sqs.SendMessageInput{
 		MessageBody:    aws.String(message.UserId),
 		MessageGroupId: aws.String(messageGroupId),

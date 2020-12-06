@@ -40,7 +40,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 
 			if c.data.Result != nil {
 				ml := log.NewMockLogger(ctrl)
-				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("SetRequestOutputPort.Output error=%v", c.data.Result)))
+				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("SaveEventOutputReceivePresenter.Output error=%v", c.data.Result)))
 				log.SetDefaultLogger(ml)
 
 				p.Output(*c.data)

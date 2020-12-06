@@ -1,3 +1,4 @@
+// Package collection provides collection data structure.
 package collection
 
 const (

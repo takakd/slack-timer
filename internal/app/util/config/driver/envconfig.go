@@ -1,4 +1,4 @@
-// Deprecated
+// Package driver provides the implementation of config methods.
 package driver
 
 import (
@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Provides based on .env file.
 type EnvConfig struct {
 }
 
@@ -21,7 +22,7 @@ func NewEnvConfig(filepathList ...string) *EnvConfig {
 	return &EnvConfig{}
 }
 
-func (e *EnvConfig) Get(name string, defaultValue string) string {
+func (e EnvConfig) Get(name string, defaultValue string) string {
 	v := os.Getenv(strings.ToUpper(name))
 	if v == "" {
 		v = defaultValue

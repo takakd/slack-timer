@@ -25,7 +25,7 @@ func NewSetTimeLambdaHandler() LambdaHandler {
 
 // API Gateway calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func (s *SetTimeLambdaHandler) Handle(ctx context.Context, input LambdaInput) (*LambdaOutput, error) {
+func (s SetTimeLambdaHandler) Handle(ctx context.Context, input LambdaInput) (*LambdaOutput, error) {
 	appinitializer.AppInit()
 
 	log.Info("lambda handler input", input)

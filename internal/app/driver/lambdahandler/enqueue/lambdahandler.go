@@ -1,3 +1,4 @@
+// Package enqueue the entry point of the enqueueing notification lambda function.
 package enqueue
 
 import (
@@ -9,7 +10,6 @@ type LambdaHandler interface {
 	Handle(ctx context.Context, input LambdaInput)
 }
 
-// Lambda handler input data
 // CloudWatchEvent passes this.
 type LambdaInput struct {
 	Version    string   `json:"version"`
@@ -30,7 +30,7 @@ type LambdaInput struct {
 	} `json:"detail"`
 }
 
-// To a controller input data.
-func (s *LambdaInput) HandleInput() enqueue.HandleInput {
+// To input data for controller.
+func (s LambdaInput) HandleInput() enqueue.HandleInput {
 	return enqueue.HandleInput{}
 }
