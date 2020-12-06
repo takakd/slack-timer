@@ -17,11 +17,13 @@ type SetTimeLambdaHandler struct {
 	ctrl settime.Controller
 }
 
-func NewSetTimeLambdaHandler() LambdaHandler {
+func NewSetTimeLambdaHandler() *SetTimeLambdaHandler {
 	h := &SetTimeLambdaHandler{}
 	h.ctrl = di.Get("settime.Controller").(settime.Controller)
 	return h
 }
+
+var _ LambdaHandler = (*SetTimeLambdaHandler)(nil)
 
 // API Gateway calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html

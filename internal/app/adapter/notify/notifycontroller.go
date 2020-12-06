@@ -12,7 +12,9 @@ type NotifyController struct {
 	InputPort notifyevent.InputPort
 }
 
-func NewNotifyController() Controller {
+var _ Controller = (*NotifyController)(nil)
+
+func NewNotifyController() *NotifyController {
 	h := &NotifyController{
 		InputPort: di.Get("notifyevent.InputPort").(notifyevent.InputPort),
 	}

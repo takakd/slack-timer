@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"os"
+	"slacktimer/internal/app/util/config"
 	"slacktimer/internal/pkg/helper"
 	"strings"
 )
@@ -12,6 +13,8 @@ import (
 // Provides based on .env file.
 type EnvConfig struct {
 }
+
+var _ config.Config = (*EnvConfig)(nil)
 
 func NewEnvConfig(filepathList ...string) *EnvConfig {
 	if len(filepathList) > 0 {

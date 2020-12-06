@@ -12,7 +12,7 @@ func TestNewTimerEvent(t *testing.T) {
 		userId string
 		want   *TimerEvent
 	}{
-		{name: "ok", userId: "id1234", want: &TimerEvent{UserId: "id1234", State: timerEventStateWait}},
+		{name: "ok", userId: "id1234", want: &TimerEvent{UserId: "id1234", State: _timerEventStateWait}},
 		{name: "ng", userId: "", want: nil},
 	}
 	for _, c := range cases {

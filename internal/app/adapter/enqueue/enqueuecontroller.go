@@ -14,7 +14,9 @@ type EnqueueController struct {
 	InputPort enqueueevent.InputPort
 }
 
-func NewEnqueueController() Controller {
+var _ Controller = (*EnqueueController)(nil)
+
+func NewEnqueueController() *EnqueueController {
 	h := &EnqueueController{
 		InputPort: di.Get("enqueueevent.InputPort").(enqueueevent.InputPort),
 	}

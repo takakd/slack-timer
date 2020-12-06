@@ -56,9 +56,7 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 
 func TestNewDynamoDb(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		repo := NewDynamoDb(nil)
-		concrete, ok := repo.(*DynamoDb)
-		assert.True(t, ok)
+		concrete := NewDynamoDb(nil)
 		assert.IsType(t, &DynamoDbWrapperAdapter{}, concrete.wrp)
 	})
 
@@ -67,9 +65,7 @@ func TestNewDynamoDb(t *testing.T) {
 		defer ctrl.Finish()
 
 		mock := NewMockDynamoDbWrapper(ctrl)
-		repo := NewDynamoDb(mock)
-		concrete, ok := repo.(*DynamoDb)
-		assert.True(t, ok)
+		concrete := NewDynamoDb(mock)
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }

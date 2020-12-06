@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+var (
+	ErrMustSetUserId = errors.New("must set userId")
+)
+
 // Holds notification properties and notification state.
 type TimerEvent struct {
 	UserId           string          `dynamodbav:"UserId" db:"user_id" bson:"user_id"`
@@ -18,18 +22,18 @@ type TimerEvent struct {
 type TimerEventState string
 
 const (
-	timerEventStateWait   TimerEventState = "wait"
-	timerEventStateQueued TimerEventState = "queued"
+	_timerEventStateWait   TimerEventState = "wait"
+	_timerEventStateQueued TimerEventState = "queued"
 )
 
 func NewTimerEvent(userId string) (*TimerEvent, error) {
 	if userId == "" {
-		return nil, errors.New("must set userId")
+		return nil, ErrMustSetUserId
 	}
 
 	p := &TimerEvent{
 		UserId: userId,
-		State:  timerEventStateWait,
+		State:  _timerEventStateWait,
 	}
 	return p, nil
 }
@@ -43,13 +47,13 @@ func (p *TimerEvent) IncrementNotificationTime() {
 }
 
 func (p TimerEvent) Queued() bool {
-	return p.State == timerEventStateQueued
+	return p.State == _timerEventStateQueued
 }
 
 func (p *TimerEvent) SetQueued() {
-	p.State = timerEventStateQueued
+	p.State = _timerEventStateQueued
 }
 
 func (p *TimerEvent) SetWait() {
-	p.State = timerEventStateWait
+	p.State = _timerEventStateWait
 }

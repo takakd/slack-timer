@@ -2,13 +2,7 @@
 package validator
 
 import (
-	"errors"
 	"slacktimer/internal/pkg/collection"
-)
-
-// Defined Error Type
-var (
-	ErrEmpty = errors.New("empty")
 )
 
 // Set of validate error

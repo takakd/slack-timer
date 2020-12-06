@@ -10,7 +10,9 @@ import (
 type CloudWatchLogsPresenter struct {
 }
 
-func NewCloudWatchLogsPresenter() notifyevent.OutputPort {
+var _ notifyevent.OutputPort = (*CloudWatchLogsPresenter)(nil)
+
+func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
 	return &CloudWatchLogsPresenter{}
 }
 

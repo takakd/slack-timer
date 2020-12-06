@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/config"
 	"strconv"
@@ -18,6 +20,10 @@ import (
 type DynamoDb struct {
 	wrp DynamoDbWrapper
 }
+
+var _ updatetimerevent.Repository = (*DynamoDb)(nil)
+var _ enqueueevent.Repository = (*DynamoDb)(nil)
+var _ notifyevent.Repository = (*DynamoDb)(nil)
 
 type DbItemState string
 
@@ -60,7 +66,7 @@ func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 }
 
 // Set wrp to null. In case unit test, set mock interface.
-func NewDynamoDb(wrp DynamoDbWrapper) updatetimerevent.Repository {
+func NewDynamoDb(wrp DynamoDbWrapper) *DynamoDb {
 	if wrp == nil {
 		wrp = &DynamoDbWrapperAdapter{
 			svc: dynamodb.New(session.New()),

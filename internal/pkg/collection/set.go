@@ -5,7 +5,7 @@ const (
 	// Use as the stuffing data.
 	// Use "map" for implementing this struct but it does not use the value of map,
 	// so set dummy value to the map value.
-	Stuffing = 0
+	_stuffing = 0
 )
 
 type Set struct {
@@ -19,7 +19,7 @@ func NewSet() *Set {
 }
 
 func (s *Set) Set(value interface{}) {
-	s.values[value] = Stuffing
+	s.values[value] = _stuffing
 }
 
 func (s *Set) Remove(value interface{}) {

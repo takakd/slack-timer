@@ -27,7 +27,7 @@ func TestNewInteractor(t *testing.T) {
 	d.EXPECT().Get("enqueueevent.Queue").Return(q)
 	di.SetDi(d)
 
-	i := NewInteractor().(*Interactor)
+	i := NewInteractor()
 	assert.Equal(t, o, i.outputPort)
 	assert.Equal(t, r, i.repository)
 	assert.Equal(t, q, i.queue)

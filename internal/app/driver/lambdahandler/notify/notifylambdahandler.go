@@ -13,11 +13,13 @@ type NotifyLambdaHandler struct {
 	ctrl notify.Controller
 }
 
-func NewNotifyLambdaHandler() LambdaHandler {
+func NewNotifyLambdaHandler() *NotifyLambdaHandler {
 	h := &NotifyLambdaHandler{}
 	h.ctrl = di.Get("notify.Controller").(notify.Controller)
 	return h
 }
+
+var _ LambdaHandler = (*NotifyLambdaHandler)(nil)
 
 // SQS calls this function.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html

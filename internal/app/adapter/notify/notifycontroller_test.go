@@ -21,7 +21,7 @@ func TestNewNotifyController(t *testing.T) {
 
 	di.SetDi(d)
 
-	h := NewNotifyController().(*NotifyController)
+	h := NewNotifyController()
 	assert.Equal(t, i, h.InputPort)
 }
 
@@ -54,7 +54,7 @@ func TestNotifyController_Handle(t *testing.T) {
 
 	di.SetDi(d)
 
-	h := NewNotifyController().(*NotifyController)
+	h := NewNotifyController()
 	resp := h.Handle(ctx, caseInput)
 	assert.Equal(t, &Response{
 		Error: caseError,

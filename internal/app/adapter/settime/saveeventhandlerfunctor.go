@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+var (
+	ErrInvalidFormat = errors.New("invalid format")
+)
+
 type SaveEventHandler interface {
 	Handle(ctx context.Context, data EventCallbackData) *Response
 }
@@ -26,7 +30,9 @@ type SaveEventHandlerFunctor struct {
 	inputPort           updatetimerevent.InputPort
 }
 
-func NewSaveEventHandlerFunctor() SaveEventHandler {
+var _ SaveEventHandler = (*SaveEventHandlerFunctor)(nil)
+
+func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	return &SaveEventHandlerFunctor{
 		inputPort: di.Get("updatetimerevent.InputPort").(updatetimerevent.InputPort),
 	}
@@ -40,13 +46,13 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	// Extract second part. e.g.1607054661.000200 -> 160705466.
 	s := strings.Split(data.MessageEvent.EventTs, ".")
 	if len(s) < 1 {
-		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+		bag.SetError("timestamp", "invalid format", ErrInvalidFormat)
 		return bag
 	}
 
 	eventTime, err := helper.ParseUnixStr(s[0])
 	if err != nil {
-		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+		bag.SetError("timestamp", "invalid format", ErrInvalidFormat)
 	}
 	se.notificationTime = eventTime.UTC()
 
@@ -54,7 +60,7 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
 	m := re.FindStringSubmatch(data.MessageEvent.Text)
 	if m == nil {
-		bag.SetError("interval", "invalid format", errors.New("invalid format"))
+		bag.SetError("interval", "invalid format", ErrInvalidFormat)
 		return bag
 	}
 	minutes, _ := strconv.Atoi(m[2])

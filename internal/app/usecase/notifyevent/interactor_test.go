@@ -25,7 +25,7 @@ func TestNewInteractor(t *testing.T) {
 	d.EXPECT().Get("notifyevent.Notifier").Return(n)
 	di.SetDi(d)
 
-	i := NewInteractor().(*Interactor)
+	i := NewInteractor()
 	assert.Equal(t, o, i.outputPort)
 	assert.Equal(t, r, i.repository)
 	assert.Equal(t, n, i.notifier)

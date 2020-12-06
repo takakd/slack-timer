@@ -10,11 +10,14 @@ import (
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log/driver"
 )
 
 type Container struct {
 }
+
+var _ di.DI = (*Container)(nil)
 
 // Returns interfaces in development environment.
 func (d *Container) Get(name string) interface{} {

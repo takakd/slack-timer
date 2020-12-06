@@ -20,7 +20,9 @@ type UrlVerificationResponseBody struct {
 	Challenge string `json:"challenge"`
 }
 
-func NewUrlVerificationRequestHandlerFunctor() UrlVerificationRequestHandler {
+var _ UrlVerificationRequestHandler = (*UrlVerificationRequestHandlerFunctor)(nil)
+
+func NewUrlVerificationRequestHandlerFunctor() *UrlVerificationRequestHandlerFunctor {
 	return &UrlVerificationRequestHandlerFunctor{}
 }
 

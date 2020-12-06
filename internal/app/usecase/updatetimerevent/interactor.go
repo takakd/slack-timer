@@ -12,7 +12,9 @@ type Interactor struct {
 	repository Repository
 }
 
-func NewInteractor() InputPort {
+var _ InputPort = (*Interactor)(nil)
+
+func NewInteractor() *Interactor {
 	return &Interactor{
 		repository: di.Get("updatetimerevent.Repository").(Repository),
 	}

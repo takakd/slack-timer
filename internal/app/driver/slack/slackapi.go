@@ -19,7 +19,9 @@ type SlackApi interface {
 type SlackApiDriver struct {
 }
 
-func NewSlackApiDriver() SlackApi {
+var _ SlackApi = (*SlackApiDriver)(nil)
+
+func NewSlackApiDriver() *SlackApiDriver {
 	s := &SlackApiDriver{}
 	return s
 }

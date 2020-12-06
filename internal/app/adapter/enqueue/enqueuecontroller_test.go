@@ -20,7 +20,7 @@ func TestNewEnqueueController(t *testing.T) {
 
 	di.SetDi(md)
 
-	h := NewEnqueueController().(*EnqueueController)
+	h := NewEnqueueController()
 	assert.Equal(t, mi, h.InputPort)
 }
 

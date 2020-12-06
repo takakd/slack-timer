@@ -13,6 +13,8 @@ type SqsWrapperAdapter struct {
 	sqs *sqs.SQS
 }
 
+var _ SqsWrapper = (*SqsWrapperAdapter)(nil)
+
 func (s SqsWrapperAdapter) SendMessage(input *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
 	return s.sqs.SendMessage(input)
 }

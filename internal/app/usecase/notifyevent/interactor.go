@@ -14,7 +14,9 @@ type Interactor struct {
 	notifier   Notifier
 }
 
-func NewInteractor() InputPort {
+var _ InputPort = (*Interactor)(nil)
+
+func NewInteractor() *Interactor {
 	return &Interactor{
 		outputPort: di.Get("notifyevent.OutputPort").(OutputPort),
 		repository: di.Get("notifyevent.Repository").(Repository),

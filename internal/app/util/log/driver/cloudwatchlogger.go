@@ -15,6 +15,8 @@ type CloudWatchLogger struct {
 	level  log2.Level
 }
 
+var _ log2.Logger = (*CloudWatchLogger)(nil)
+
 func NewCloudWatchLogger() *CloudWatchLogger {
 	return &CloudWatchLogger{
 		logger: log.New(os.Stdout, "", log.LstdFlags),

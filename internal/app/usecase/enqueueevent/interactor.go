@@ -13,13 +13,15 @@ type Interactor struct {
 	queue      Queue
 }
 
-func NewInteractor() InputPort {
+func NewInteractor() *Interactor {
 	return &Interactor{
 		repository: di.Get("enqueueevent.Repository").(Repository),
 		outputPort: di.Get("enqueueevent.OutputPort").(OutputPort),
 		queue:      di.Get("enqueueevent.Queue").(Queue),
 	}
 }
+
+var _ InputPort = (*Interactor)(nil)
 
 func (s Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 	outputData := OutputData{}

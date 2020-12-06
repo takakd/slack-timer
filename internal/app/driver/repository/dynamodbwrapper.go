@@ -20,6 +20,8 @@ type DynamoDbWrapperAdapter struct {
 	svc *dynamodb.DynamoDB
 }
 
+var _ DynamoDbWrapper = (*DynamoDbWrapperAdapter)(nil)
+
 // Dispatch simply.
 func (d DynamoDbWrapperAdapter) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
 	return d.svc.GetItem(input)

@@ -12,7 +12,9 @@ type EnqueueLambdaHandler struct {
 	ctrl enqueue.Controller
 }
 
-func NewEnqueueLambdaHandler() LambdaHandler {
+var _ LambdaHandler = (*EnqueueLambdaHandler)(nil)
+
+func NewEnqueueLambdaHandler() *EnqueueLambdaHandler {
 	h := &EnqueueLambdaHandler{}
 	h.ctrl = di.Get("enqueue.Controller").(enqueue.Controller)
 	return h

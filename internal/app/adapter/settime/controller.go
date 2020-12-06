@@ -11,7 +11,7 @@ import (
 
 // Command types entered by users.
 const (
-	cmdSet = "set"
+	_cmdSet = "set"
 )
 
 // Called by Lambda handler.
@@ -78,7 +78,7 @@ func (m MessageEvent) isSetTimeEvent() bool {
 	// e.g. set 10
 	re := regexp.MustCompile(`^([^\s]*)\s*`)
 	matches := re.FindStringSubmatch(m.Text)
-	if matches == nil || matches[1] != cmdSet {
+	if matches == nil || matches[1] != _cmdSet {
 		return false
 	}
 

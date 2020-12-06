@@ -14,9 +14,7 @@ import (
 
 func TestNewSqs(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		q := NewSqs(nil)
-		concrete, ok := q.(*Sqs)
-		assert.True(t, ok)
+		concrete := NewSqs(nil)
 		assert.IsType(t, &SqsWrapperAdapter{}, concrete.wrp)
 	})
 
@@ -25,9 +23,7 @@ func TestNewSqs(t *testing.T) {
 		defer ctrl.Finish()
 
 		mock := NewMockSqsWrapper(ctrl)
-		repo := NewSqs(mock)
-		concrete, ok := repo.(*Sqs)
-		assert.True(t, ok)
+		concrete := NewSqs(mock)
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }
@@ -40,7 +36,7 @@ func TestSqs_Enqueue(t *testing.T) {
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
 			MessageBody:    aws.String(caseMessage.UserId),
-			MessageGroupId: aws.String(messageGroupId),
+			MessageGroupId: aws.String(_messageGroupId),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseMessageOutput := &sqs.SendMessageOutput{
@@ -70,7 +66,7 @@ func TestSqs_Enqueue(t *testing.T) {
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
 			MessageBody:    aws.String(caseMessage.UserId),
-			MessageGroupId: aws.String(messageGroupId),
+			MessageGroupId: aws.String(_messageGroupId),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseError := errors.New("error")

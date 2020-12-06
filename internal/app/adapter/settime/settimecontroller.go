@@ -11,10 +11,12 @@ import (
 type SetTimeController struct {
 }
 
-func NewSetTimeController() Controller {
-	h := SetTimeController{}
+func NewSetTimeController() *SetTimeController {
+	h := &SetTimeController{}
 	return h
 }
+
+var _ Controller = (*SetTimeController)(nil)
 
 func (s SetTimeController) Handle(ctx context.Context, input HandleInput) *Response {
 	// URL verification event

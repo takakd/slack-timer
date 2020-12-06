@@ -40,7 +40,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 				},
 			}
 
-			ct := NewSaveEventHandlerFunctor().(*SaveEventHandlerFunctor)
+			ct := NewSaveEventHandlerFunctor()
 
 			bag := ct.validate(caseData)
 			_, exists := bag.GetError("timestamp")
@@ -83,7 +83,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 				},
 			}
 
-			ct := NewSaveEventHandlerFunctor().(*SaveEventHandlerFunctor)
+			ct := NewSaveEventHandlerFunctor()
 
 			bag := ct.validate(caseData)
 			_, exists := bag.GetError("interval")

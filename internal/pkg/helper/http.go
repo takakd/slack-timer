@@ -9,11 +9,15 @@ import (
 	"reflect"
 )
 
+var (
+	ErrHttpArgsShoudNotBeNil = errors.New("arguments should not be nil")
+)
+
 // Get body as string from http.request.
 // Ref: https://developer.twitter.com/en/docs/basics/response-codes
 func GetRequestBody(req *http.Request) ([]byte, error) {
 	if req == nil {
-		return nil, errors.New("arguments should not be nil.")
+		return nil, ErrHttpArgsShoudNotBeNil
 	}
 
 	body := make([]byte, req.ContentLength)
@@ -27,7 +31,7 @@ func GetRequestBody(req *http.Request) ([]byte, error) {
 // More about details are https://golang.org/pkg/net/http/
 func GetResponseBody(resp *http.Response) ([]byte, error) {
 	if resp == nil {
-		return nil, errors.New("arguments should not be nil.")
+		return nil, ErrHttpArgsShoudNotBeNil
 	}
 
 	defer resp.Body.Close()
@@ -79,19 +83,19 @@ func SetFormValueToStruct(values url.Values, structPtr interface{}) error {
 	}
 
 	if structPtr == nil {
-		return errors.New("http/SetFormValueToStruct: structPtr is nil")
+		return errors.New("structPtr is nil")
 	}
 
 	// Get struct pointer
 	ptr := reflect.ValueOf(structPtr)
 	if ptr.Type().Kind() != reflect.Ptr {
-		return errors.New("http/SetFormValueToStruct: structPtr is not pointer")
+		return errors.New("structPtr is not pointer")
 	}
 
 	// Get struct value
 	value := ptr.Elem()
 	if value.Type().Kind() != reflect.Struct {
-		return errors.New("http/SetFormValueToStruct: structPtr is not struct pointer")
+		return errors.New("structPtr is not struct pointer")
 	}
 
 	// Set value to struct field

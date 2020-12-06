@@ -11,16 +11,18 @@ import (
 )
 
 const (
-	messageGroupId = "fifo"
+	_messageGroupId = "fifo"
 )
 
 type Sqs struct {
 	wrp SqsWrapper
 }
 
+var _ enqueueevent.Queue = (*Sqs)(nil)
+
 // TODO: not null parameter, get from DI in the function
 // Set wrp to null. In case unit test, set mock interface.
-func NewSqs(wrp SqsWrapper) enqueueevent.Queue {
+func NewSqs(wrp SqsWrapper) *Sqs {
 	if wrp == nil {
 		wrp = &SqsWrapperAdapter{
 			sqs: sqs.New(session.New()),
@@ -34,7 +36,7 @@ func NewSqs(wrp SqsWrapper) enqueueevent.Queue {
 func (s Sqs) Enqueue(message enqueueevent.QueueMessage) (string, error) {
 	r, err := s.wrp.SendMessage(&sqs.SendMessageInput{
 		MessageBody:    aws.String(message.UserId),
-		MessageGroupId: aws.String(messageGroupId),
+		MessageGroupId: aws.String(_messageGroupId),
 		QueueUrl:       aws.String(config.Get("SQS_URL", "")),
 	})
 	if err != nil {
