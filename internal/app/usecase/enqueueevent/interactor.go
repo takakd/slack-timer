@@ -21,7 +21,7 @@ func NewInteractor() InputPort {
 	}
 }
 
-func (s *Interactor) EnqueueEvent(ctx context.Context, data InputData) {
+func (s Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 	outputData := OutputData{}
 
 	events, err := s.repository.FindTimerEventsByTime(ctx, data.EventTime)

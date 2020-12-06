@@ -10,7 +10,7 @@ import (
 
 // Pass the output data to the controller.
 type SaveEventOutputReceivePresenter struct {
-	Resp       *Response
+	Resp       Response
 	Error      error
 	SavedEvent *enterpriserule.TimerEvent
 	StatusCode int
@@ -21,19 +21,19 @@ func NewSaveEventOutputReceivePresenter() *SaveEventOutputReceivePresenter {
 	return &SaveEventOutputReceivePresenter{}
 }
 
-func (p *SaveEventOutputReceivePresenter) Output(data updatetimerevent.OutputData) {
-	p.Resp = &Response{
+func (s *SaveEventOutputReceivePresenter) Output(data updatetimerevent.OutputData) {
+	s.Resp = Response{
 		Error: data.Result,
 	}
 
 	if data.Result != nil {
 		log.Info(fmt.Sprintf("SaveEventOutputReceivePresenter.Output error=%v", data.Result))
-		p.Resp.StatusCode = http.StatusInternalServerError
-		p.Resp.Body = "internal server error"
+		s.Resp.StatusCode = http.StatusInternalServerError
+		s.Resp.Body = "internal server error"
 		return
 	}
 
-	p.SavedEvent = data.SavedEvent
-	p.Resp.StatusCode = http.StatusOK
-	p.Resp.Body = "success"
+	s.SavedEvent = data.SavedEvent
+	s.Resp.StatusCode = http.StatusOK
+	s.Resp.Body = "success"
 }

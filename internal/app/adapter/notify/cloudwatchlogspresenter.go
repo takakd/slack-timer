@@ -8,7 +8,6 @@ import (
 
 // Output to CloudWatchLogs.
 type CloudWatchLogsPresenter struct {
-	Error error
 }
 
 func NewCloudWatchLogsPresenter() notifyevent.OutputPort {

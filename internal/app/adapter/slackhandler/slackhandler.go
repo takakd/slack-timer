@@ -17,7 +17,7 @@ func NewSlackHandler() *SlackHandler {
 	return s
 }
 
-func (s *SlackHandler) Notify(userId string, message string) error {
+func (s SlackHandler) Notify(userId string, message string) error {
 	// Need to open DM channel to send DM.
 	channelId, err := s.api.ConversationsOpen(userId)
 	if err != nil {

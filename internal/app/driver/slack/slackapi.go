@@ -42,7 +42,7 @@ type ConversationsOpenResponseBodyChannel struct {
 }
 
 // Ref: https://api.slack.com/methods/conversations.open
-func (s *SlackApiDriver) ConversationsOpen(userId string) (string, error) {
+func (s SlackApiDriver) ConversationsOpen(userId string) (string, error) {
 	body := &ConversationsOpenRequestBody{
 		userId,
 	}
@@ -94,7 +94,7 @@ type ChatPostMessageResponseBody struct {
 }
 
 // Ref: https://api.slack.com/methods/chat.postMessage
-func (s *SlackApiDriver) ChatPostMessage(channelId string, message string) error {
+func (s SlackApiDriver) ChatPostMessage(channelId string, message string) error {
 	body := &ChatPostMessageRequestBody{
 		Channel: channelId,
 		Text:    message,

@@ -46,7 +46,7 @@ type EventCallbackData struct {
 	Challenge string `json:"challenge"`
 }
 
-func (e *EventCallbackData) isVerificationEvent() bool {
+func (e EventCallbackData) isVerificationEvent() bool {
 	return e.Type == "url_verification"
 }
 

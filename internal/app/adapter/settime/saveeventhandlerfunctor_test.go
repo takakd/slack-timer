@@ -100,23 +100,23 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 		name string
 		text string
 		ts   string
-		resp *Response
+		resp Response
 	}{
-		{"timestamp validate error", "set 10", "", &Response{
+		{"timestamp validate error", "set 10", "", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
 				Detail:  "invalid format",
 			},
 		}},
-		{"set command validate error", "", "1606830655", &Response{
+		{"set command validate error", "", "1606830655", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
 				Detail:  "invalid format",
 			},
 		}},
-		{"ok", "set 10", "1606830655", &Response{
+		{"ok", "set 10", "1606830655", Response{
 			StatusCode: http.StatusOK,
 			Body:       "success",
 		}},
@@ -152,7 +152,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 
 			h := NewSaveEventHandlerFunctor()
 			got := h.Handle(ctx, caseData)
-			assert.Equal(t, c.resp, got)
+			assert.Equal(t, &c.resp, got)
 		})
 	}
 }

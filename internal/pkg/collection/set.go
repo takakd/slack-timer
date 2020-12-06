@@ -29,7 +29,7 @@ func (s *Set) Remove(value interface{}) {
 }
 
 // Check if the value contains.
-func (s *Set) Contains(value interface{}) bool {
+func (s Set) Contains(value interface{}) bool {
 	_, contain := s.values[value]
 	return contain
 }

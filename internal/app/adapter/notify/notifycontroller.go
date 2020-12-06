@@ -19,14 +19,14 @@ func NewNotifyController() Controller {
 	return h
 }
 
-func (c NotifyController) Handle(ctx context.Context, input HandleInput) *Response {
+func (n NotifyController) Handle(ctx context.Context, input HandleInput) *Response {
 	log.Info("handler input", input)
 
 	data := notifyevent.InputData{
 		UserId:  input.UserId,
 		Message: input.Message,
 	}
-	err := c.InputPort.NotifyEvent(ctx, data)
+	err := n.InputPort.NotifyEvent(ctx, data)
 
 	resp := &Response{
 		Error: err,

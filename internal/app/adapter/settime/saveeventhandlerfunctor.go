@@ -78,7 +78,7 @@ func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallback
 	presenter := NewSaveEventOutputReceivePresenter()
 	se.inputPort.SaveIntervalMin(ctx, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
 
-	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", *presenter.Resp))
+	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", presenter.Resp))
 
-	return presenter.Resp
+	return &presenter.Resp
 }

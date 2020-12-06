@@ -31,6 +31,6 @@ type LambdaInput struct {
 }
 
 // To input data for controller.
-func (s LambdaInput) HandleInput() enqueue.HandleInput {
+func (l LambdaInput) HandleInput() enqueue.HandleInput {
 	return enqueue.HandleInput{}
 }

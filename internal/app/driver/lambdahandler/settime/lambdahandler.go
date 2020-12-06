@@ -49,10 +49,10 @@ type LambdaInput struct {
 }
 
 // To input data for controller.
-func (s LambdaInput) HandleInput() (data *settime.HandleInput, err error) {
+func (l LambdaInput) HandleInput() (data *settime.HandleInput, err error) {
 	// Extract Slack event data.
 	var body settime.EventCallbackData
-	err = json.Unmarshal([]byte(s.Body), &body)
+	err = json.Unmarshal([]byte(l.Body), &body)
 	if err != nil {
 		return
 	}

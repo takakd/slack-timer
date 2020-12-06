@@ -50,7 +50,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 					Body:       "internal server error",
 					Error:      c.data.Result,
 				}
-				assert.Equal(t, want, p.Resp)
+				assert.Equal(t, want, &p.Resp)
 
 			} else {
 				var err error
@@ -64,7 +64,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 					Body:       "success",
 					Error:      c.data.Result,
 				}
-				assert.Equal(t, want, p.Resp)
+				assert.Equal(t, want, &p.Resp)
 			}
 
 		})

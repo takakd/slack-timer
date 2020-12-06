@@ -16,7 +16,7 @@ func NewSetTimeController() Controller {
 	return h
 }
 
-func (c SetTimeController) Handle(ctx context.Context, input HandleInput) *Response {
+func (s SetTimeController) Handle(ctx context.Context, input HandleInput) *Response {
 	// URL verification event
 	if input.EventData.isVerificationEvent() {
 		log.Info("url verification event")

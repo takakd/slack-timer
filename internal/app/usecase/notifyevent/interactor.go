@@ -22,7 +22,7 @@ func NewInteractor() InputPort {
 	}
 }
 
-func (s *Interactor) NotifyEvent(ctx context.Context, input InputData) error {
+func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 	outputData := OutputData{
 		UserId: input.UserId,
 	}
