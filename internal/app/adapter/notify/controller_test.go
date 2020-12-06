@@ -3,15 +3,16 @@ package notify
 import (
 	"context"
 	"errors"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestNewNotifyController(t *testing.T) {
+func TestNewController(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -21,17 +22,17 @@ func TestNewNotifyController(t *testing.T) {
 
 	di.SetDi(d)
 
-	h := NewNotifyController()
+	h := NewController()
 	assert.Equal(t, i, h.InputPort)
 }
 
-func TestNotifyController_Handle(t *testing.T) {
+func TestController_Handle(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	ctx := context.TODO()
 	caseInput := HandleInput{
-		UserId:  "test user",
+		UserID:  "test user",
 		Message: "test message",
 	}
 	caseError := errors.New("test error")
@@ -45,7 +46,7 @@ func TestNotifyController_Handle(t *testing.T) {
 
 	i := notifyevent.NewMockInputPort(ctrl)
 	i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Eq(notifyevent.InputData{
-		UserId:  caseInput.UserId,
+		UserId:  caseInput.UserID,
 		Message: caseInput.Message,
 	})).Return(caseError)
 
@@ -54,7 +55,7 @@ func TestNotifyController_Handle(t *testing.T) {
 
 	di.SetDi(d)
 
-	h := NewNotifyController()
+	h := NewController()
 	resp := h.Handle(ctx, caseInput)
 	assert.Equal(t, &Response{
 		Error: caseError,

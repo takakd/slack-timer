@@ -3,11 +3,12 @@ package queue
 
 import (
 	"fmt"
+	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/config"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"slacktimer/internal/app/usecase/enqueueevent"
-	"slacktimer/internal/app/util/config"
 )
 
 const (

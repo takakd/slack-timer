@@ -2,11 +2,12 @@ package enqueue
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/adapter/enqueue"
 	"slacktimer/internal/app/util/di"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEnqueueLambdaHandler(t *testing.T) {
@@ -14,7 +15,7 @@ func TestNewEnqueueLambdaHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mc := enqueue.NewMockController(ctrl)
+		mc := enqueue.NewMockControllerHandler(ctrl)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("enqueue.Controller").Return(mc)
@@ -34,7 +35,7 @@ func TestEnqueueLambdaHandler_Handle(t *testing.T) {
 
 			caseInput := LambdaInput{}
 
-			mc := enqueue.NewMockController(ctrl)
+			mc := enqueue.NewMockControllerHandler(ctrl)
 			mc.EXPECT().Handle(gomock.Eq(ctx), gomock.Any())
 
 			md := di.NewMockDI(ctrl)

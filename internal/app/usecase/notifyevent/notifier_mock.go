@@ -5,8 +5,9 @@
 package notifyevent
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockNotifier is a mock of Notifier interface

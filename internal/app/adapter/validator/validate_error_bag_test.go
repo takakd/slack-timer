@@ -1,9 +1,10 @@
 package validator
 
 import (
+	"testing"
+
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestSet_SetGetError(t *testing.T) {

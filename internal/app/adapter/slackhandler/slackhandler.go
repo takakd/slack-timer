@@ -6,10 +6,12 @@ import (
 	"slacktimer/internal/app/util/di"
 )
 
+// SlackHandler serves Slack API handlers used by the app.
 type SlackHandler struct {
 	api slack.SlackApi
 }
 
+// NewSlackHandler create new struct.
 func NewSlackHandler() *SlackHandler {
 	s := &SlackHandler{
 		api: di.Get("slack.SlackApi").(slack.SlackApi),
@@ -17,15 +19,16 @@ func NewSlackHandler() *SlackHandler {
 	return s
 }
 
-func (s SlackHandler) Notify(userId string, message string) error {
+// Notify notify message to user identified by userID.
+func (s SlackHandler) Notify(userID string, message string) error {
 	// Need to open DM channel to send DM.
-	channelId, err := s.api.ConversationsOpen(userId)
+	channelID, err := s.api.ConversationsOpen(userID)
 	if err != nil {
 		return err
 	}
 
 	// Send DM.
-	err = s.api.ChatPostMessage(channelId, message)
+	err = s.api.ChatPostMessage(channelID, message)
 	if err != nil {
 		return err
 	}

@@ -5,9 +5,10 @@
 package queue
 
 import (
+	reflect "reflect"
+
 	sqs "github.com/aws/aws-sdk-go/service/sqs"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockSqsWrapper is a mock of SqsWrapper interface

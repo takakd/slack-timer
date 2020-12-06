@@ -3,11 +3,12 @@ package notify
 import (
 	"context"
 	"errors"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/adapter/notify"
 	"slacktimer/internal/app/util/di"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewNotifyLambdaHandler(t *testing.T) {
@@ -15,7 +16,7 @@ func TestNewNotifyLambdaHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mc := notify.NewMockController(ctrl)
+		mc := notify.NewMockControllerHandler(ctrl)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("notify.Controller").Return(mc)
@@ -43,7 +44,7 @@ func TestNotifyLambdaHandler_Handle(t *testing.T) {
 			Error: nil,
 		}
 
-		mi := notify.NewMockController(ctrl)
+		mi := notify.NewMockControllerHandler(ctrl)
 		mi.EXPECT().Handle(gomock.Eq(ctx), gomock.Any()).Return(caseResponse)
 
 		md := di.NewMockDI(ctrl)
@@ -73,7 +74,7 @@ func TestNotifyLambdaHandler_Handle(t *testing.T) {
 			Error: errors.New("test error"),
 		}
 
-		mi := notify.NewMockController(ctrl)
+		mi := notify.NewMockControllerHandler(ctrl)
 		mi.EXPECT().Handle(gomock.Eq(ctx), gomock.Any()).Return(caseResponse)
 
 		md := di.NewMockDI(ctrl)

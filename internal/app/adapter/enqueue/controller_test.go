@@ -2,15 +2,16 @@ package enqueue
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestNewEnqueueController(t *testing.T) {
+func TestNewController(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -20,11 +21,11 @@ func TestNewEnqueueController(t *testing.T) {
 
 	di.SetDi(md)
 
-	h := NewEnqueueController()
+	h := NewController()
 	assert.Equal(t, mi, h.InputPort)
 }
 
-func TestEnqueueController_Handle(t *testing.T) {
+func TestController_Handle(t *testing.T) {
 	ctx := context.TODO()
 	caseInput := HandleInput{}
 
@@ -46,7 +47,7 @@ func TestEnqueueController_Handle(t *testing.T) {
 	di.SetDi(d)
 
 	assert.NotPanics(t, func() {
-		h := NewEnqueueController()
+		h := NewController()
 		h.Handle(ctx, caseInput)
 	})
 }

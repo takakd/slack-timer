@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/aws/aws-lambda-go/lambda"
 	"slacktimer/internal/app/driver/lambdahandler/settime"
+
+	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html

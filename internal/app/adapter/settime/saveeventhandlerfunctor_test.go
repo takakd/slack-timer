@@ -2,12 +2,17 @@ package settime
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/di"
 	"testing"
+
+	"fmt"
+	"slacktimer/internal/app/util/log"
+	"time"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
@@ -116,7 +121,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				Detail:  "invalid format",
 			},
 		}},
-		{"ok", "set 10", "1606830655", Response{
+		{"ok", "set 10", "1606830655.000010", Response{
 			StatusCode: http.StatusOK,
 			Body:       "success",
 		}},
@@ -144,6 +149,15 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 					output := outputPort.(*SaveEventOutputReceivePresenter)
 					output.Resp = c.resp
 				})
+			}
+
+			if c.resp.StatusCode == http.StatusOK {
+				ml := log.NewMockLogger(ctrl)
+
+				ts, _ := caseData.MessageEvent.eventUnixTimeStamp()
+				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", caseData.MessageEvent.User, time.Unix(ts, 0).UTC(), 10))
+				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", c.resp))
+				log.SetDefaultLogger(ml)
 			}
 
 			md := di.NewMockDI(ctrl)

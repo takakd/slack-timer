@@ -6,9 +6,10 @@ package updatetimerevent
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockInputPort is a mock of InputPort interface

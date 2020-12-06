@@ -3,13 +3,14 @@ package queue
 import (
 	"errors"
 	"fmt"
+	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/config"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"slacktimer/internal/app/usecase/enqueueevent"
-	"slacktimer/internal/app/util/config"
-	"testing"
 )
 
 func TestNewSqs(t *testing.T) {
@@ -31,7 +32,7 @@ func TestNewSqs(t *testing.T) {
 func TestSqs_Enqueue(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseMessage := enqueueevent.QueueMessage{
-			"id1",
+			UserId: "id1",
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
@@ -61,7 +62,7 @@ func TestSqs_Enqueue(t *testing.T) {
 
 	t.Run("ng:failed", func(t *testing.T) {
 		caseMessage := enqueueevent.QueueMessage{
-			"id1",
+			UserId: "id1",
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{

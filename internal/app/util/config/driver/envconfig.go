@@ -3,11 +3,12 @@ package driver
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"slacktimer/internal/app/util/config"
 	"slacktimer/internal/pkg/helper"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // Provides based on .env file.

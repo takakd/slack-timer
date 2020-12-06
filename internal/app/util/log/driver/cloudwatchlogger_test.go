@@ -3,13 +3,14 @@ package driver
 import (
 	"bytes"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"regexp"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/helper"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCloudWatchLogger(t *testing.T) {

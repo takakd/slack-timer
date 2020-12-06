@@ -34,7 +34,7 @@ type SqsMessage struct {
 // To input data for controller.
 func (s SqsMessage) HandleInput() notify.HandleInput {
 	return notify.HandleInput{
-		UserId: s.Body,
+		UserID: s.Body,
 		// TODO: Get userid and message from body.
 		Message: "test",
 	}

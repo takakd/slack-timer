@@ -4,9 +4,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/usecase/notifyevent"
@@ -14,6 +11,10 @@ import (
 	"slacktimer/internal/app/util/config"
 	"strconv"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 // Implements Repository interface with DynamoDB.

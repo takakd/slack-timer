@@ -2,12 +2,13 @@
 package driver
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slacktimer/internal/pkg/helper"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEnvConfig(t *testing.T) {

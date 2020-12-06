@@ -1,10 +1,11 @@
 package log
 
 import (
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSetDefaultLogger(t *testing.T) {

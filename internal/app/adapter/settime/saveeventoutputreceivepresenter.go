@@ -8,7 +8,7 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
-// Pass the output data to the controller.
+// SaveEventOutputReceivePresenter passes the output data to the controller.
 type SaveEventOutputReceivePresenter struct {
 	Resp       Response
 	Error      error
@@ -19,10 +19,12 @@ type SaveEventOutputReceivePresenter struct {
 
 var _ updatetimerevent.OutputPort = (*SaveEventOutputReceivePresenter)(nil)
 
+// NewSaveEventOutputReceivePresenter create new struct.
 func NewSaveEventOutputReceivePresenter() *SaveEventOutputReceivePresenter {
 	return &SaveEventOutputReceivePresenter{}
 }
 
+// Output receives interactor outputs and keep them inside.
 func (s *SaveEventOutputReceivePresenter) Output(data updatetimerevent.OutputData) {
 	s.Resp = Response{
 		Error: data.Result,

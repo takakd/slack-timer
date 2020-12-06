@@ -16,14 +16,16 @@ import (
 )
 
 var (
+	// ErrInvalidFormat returns if parameter is invalid format.
 	ErrInvalidFormat = errors.New("invalid format")
 )
 
+// SaveEventHandler handles "set" command.
 type SaveEventHandler interface {
 	Handle(ctx context.Context, data EventCallbackData) *Response
 }
 
-// Handle "Set" command
+// SaveEventHandlerFunctor handle "Set" command.
 type SaveEventHandlerFunctor struct {
 	notificationTime    time.Time
 	remindIntervalInMin int
@@ -32,6 +34,7 @@ type SaveEventHandlerFunctor struct {
 
 var _ SaveEventHandler = (*SaveEventHandlerFunctor)(nil)
 
+// NewSaveEventHandlerFunctor create new struct.
 func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	return &SaveEventHandlerFunctor{
 		inputPort: di.Get("updatetimerevent.InputPort").(updatetimerevent.InputPort),
@@ -69,6 +72,7 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	return bag
 }
 
+// Handle saves event sent by user.
 func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
 	if validateErrors := se.validate(data); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError

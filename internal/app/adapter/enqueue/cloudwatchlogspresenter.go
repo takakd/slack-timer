@@ -6,16 +6,18 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
-// Output to CloudWatchLogs.
+// CloudWatchLogsPresenter output logs to CloudWatchLogs.
 type CloudWatchLogsPresenter struct {
 }
 
 var _ enqueueevent.OutputPort = (*CloudWatchLogsPresenter)(nil)
 
+// NewCloudWatchLogsPresenter create new struct.
 func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
 	return &CloudWatchLogsPresenter{}
 }
 
+// Output used as outputport by interactor.
 func (c CloudWatchLogsPresenter) Output(data enqueueevent.OutputData) {
 	if len(data.NotifiedUserIdList) == 0 {
 		log.Info("no items to be enqueued")

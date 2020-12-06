@@ -5,8 +5,9 @@
 package enqueueevent
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockQueue is a mock of Queue interface

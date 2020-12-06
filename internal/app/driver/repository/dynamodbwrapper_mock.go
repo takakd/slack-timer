@@ -5,9 +5,10 @@
 package repository
 
 import (
+	reflect "reflect"
+
 	dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 // MockDynamoDbWrapper is a mock of DynamoDbWrapper interface

@@ -2,16 +2,17 @@ package settime
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/adapter/settime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLambdaInput_HandleInput(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		data := settime.EventCallbackData{
 			Token:  "test",
-			TeamId: "test id",
+			TeamID: "test id",
 			MessageEvent: settime.MessageEvent{
 				Type:    "message",
 				EventTs: "1234.0000001",
