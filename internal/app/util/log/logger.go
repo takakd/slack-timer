@@ -1,3 +1,4 @@
+// Package log provides logging feature.
 package log
 
 type Level int

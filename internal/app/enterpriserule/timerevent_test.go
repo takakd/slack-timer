@@ -43,7 +43,6 @@ func TestTimerEvent_Equal(t *testing.T) {
 		result bool
 	}{
 		{name: "ok", lhs: event, rhs: event, result: true},
-		{name: "ng:nil", lhs: event, rhs: nil, result: false},
 		{name: "ng:user_id", lhs: event, rhs: &TimerEvent{
 			UserId: "id2", NotificationTime: now, IntervalMin: sec}, result: false},
 		{name: "ng:utc_time", lhs: event, rhs: &TimerEvent{
@@ -54,9 +53,9 @@ func TestTimerEvent_Equal(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			// TODO
-			assert.Equal(t, c.lhs.Equal(c.rhs), c.result)
+			assert.Equal(t, c.lhs.Equal(*c.rhs), c.result)
 			//if c.lhs.Equal(c.rhs) != c.result {
-			//	t.Error(testutil.MakeTestMessageWithGotWant(c.lhs, c.rhs))
+			//	t.Error(helper.MakeTestMessageWithGotWant(c.lhs, c.rhs))
 			//}
 		})
 	}

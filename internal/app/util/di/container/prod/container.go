@@ -1,41 +1,88 @@
 package prod
 
 import (
+	"slacktimer/internal/app/adapter/enqueue"
+	"slacktimer/internal/app/adapter/notify"
+	"slacktimer/internal/app/adapter/slackhandler"
 	"slacktimer/internal/app/driver/queue"
 	"slacktimer/internal/app/driver/repository"
+	"slacktimer/internal/app/driver/slack"
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/log/driver"
 )
 
 type Container struct {
 }
 
-// Returns interfaces in production environment.
+// Returns interfaces in development environment.
 func (d *Container) Get(name string) interface{} {
-	if name == "UpdateTimerEvent" {
-		return updatetimerevent.NewUsecase()
-	} else if name == "Repository" {
-		return repository.NewPostgresRepository()
+	if c, ok := getUtilConcrete(name); ok {
+		return c
 	}
-
+	if c, ok := getSetTimerConcrete(name); ok {
+		return c
+	}
 	if c, ok := getEnqueueConcrete(name); ok {
 		return c
 	}
-
+	if c, ok := getNotifyConcrete(name); ok {
+		return c
+	}
 	return nil
+}
+
+func getUtilConcrete(name string) (interface{}, bool) {
+	var c interface{}
+	switch name {
+	case "Logger":
+		c = driver.NewCloudWatchLogger()
+	}
+	return c, c != nil
+}
+
+func getSetTimerConcrete(name string) (interface{}, bool) {
+	var c interface{}
+	switch name {
+	case "UpdateTimerEvent":
+		c = updatetimerevent.NewInteractor()
+	case "Repository":
+		c = repository.NewDynamoDb(nil)
+	case "Queue":
+		c = queue.NewSqs(nil)
+	}
+	return c, c != nil
 }
 
 func getEnqueueConcrete(name string) (interface{}, bool) {
 	var c interface{}
 	switch name {
-	case "enqueuecontroller.EnqueueNotification":
-		c = enqueueevent.NewUsecase()
-	case "enqueueevent.Repository":
-		c = repository.NewDynamoDbRepository(nil)
+	case "enqueuecontroller.InputPort":
+		c = enqueueevent.NewInteractor()
 	case "enqueueevent.OutputPort":
-		c = enqueueevent.NewCloudWatchLogsOutputPort()
+		c = enqueue.NewCloudWatchLogsPresenter()
+	case "enqueueevent.Repository":
+		c = repository.NewDynamoDb(nil)
 	case "enqueueevent.Queue":
-		c = queue.NewSQSMessageQueue(nil)
+		c = queue.NewSqs(nil)
+	}
+	return c, c != nil
+}
+
+func getNotifyConcrete(name string) (interface{}, bool) {
+	var c interface{}
+	switch name {
+	case "notifycontroller.InputPort":
+		c = notifyevent.NewInteractor()
+	case "notifyevent.OutputPort":
+		c = notify.NewCloudWatchLogsPresenter()
+	case "notifyevent.Repository":
+		c = repository.NewDynamoDb(nil)
+	case "notifyevent.Notifier":
+		c = slackhandler.NewSlackHandler()
+	case "slackhandler.SlackApi":
+		c = slack.NewSlackApiDriver()
 	}
 	return c, c != nil
 }

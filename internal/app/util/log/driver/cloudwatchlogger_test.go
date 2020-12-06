@@ -8,12 +8,12 @@ import (
 	"os"
 	"regexp"
 	"slacktimer/internal/app/util/log"
-	"slacktimer/internal/pkg/testutil"
+	"slacktimer/internal/pkg/helper"
 	"testing"
 )
 
 func TestNewCloudWatchLogger(t *testing.T) {
-	testutil.DoesTestCallPanic(func() {
+	helper.DoesTestCallPanic(func() {
 		NewCloudWatchLogger()
 	})
 }

@@ -1,6 +1,5 @@
+// Package di provides dependency injection container.
 package di
-
-import "slacktimer/internal/app/util/log"
 
 var (
 	di DI
@@ -14,7 +13,6 @@ type DI interface {
 // Helper function of DI.Get
 func Get(name string) interface{} {
 	if di == nil {
-		log.Error("di is null")
 		return nil
 	}
 	return di.Get(name)

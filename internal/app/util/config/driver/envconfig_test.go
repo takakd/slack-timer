@@ -6,17 +6,17 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"slacktimer/internal/pkg/testutil"
+	"slacktimer/internal/pkg/helper"
 	"testing"
 )
 
 func TestNewEnvConfig(t *testing.T) {
-	called := testutil.DoesTestCallPanic(func() {
+	called := helper.DoesTestCallPanic(func() {
 		NewEnvConfig()
 	})
 	assert.False(t, called)
 
-	called = testutil.DoesTestCallPanic(func() {
+	called = helper.DoesTestCallPanic(func() {
 		NewEnvConfig("")
 	})
 	assert.True(t, called)

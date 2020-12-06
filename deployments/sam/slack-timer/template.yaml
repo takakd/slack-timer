@@ -93,8 +93,8 @@ Resources:
     # Ref: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../../cmd/lambda/settimer
-      Handler: settimer
+      CodeUri: ../../../cmd/lambda/settime
+      Handler: main
       # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
       Policies:
         - CloudWatchPutMetricPolicy: {}
@@ -108,7 +108,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../../../cmd/lambda/enqueue
-      Handler: enqueue
+      Handler: main
       Policies:
         - CloudWatchPutMetricPolicy: {}
         - DynamoDBCrudPolicy:
@@ -154,7 +154,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../../../cmd/lambda/notify
-      Handler: notify
+      Handler: main
       # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
       Events:
         SQSEvent:
