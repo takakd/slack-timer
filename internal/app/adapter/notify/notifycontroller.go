@@ -7,25 +7,25 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
+// Concrete struct
 type NotifyController struct {
 	InputPort notifyevent.InputPort
 }
 
 func NewNotifyController() Controller {
 	h := &NotifyController{
-		InputPort: di.Get("notifycontroller.InputPort").(notifyevent.InputPort),
+		InputPort: di.Get("notifyevent.InputPort").(notifyevent.InputPort),
 	}
 	return h
 }
 
-func (s NotifyController) Handle(ctx context.Context, input HandleInput) *Response {
+func (c NotifyController) Handle(ctx context.Context, input HandleInput) *Response {
 	log.Info("handler input", input)
 
 	data := notifyevent.InputData{
 		UserId:  input.UserId,
 		Message: input.Message,
 	}
-
 	err := s.InputPort.NotifyEvent(ctx, data)
 
 	resp := &Response{

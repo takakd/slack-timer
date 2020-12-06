@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Concrete struct.
 type EnqueueController struct {
 	InputPort enqueueevent.InputPort
 }
@@ -23,6 +24,7 @@ func NewEnqueueController() Controller {
 func (c EnqueueController) Handle(ctx context.Context, input HandleInput) {
 	log.Info("handler called", input)
 
+	// TODO: Getting time from Lambda context?
 	data := enqueueevent.InputData{
 		EventTime: time.Now().UTC(),
 	}

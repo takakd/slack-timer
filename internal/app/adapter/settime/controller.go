@@ -1,5 +1,4 @@
-// Package slackcontroller provides the slack Event API callback handler.
-// Ref: https://api.slack.com/events-api#the-events-api__receiving-events
+// Package settime provides features that set user's event notification time.
 package settime
 
 import (
@@ -10,6 +9,7 @@ import (
 	"strings"
 )
 
+// Called by Lambda handler.
 type Controller interface {
 	Handle(ctx context.Context, input HandleInput) *Response
 }
@@ -24,14 +24,17 @@ type HandleInput struct {
 	EventData EventCallbackData
 }
 
-// Slack EventAPI Notification data
+// The data contained in Slack EventAPI Request.
+// Ref: https://api.slack.com/events-api#the-events-api__receiving-events
 type EventCallbackData struct {
 	Token  string `json:"token"`
 	TeamId string `json:"team_id"`
-	// Ref. https://api.slack.com/events
-	MessageEvent MessageEvent `json:"event"`
 	Type         string       `json:"type"`
 	EventTime    int          `json:"event_time"`
+
+	// This field is only included in Message Event.
+	// Ref: https://api.slack.com/events
+	MessageEvent MessageEvent `json:"event"`
 
 	// This field is only included in URL Verification Event.
 	// Ref: https://api.slack.com/events/url_verification
@@ -50,6 +53,7 @@ type MessageEvent struct {
 	Text    string `json:"text"`
 }
 
+// Extract second, because the format of timestamp sent by Slack has nano second.
 func (m MessageEvent) eventUnixTimeStamp() (ts int64, err error) {
 	s := strings.Split(m.EventTs, ".")
 	if len(s) < 1 {
@@ -61,6 +65,7 @@ func (m MessageEvent) eventUnixTimeStamp() (ts int64, err error) {
 	return
 }
 
+// TODO: change name "isSetEvnet" to "isSetTimeEvent"
 func (m MessageEvent) isSetEvent() bool {
 	if m.Type != "message" {
 		return false
