@@ -3,6 +3,7 @@ package prod
 import (
 	"slacktimer/internal/app/adapter/enqueue"
 	"slacktimer/internal/app/adapter/notify"
+	"slacktimer/internal/app/adapter/settime"
 	"slacktimer/internal/app/adapter/slackhandler"
 	"slacktimer/internal/app/driver/queue"
 	"slacktimer/internal/app/driver/repository"
@@ -49,12 +50,16 @@ func getUtilConcrete(name string) (interface{}, bool) {
 func getSetTimerConcrete(name string) (interface{}, bool) {
 	var c interface{}
 	switch name {
-	case "UpdateTimerEvent":
+	case "settime.URLVerificationRequestHandler":
+		c = settime.NewURLVerificationRequestHandlerFunctor()
+	case "settime.SaveEventHandler":
+		c = settime.NewSaveEventHandlerFunctor()
+	case "settime.ControllerHandler":
+		c = settime.NewController()
+	case "updatetimerevent.InputPort":
 		c = updatetimerevent.NewInteractor()
-	case "Repository":
+	case "updatetimerevent.Repository":
 		c = repository.NewDynamoDb(nil)
-	case "Queue":
-		c = queue.NewSqs(nil)
 	}
 	return c, c != nil
 }
@@ -62,7 +67,9 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 func getEnqueueConcrete(name string) (interface{}, bool) {
 	var c interface{}
 	switch name {
-	case "enqueuecontroller.InputPort":
+	case "enqueue.ControllerHandler":
+		c = enqueue.NewController()
+	case "enqueueevent.InputPort":
 		c = enqueueevent.NewInteractor()
 	case "enqueueevent.OutputPort":
 		c = enqueue.NewCloudWatchLogsPresenter()
@@ -77,7 +84,9 @@ func getEnqueueConcrete(name string) (interface{}, bool) {
 func getNotifyConcrete(name string) (interface{}, bool) {
 	var c interface{}
 	switch name {
-	case "notifycontroller.InputPort":
+	case "notify.ControllerHandler":
+		c = notify.NewController()
+	case "notifyevent.InputPort":
 		c = notifyevent.NewInteractor()
 	case "notifyevent.OutputPort":
 		c = notify.NewCloudWatchLogsPresenter()
@@ -85,7 +94,7 @@ func getNotifyConcrete(name string) (interface{}, bool) {
 		c = repository.NewDynamoDb(nil)
 	case "notifyevent.Notifier":
 		c = slackhandler.NewSlackHandler()
-	case "slackhandler.SlackApi":
+	case "slack.API":
 		c = slack.NewAPIDriver()
 	}
 	return c, c != nil
