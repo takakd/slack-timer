@@ -32,11 +32,11 @@ func TestNewSqs(t *testing.T) {
 func TestSqs_Enqueue(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseMessage := enqueueevent.QueueMessage{
-			UserId: "id1",
+			UserID: "id1",
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
-			MessageBody:    aws.String(caseMessage.UserId),
+			MessageBody:    aws.String(caseMessage.UserID),
 			MessageGroupId: aws.String(_messageGroupID),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
@@ -62,11 +62,11 @@ func TestSqs_Enqueue(t *testing.T) {
 
 	t.Run("ng:failed", func(t *testing.T) {
 		caseMessage := enqueueevent.QueueMessage{
-			UserId: "id1",
+			UserID: "id1",
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
-			MessageBody:    aws.String(caseMessage.UserId),
+			MessageBody:    aws.String(caseMessage.UserID),
 			MessageGroupId: aws.String(_messageGroupID),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}

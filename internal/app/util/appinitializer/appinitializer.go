@@ -15,7 +15,7 @@ import (
 	"slacktimer/internal/pkg/helper"
 )
 
-// Call this first when the app launch.
+// AppInit calls when the app launch.
 func AppInit() {
 	setConfig()
 	setDi()

@@ -17,12 +17,12 @@ import (
 func TestNewTimerEventDbItem(t *testing.T) {
 	caseTime := time.Now()
 	caseEvent := &enterpriserule.TimerEvent{
-		UserId:           "test_user",
+		UserID:           "test_user",
 		NotificationTime: caseTime,
 		IntervalMin:      3,
 	}
 	got := NewTimerEventDbItem(caseEvent)
-	assert.Equal(t, caseEvent.UserId, got.UserID)
+	assert.Equal(t, caseEvent.UserID, got.UserID)
 	assert.Equal(t, caseEvent.NotificationTime.Format(time.RFC3339), got.NotificationTime)
 	assert.Equal(t, caseEvent.IntervalMin, got.IntervalMin)
 }
@@ -31,7 +31,7 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseTime := time.Now().UTC().Truncate(time.Second)
 		want := &enterpriserule.TimerEvent{
-			UserId:           "test_user",
+			UserID:           "test_user",
 			NotificationTime: caseTime,
 			IntervalMin:      3,
 		}
@@ -43,7 +43,7 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ng:notification time", func(t *testing.T) {
 		caseTime := time.Now().Truncate(time.Second)
 		event := &enterpriserule.TimerEvent{
-			UserId:           "test_user",
+			UserID:           "test_user",
 			NotificationTime: caseTime,
 			IntervalMin:      3,
 		}
@@ -100,7 +100,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserId = :userid"),
+			KeyConditionExpression: aws.String("UserID = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -172,7 +172,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserId = :userid"),
+			KeyConditionExpression: aws.String("UserID = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -204,7 +204,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserId = :userid"),
+			KeyConditionExpression: aws.String("UserID = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{

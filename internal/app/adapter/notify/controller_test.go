@@ -46,7 +46,7 @@ func TestController_Handle(t *testing.T) {
 
 	i := notifyevent.NewMockInputPort(ctrl)
 	i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Eq(notifyevent.InputData{
-		UserId:  caseInput.UserID,
+		UserID:  caseInput.UserID,
 		Message: caseInput.Message,
 	})).Return(caseError)
 

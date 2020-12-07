@@ -10,7 +10,7 @@ type DI interface {
 	Get(name string) interface{}
 }
 
-// Helper function of DI.Get
+// Get is helper function of DI.Get
 func Get(name string) interface{} {
 	if di == nil {
 		return nil
@@ -18,6 +18,7 @@ func Get(name string) interface{} {
 	return di.Get(name)
 }
 
+// SetDi sets DI used throughout the application.
 func SetDi(d DI) {
 	di = d
 }

@@ -6,12 +6,13 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
+// Container implements DI on production env.
 type Container struct {
 }
 
 var _ di.DI = (*Container)(nil)
 
-// Returns interfaces in test environment.
+// Get returns interfaces corresponding name.
 func (t *Container) Get(name string) interface{} {
 	log.Info(fmt.Sprintf("call di.Get name=%s", name))
 	return nil

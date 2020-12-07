@@ -27,7 +27,7 @@ func (n Controller) Handle(ctx context.Context, input HandleInput) *Response {
 	log.Info("handler input", input)
 
 	data := notifyevent.InputData{
-		UserId:  input.UserID,
+		UserID:  input.UserID,
 		Message: input.Message,
 	}
 	err := n.InputPort.NotifyEvent(ctx, data)

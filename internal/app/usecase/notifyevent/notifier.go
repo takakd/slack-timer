@@ -1,6 +1,7 @@
 package notifyevent
 
+// Notifier defines notifying methods used in notifying usecase.
 type Notifier interface {
 	// Notify an event to user.
-	Notify(userId string, message string) error
+	Notify(userID string, message string) error
 }

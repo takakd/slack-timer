@@ -8,12 +8,14 @@ import (
 	"time"
 )
 
+// Interactor implements updatetimerevent.InputPort.
 type Interactor struct {
 	repository Repository
 }
 
 var _ InputPort = (*Interactor)(nil)
 
+// NewInteractor create new struct.
 func NewInteractor() *Interactor {
 	return &Interactor{
 		repository: di.Get("updatetimerevent.Repository").(Repository),
@@ -21,19 +23,19 @@ func NewInteractor() *Interactor {
 }
 
 // Common processing.
-func (s Interactor) saveTimerEventValue(ctx context.Context, userId string, notificationTime time.Time, remindInterval int) *OutputData {
+func (s Interactor) saveTimerEventValue(ctx context.Context, userID string, notificationTime time.Time, remindInterval int) *OutputData {
 
 	outputData := &OutputData{}
 
-	event, err := s.repository.FindTimerEvent(ctx, userId)
+	event, err := s.repository.FindTimerEvent(ctx, userID)
 	if err != nil {
-		outputData.Result = fmt.Errorf("finding timer event error userId=%v: %w", userId, err)
+		outputData.Result = fmt.Errorf("finding timer event error userID=%v: %w", userID, err)
 		return outputData
 	}
 
 	if event == nil {
-		if event, err = enterpriserule.NewTimerEvent(userId); err != nil {
-			outputData.Result = fmt.Errorf("creating timer event error userId=%v: %w", userId, err)
+		if event, err = enterpriserule.NewTimerEvent(userID); err != nil {
+			outputData.Result = fmt.Errorf("creating timer event error userID=%v: %w", userID, err)
 			return outputData
 		}
 	}
@@ -46,7 +48,7 @@ func (s Interactor) saveTimerEventValue(ctx context.Context, userId string, noti
 	event.NotificationTime = notificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
 
 	if _, err = s.repository.SaveTimerEvent(ctx, event); err != nil {
-		outputData.Result = fmt.Errorf("saving timer event error userId=%v: %w", userId, err)
+		outputData.Result = fmt.Errorf("saving timer event error userID=%v: %w", userID, err)
 		return outputData
 	}
 
@@ -54,15 +56,17 @@ func (s Interactor) saveTimerEventValue(ctx context.Context, userId string, noti
 	return outputData
 }
 
-func (s Interactor) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, presenter OutputPort) {
-	data := s.saveTimerEventValue(ctx, userId, notificationTime, 0)
+// UpdateNotificationTime sets notificationTime to the notification time of the event which corresponds to userID.
+func (s Interactor) UpdateNotificationTime(ctx context.Context, userID string, notificationTime time.Time, presenter OutputPort) {
+	data := s.saveTimerEventValue(ctx, userID, notificationTime, 0)
 	if presenter != nil {
 		presenter.Output(*data)
 	}
 }
 
-func (s Interactor) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, presetner OutputPort) {
-	data := s.saveTimerEventValue(ctx, userId, currentTime, minutes)
+// SaveIntervalMin sets notification interval to the event which corresponds to userID.
+func (s Interactor) SaveIntervalMin(ctx context.Context, userID string, currentTime time.Time, minutes int, presetner OutputPort) {
+	data := s.saveTimerEventValue(ctx, userID, currentTime, minutes)
 	if presetner != nil {
 		presetner.Output(*data)
 	}

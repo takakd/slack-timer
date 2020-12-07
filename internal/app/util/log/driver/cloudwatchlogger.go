@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Stdout logger
+// CloudWatchLogger implements log.Logger with CloudwatchLogs.
 type CloudWatchLogger struct {
 	logger *log.Logger
 	level  log2.Level
@@ -17,18 +17,18 @@ type CloudWatchLogger struct {
 
 var _ log2.Logger = (*CloudWatchLogger)(nil)
 
+// NewCloudWatchLogger create new struct.
 func NewCloudWatchLogger() *CloudWatchLogger {
 	return &CloudWatchLogger{
 		logger: log.New(os.Stdout, "", log.LstdFlags),
 	}
 }
 
-// Set logging level.
+// SetLevel sets logging level.
 func (l *CloudWatchLogger) SetLevel(level log2.Level) {
 	l.level = level
 }
 
-// Output log.
 func (l CloudWatchLogger) outputLog(level log2.Level, v ...interface{}) {
 	if l.level < level {
 		// Ignore the log with lower priorities than the output level.
@@ -53,17 +53,17 @@ func (l CloudWatchLogger) outputLog(level log2.Level, v ...interface{}) {
 	l.logger.Print(fmt.Sprintf("[%s] %s", label, body))
 }
 
-// Output debug log.
+// Debug implements Logger.Debug.
 func (l CloudWatchLogger) Debug(v ...interface{}) {
 	l.outputLog(log2.LevelDebug, v)
 }
 
-// Output info log.
+// Info implements Logger.Info.
 func (l CloudWatchLogger) Info(v ...interface{}) {
 	l.outputLog(log2.LevelInfo, v)
 }
 
-// Output error log.
+// Error implements Logger.Error.
 func (l CloudWatchLogger) Error(v ...interface{}) {
 	l.outputLog(log2.LevelError, v)
 }

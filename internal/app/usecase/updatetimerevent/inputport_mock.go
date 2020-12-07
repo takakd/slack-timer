@@ -36,25 +36,25 @@ func (m *MockInputPort) EXPECT() *MockInputPortMockRecorder {
 }
 
 // UpdateNotificationTime mocks base method
-func (m *MockInputPort) UpdateNotificationTime(ctx context.Context, userId string, notificationTime time.Time, presenter OutputPort) {
+func (m *MockInputPort) UpdateNotificationTime(ctx context.Context, userID string, notificationTime time.Time, presenter OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateNotificationTime", ctx, userId, notificationTime, presenter)
+	m.ctrl.Call(m, "UpdateNotificationTime", ctx, userID, notificationTime, presenter)
 }
 
 // UpdateNotificationTime indicates an expected call of UpdateNotificationTime
-func (mr *MockInputPortMockRecorder) UpdateNotificationTime(ctx, userId, notificationTime, presenter interface{}) *gomock.Call {
+func (mr *MockInputPortMockRecorder) UpdateNotificationTime(ctx, userID, notificationTime, presenter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockInputPort)(nil).UpdateNotificationTime), ctx, userId, notificationTime, presenter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockInputPort)(nil).UpdateNotificationTime), ctx, userID, notificationTime, presenter)
 }
 
 // SaveIntervalMin mocks base method
-func (m *MockInputPort) SaveIntervalMin(ctx context.Context, userId string, currentTime time.Time, minutes int, presenter OutputPort) {
+func (m *MockInputPort) SaveIntervalMin(ctx context.Context, userID string, currentTime time.Time, minutes int, presenter OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SaveIntervalMin", ctx, userId, currentTime, minutes, presenter)
+	m.ctrl.Call(m, "SaveIntervalMin", ctx, userID, currentTime, minutes, presenter)
 }
 
 // SaveIntervalMin indicates an expected call of SaveIntervalMin
-func (mr *MockInputPortMockRecorder) SaveIntervalMin(ctx, userId, currentTime, minutes, presenter interface{}) *gomock.Call {
+func (mr *MockInputPortMockRecorder) SaveIntervalMin(ctx, userID, currentTime, minutes, presenter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveIntervalMin", reflect.TypeOf((*MockInputPort)(nil).SaveIntervalMin), ctx, userId, currentTime, minutes, presenter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveIntervalMin", reflect.TypeOf((*MockInputPort)(nil).SaveIntervalMin), ctx, userID, currentTime, minutes, presenter)
 }

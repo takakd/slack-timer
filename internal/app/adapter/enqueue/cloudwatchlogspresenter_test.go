@@ -18,7 +18,7 @@ func TestNewCloudWatchLogsPresenter(t *testing.T) {
 func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		caseData := enqueueevent.OutputData{}
-		caseData.NotifiedUserIdList = make([]string, 0)
+		caseData.NotifiedUserIDList = make([]string, 0)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -33,10 +33,10 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 
 	t.Run("exist", func(t *testing.T) {
 		caseData := enqueueevent.OutputData{}
-		caseData.NotifiedUserIdList = []string{
+		caseData.NotifiedUserIDList = []string{
 			"id1", "id2",
 		}
-		caseData.QueueMessageIdList = []string{
+		caseData.QueueMessageIDList = []string{
 			"mid1", "mid2",
 		}
 

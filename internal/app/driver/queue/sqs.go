@@ -39,7 +39,7 @@ func NewSqs(wrp SqsWrapper) *Sqs {
 // Enqueue enqueues a message to SQS.
 func (s Sqs) Enqueue(message enqueueevent.QueueMessage) (string, error) {
 	r, err := s.wrp.SendMessage(&sqs.SendMessageInput{
-		MessageBody:    aws.String(message.UserId),
+		MessageBody:    aws.String(message.UserID),
 		MessageGroupId: aws.String(_messageGroupID),
 		QueueUrl:       aws.String(config.Get("SQS_URL", "")),
 	})

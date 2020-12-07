@@ -8,13 +8,13 @@ import (
 
 // SlackHandler serves Slack API handlers used by the app.
 type SlackHandler struct {
-	api slack.SlackApi
+	api slack.API
 }
 
 // NewSlackHandler create new struct.
 func NewSlackHandler() *SlackHandler {
 	s := &SlackHandler{
-		api: di.Get("slack.SlackApi").(slack.SlackApi),
+		api: di.Get("slack.API").(slack.API),
 	}
 	return s
 }

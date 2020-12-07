@@ -11,12 +11,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Provides based on .env file.
+// EnvConfig provides implementation of config.Config based on .env file.
 type EnvConfig struct {
 }
 
 var _ config.Config = (*EnvConfig)(nil)
 
+// NewEnvConfig create new struct.
 func NewEnvConfig(filepathList ...string) *EnvConfig {
 	if len(filepathList) > 0 {
 		if err := godotenv.Load(filepathList...); err != nil {
@@ -26,6 +27,7 @@ func NewEnvConfig(filepathList ...string) *EnvConfig {
 	return &EnvConfig{}
 }
 
+// Get returns value corresponding name.
 func (e EnvConfig) Get(name string, defaultValue string) string {
 	v := os.Getenv(strings.ToUpper(name))
 	if v == "" {
