@@ -22,10 +22,10 @@ func TestLambdaInput_HandleInput(t *testing.T) {
 			},
 			Challenge: "challenge",
 		}
-		dataJson, _ := json.Marshal(&data)
+		dataJSON, _ := json.Marshal(&data)
 
 		caseInput := LambdaInput{
-			Body: string(dataJson),
+			Body: string(dataJSON),
 		}
 
 		want := &settime.HandleInput{

@@ -9,21 +9,23 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
-type NotifyLambdaHandler struct {
-	ctrl notify.Controller
+// LambdaFunctor provides the method that is set to AWS Lambda.
+type LambdaFunctor struct {
+	ctrl notify.ControllerHandler
 }
 
-func NewNotifyLambdaHandler() *NotifyLambdaHandler {
-	h := &NotifyLambdaHandler{}
-	h.ctrl = di.Get("notify.Controller").(notify.Controller)
+// NewLambdaFunctor create new struct.
+func NewLambdaFunctor() *LambdaFunctor {
+	h := &LambdaFunctor{}
+	h.ctrl = di.Get("notify.ControllerHandler").(notify.ControllerHandler)
 	return h
 }
 
-var _ LambdaHandler = (*NotifyLambdaHandler)(nil)
+var _ LambdaHandler = (*LambdaFunctor)(nil)
 
-// SQS calls this function.
+// Handle is called by SQS.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
-func (n NotifyLambdaHandler) Handle(ctx context.Context, input LambdaInput) error {
+func (n LambdaFunctor) Handle(ctx context.Context, input LambdaInput) error {
 	appinitializer.AppInit()
 
 	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%v", len(input.Records), input.Records))

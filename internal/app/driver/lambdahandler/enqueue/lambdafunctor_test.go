@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewEnqueueLambdaHandler(t *testing.T) {
+func TestNewLambdaFunctor(t *testing.T) {
 	assert.NotPanics(t, func() {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -18,14 +18,14 @@ func TestNewEnqueueLambdaHandler(t *testing.T) {
 		mc := enqueue.NewMockControllerHandler(ctrl)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get("enqueue.Controller").Return(mc)
+		md.EXPECT().Get("enqueue.ControllerHandler").Return(mc)
 		di.SetDi(md)
 
-		NewEnqueueLambdaHandler()
+		NewLambdaFunctor()
 	})
 }
 
-func TestEnqueueLambdaHandler_Handle(t *testing.T) {
+func TestLambdaFunctor_Handle(t *testing.T) {
 	t.Run("ok:notify", func(t *testing.T) {
 		assert.NotPanics(t, func() {
 			ctrl := gomock.NewController(t)
@@ -39,10 +39,10 @@ func TestEnqueueLambdaHandler_Handle(t *testing.T) {
 			mc.EXPECT().Handle(gomock.Eq(ctx), gomock.Any())
 
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get("enqueue.Controller").Return(mc)
+			md.EXPECT().Get("enqueue.ControllerHandler").Return(mc)
 			di.SetDi(md)
 
-			h := NewEnqueueLambdaHandler()
+			h := NewLambdaFunctor()
 			h.Handle(ctx, caseInput)
 		})
 	})

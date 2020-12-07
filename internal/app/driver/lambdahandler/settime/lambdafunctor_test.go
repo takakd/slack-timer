@@ -33,10 +33,10 @@ func TestLambdaHandler(t *testing.T) {
 				Challenge: "challenge",
 			},
 		}
-		dataJson, _ := json.Marshal(&data.EventData)
+		dataJSON,  _ := json.Marshal(&data.EventData)
 
 		caseInput := LambdaInput{
-			Body: string(dataJson),
+			Body: string(dataJSON),
 		}
 
 		caseRespBody := struct {
@@ -53,10 +53,10 @@ func TestLambdaHandler(t *testing.T) {
 		mh.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(data)).Return(&caseResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.Controller")).Return(mh)
+		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
 		di.SetDi(md)
 
-		h := NewSetTimeLambdaHandler()
+		h := NewLambdaFunctor()
 		got, err := h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, true, got.IsBase64Encoded)
@@ -91,10 +91,10 @@ func TestLambdaHandler(t *testing.T) {
 				Challenge: "challenge",
 			},
 		}
-		dataJson, _ := json.Marshal(&data.EventData)
+		dataJSON, _ := json.Marshal(&data.EventData)
 
 		caseInput := LambdaInput{
-			Body: string(dataJson),
+			Body: string(dataJSON),
 		}
 
 		caseRespBody := "message"
@@ -107,10 +107,10 @@ func TestLambdaHandler(t *testing.T) {
 		mh.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(data)).Return(&caseResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.Controller")).Return(mh)
+		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
 		di.SetDi(md)
 
-		h := NewSetTimeLambdaHandler()
+		h := NewLambdaFunctor()
 		got, err := h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, true, got.IsBase64Encoded)
@@ -136,10 +136,10 @@ func TestLambdaHandler(t *testing.T) {
 		mh := settime.NewMockControllerHandler(ctrl)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.Controller")).Return(mh)
+		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
 		di.SetDi(md)
 
-		h := NewSetTimeLambdaHandler()
+		h := NewLambdaFunctor()
 		got, err := h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, true, got.IsBase64Encoded)

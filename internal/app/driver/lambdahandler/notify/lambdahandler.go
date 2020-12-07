@@ -6,20 +6,21 @@ import (
 	"slacktimer/internal/app/adapter/notify"
 )
 
+// LambdaHandler defines the interface called by AWS Lambda.
 type LambdaHandler interface {
 	Handle(ctx context.Context, input LambdaInput) error
 }
 
-// SQS passes this.
+// LambdaInput is passed from SQS.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
 type LambdaInput struct {
 	// Parameters include multiple SQS messages.
 	Records []SqsMessage `json:"records"`
 }
 
-// A SQS message in handler parameters.
+// SqsMessage is one of SQS message in handler parameters.
 type SqsMessage struct {
-	MessageId     string            `json:"messageId"`
+	MessageID     string            `json:"messageId"`
 	ReceiptHandle string            `json:"receiptHandle"`
 	Body          string            `json:"body"`
 	Attributes    map[string]string `json:"attributes"`
@@ -31,7 +32,7 @@ type SqsMessage struct {
 	AwsRegion         string                 `json:"awsRegion"`
 }
 
-// To input data for controller.
+// HandleInput convert to the data for controller.
 func (s SqsMessage) HandleInput() notify.HandleInput {
 	return notify.HandleInput{
 		UserID: s.Body,

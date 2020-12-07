@@ -37,7 +37,7 @@ func TestSqs_Enqueue(t *testing.T) {
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
 			MessageBody:    aws.String(caseMessage.UserId),
-			MessageGroupId: aws.String(_messageGroupId),
+			MessageGroupId: aws.String(_messageGroupID),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseMessageOutput := &sqs.SendMessageOutput{
@@ -67,7 +67,7 @@ func TestSqs_Enqueue(t *testing.T) {
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
 			MessageBody:    aws.String(caseMessage.UserId),
-			MessageGroupId: aws.String(_messageGroupId),
+			MessageGroupId: aws.String(_messageGroupID),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseError := errors.New("error")
