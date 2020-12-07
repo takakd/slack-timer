@@ -2,7 +2,7 @@ package helper
 
 import "reflect"
 
-// Check if the type is struct.
+// IsStruct checks if v is struct.
 func IsStruct(v interface{}) bool {
 	c := reflect.ValueOf(v)
 

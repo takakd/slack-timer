@@ -7,7 +7,7 @@ type OutputPort interface {
 
 // OutputData is parameter of OutputPort.
 type OutputData struct {
-	Result             error
+	Result error
 	// Succeeded in Notifying ID list.
 	NotifiedUserIDList []string
 	QueueMessageIDList []string

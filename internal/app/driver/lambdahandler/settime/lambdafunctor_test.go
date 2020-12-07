@@ -33,7 +33,7 @@ func TestLambdaHandler(t *testing.T) {
 				Challenge: "challenge",
 			},
 		}
-		dataJSON,  _ := json.Marshal(&data.EventData)
+		dataJSON, _ := json.Marshal(&data.EventData)
 
 		caseInput := LambdaInput{
 			Body: string(dataJSON),

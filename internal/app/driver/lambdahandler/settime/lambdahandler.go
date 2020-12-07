@@ -23,12 +23,12 @@ type LambdaInput struct {
 	MultiValueQueryStringParameters []map[string][]string `json:"multiValueQueryStringParameters,omitempty"`
 	PathParameters                  map[string]string     `json:"pathParameters,omitempty"`
 	StageVaribales                  map[string]string     `json:"stageVariables,omitempty"`
-	RequestContext struct {
+	RequestContext                  struct {
 		AccountID  string `json:"accountId,omitempty"`
 		ResourceID string `json:"resourceId,omitempty"`
 		Stage      string `json:"stage,omitempty"`
 		RequestID  string `json:"requestId,omitempty"`
-		Identity struct {
+		Identity   struct {
 			CognitoIdentityPoolID         string `json:"cognitoIdentityPoolId,omitempty"`
 			AccountID                     string `json:"accountId,omitempty"`
 			CognitoIdentityID             string `json:"cognitoIdentityId,omitempty"`

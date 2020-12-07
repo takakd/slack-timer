@@ -7,14 +7,13 @@ import (
 	"os"
 	"regexp"
 	"slacktimer/internal/app/util/log"
-	"slacktimer/internal/pkg/helper"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCloudWatchLogger(t *testing.T) {
-	helper.DoesTestCallPanic(func() {
+	assert.NotPanics(t, func() {
 		NewCloudWatchLogger()
 	})
 }

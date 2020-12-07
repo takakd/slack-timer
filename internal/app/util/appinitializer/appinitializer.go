@@ -33,7 +33,7 @@ func setConfig() {
 		// Get .env path
 		appDir, err := helper.GetAppDir()
 		if err != nil {
-			panic(helper.MakePanicMessage("need app directory path."))
+			panic("need app directory path.")
 		}
 		names := make([]string, 0)
 		path := filepath.Join(appDir, ".env")

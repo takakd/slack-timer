@@ -5,22 +5,19 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"slacktimer/internal/pkg/helper"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEnvConfig(t *testing.T) {
-	called := helper.DoesTestCallPanic(func() {
+	assert.NotPanics(t, func() {
 		NewEnvConfig()
 	})
-	assert.False(t, called)
 
-	called = helper.DoesTestCallPanic(func() {
+	assert.Panics(t, func() {
 		NewEnvConfig("")
 	})
-	assert.True(t, called)
 }
 
 func TestEnvConfig_Get(t *testing.T) {

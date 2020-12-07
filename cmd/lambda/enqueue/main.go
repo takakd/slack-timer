@@ -8,6 +8,6 @@ import (
 
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func main() {
-	h := enqueue.NewEnqueueLambdaHandler()
+	h := enqueue.NewLambdaFunctor()
 	lambda.Start(h.Handle)
 }
