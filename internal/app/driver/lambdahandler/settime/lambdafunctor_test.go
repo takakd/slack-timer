@@ -3,12 +3,13 @@ package settime
 import (
 	"context"
 	"encoding/json"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"slacktimer/internal/app/adapter/settime"
 	"slacktimer/internal/app/util/di"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLambdaHandler(t *testing.T) {
@@ -21,7 +22,7 @@ func TestLambdaHandler(t *testing.T) {
 		data := settime.HandleInput{
 			EventData: settime.EventCallbackData{
 				Token:  "test",
-				TeamId: "test id",
+				TeamID: "test id",
 				MessageEvent: settime.MessageEvent{
 					Type:    "message",
 					EventTs: "1234.0000001",
@@ -32,10 +33,10 @@ func TestLambdaHandler(t *testing.T) {
 				Challenge: "challenge",
 			},
 		}
-		dataJson, _ := json.Marshal(&data.EventData)
+		dataJSON, _ := json.Marshal(&data.EventData)
 
 		caseInput := LambdaInput{
-			Body: string(dataJson),
+			Body: string(dataJSON),
 		}
 
 		caseRespBody := struct {
@@ -48,14 +49,14 @@ func TestLambdaHandler(t *testing.T) {
 			Body:       caseRespBody,
 		}
 
-		mh := settime.NewMockController(ctrl)
+		mh := settime.NewMockControllerHandler(ctrl)
 		mh.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(data)).Return(&caseResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.Controller")).Return(mh)
+		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
 		di.SetDi(md)
 
-		h := NewSetTimeLambdaHandler()
+		h := NewLambdaFunctor()
 		got, err := h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, true, got.IsBase64Encoded)
@@ -79,7 +80,7 @@ func TestLambdaHandler(t *testing.T) {
 		data := settime.HandleInput{
 			EventData: settime.EventCallbackData{
 				Token:  "test",
-				TeamId: "test id",
+				TeamID: "test id",
 				MessageEvent: settime.MessageEvent{
 					Type:    "message",
 					EventTs: "1234.0000001",
@@ -90,10 +91,10 @@ func TestLambdaHandler(t *testing.T) {
 				Challenge: "challenge",
 			},
 		}
-		dataJson, _ := json.Marshal(&data.EventData)
+		dataJSON, _ := json.Marshal(&data.EventData)
 
 		caseInput := LambdaInput{
-			Body: string(dataJson),
+			Body: string(dataJSON),
 		}
 
 		caseRespBody := "message"
@@ -102,14 +103,14 @@ func TestLambdaHandler(t *testing.T) {
 			Body:       caseRespBody,
 		}
 
-		mh := settime.NewMockController(ctrl)
+		mh := settime.NewMockControllerHandler(ctrl)
 		mh.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(data)).Return(&caseResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.Controller")).Return(mh)
+		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
 		di.SetDi(md)
 
-		h := NewSetTimeLambdaHandler()
+		h := NewLambdaFunctor()
 		got, err := h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, true, got.IsBase64Encoded)
@@ -132,13 +133,13 @@ func TestLambdaHandler(t *testing.T) {
 			Body: "{invalid format",
 		}
 
-		mh := settime.NewMockController(ctrl)
+		mh := settime.NewMockControllerHandler(ctrl)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.Controller")).Return(mh)
+		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
 		di.SetDi(md)
 
-		h := NewSetTimeLambdaHandler()
+		h := NewLambdaFunctor()
 		got, err := h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 		assert.Equal(t, true, got.IsBase64Encoded)

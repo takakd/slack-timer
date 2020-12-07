@@ -6,10 +6,11 @@ package enqueueevent
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 	enterpriserule "slacktimer/internal/app/enterpriserule"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockRepository is a mock of Repository interface

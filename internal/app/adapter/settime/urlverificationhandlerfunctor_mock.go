@@ -6,35 +6,36 @@ package settime
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockUrlVerificationRequestHandler is a mock of UrlVerificationRequestHandler interface
-type MockUrlVerificationRequestHandler struct {
+// MockURLVerificationRequestHandler is a mock of URLVerificationRequestHandler interface
+type MockURLVerificationRequestHandler struct {
 	ctrl     *gomock.Controller
-	recorder *MockUrlVerificationRequestHandlerMockRecorder
+	recorder *MockURLVerificationRequestHandlerMockRecorder
 }
 
-// MockUrlVerificationRequestHandlerMockRecorder is the mock recorder for MockUrlVerificationRequestHandler
-type MockUrlVerificationRequestHandlerMockRecorder struct {
-	mock *MockUrlVerificationRequestHandler
+// MockURLVerificationRequestHandlerMockRecorder is the mock recorder for MockURLVerificationRequestHandler
+type MockURLVerificationRequestHandlerMockRecorder struct {
+	mock *MockURLVerificationRequestHandler
 }
 
-// NewMockUrlVerificationRequestHandler creates a new mock instance
-func NewMockUrlVerificationRequestHandler(ctrl *gomock.Controller) *MockUrlVerificationRequestHandler {
-	mock := &MockUrlVerificationRequestHandler{ctrl: ctrl}
-	mock.recorder = &MockUrlVerificationRequestHandlerMockRecorder{mock}
+// NewMockURLVerificationRequestHandler creates a new mock instance
+func NewMockURLVerificationRequestHandler(ctrl *gomock.Controller) *MockURLVerificationRequestHandler {
+	mock := &MockURLVerificationRequestHandler{ctrl: ctrl}
+	mock.recorder = &MockURLVerificationRequestHandlerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockUrlVerificationRequestHandler) EXPECT() *MockUrlVerificationRequestHandlerMockRecorder {
+func (m *MockURLVerificationRequestHandler) EXPECT() *MockURLVerificationRequestHandlerMockRecorder {
 	return m.recorder
 }
 
 // Handle mocks base method
-func (m *MockUrlVerificationRequestHandler) Handle(ctx context.Context, data EventCallbackData) *Response {
+func (m *MockURLVerificationRequestHandler) Handle(ctx context.Context, data EventCallbackData) *Response {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Handle", ctx, data)
 	ret0, _ := ret[0].(*Response)
@@ -42,7 +43,7 @@ func (m *MockUrlVerificationRequestHandler) Handle(ctx context.Context, data Eve
 }
 
 // Handle indicates an expected call of Handle
-func (mr *MockUrlVerificationRequestHandlerMockRecorder) Handle(ctx, data interface{}) *gomock.Call {
+func (mr *MockURLVerificationRequestHandlerMockRecorder) Handle(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockUrlVerificationRequestHandler)(nil).Handle), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockURLVerificationRequestHandler)(nil).Handle), ctx, data)
 }

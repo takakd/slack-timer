@@ -3,20 +3,21 @@ package settime
 import (
 	"context"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestNewUrlVerificationRequestHandlerFunctor(t *testing.T) {
+func TestNewURLVerificationRequestHandlerFunctor(t *testing.T) {
 	assert.NotPanics(t, func() {
-		NewUrlVerificationRequestHandlerFunctor()
+		NewURLVerificationRequestHandlerFunctor()
 	})
 }
 
-func TestUrlVerificationRequestHandlerFunctor_Handle(t *testing.T) {
+func TestURLVerificationRequestHandlerFunctor_Handle(t *testing.T) {
 	cases := []struct {
 		name      string
 		challenge string
@@ -31,7 +32,7 @@ func TestUrlVerificationRequestHandlerFunctor_Handle(t *testing.T) {
 		}},
 		{"ok", "valid token", &Response{
 			StatusCode: http.StatusOK,
-			Body: UrlVerificationResponseBody{
+			Body: URLVerificationResponseBody{
 				"valid token",
 			},
 		}},
@@ -46,13 +47,13 @@ func TestUrlVerificationRequestHandlerFunctor_Handle(t *testing.T) {
 			defer ctrl.Finish()
 
 			ml := log.NewMockLogger(ctrl)
-			ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", caseData.Challenge)))
+			ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("URLVerificationRequestHandler.Handler challenge=%s", caseData.Challenge)))
 			if caseData.Challenge != "" {
-				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", *c.resp)))
+				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("URLVerificationRequestHandler.Handler output=%v", *c.resp)))
 			}
 			log.SetDefaultLogger(ml)
 
-			h := NewUrlVerificationRequestHandlerFunctor()
+			h := NewURLVerificationRequestHandlerFunctor()
 			got := h.Handle(context.TODO(), caseData)
 			assert.Equal(t, c.resp, got)
 		})

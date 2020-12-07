@@ -10,13 +10,17 @@ import (
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log/driver"
 )
 
+// Container implements DI on production env.
 type Container struct {
 }
 
-// Returns interfaces in development environment.
+var _ di.DI = (*Container)(nil)
+
+// Get returns interfaces corresponding name.
 func (d *Container) Get(name string) interface{} {
 	if c, ok := getUtilConcrete(name); ok {
 		return c
@@ -82,7 +86,7 @@ func getNotifyConcrete(name string) (interface{}, bool) {
 	case "notifyevent.Notifier":
 		c = slackhandler.NewSlackHandler()
 	case "slackhandler.SlackApi":
-		c = slack.NewSlackApiDriver()
+		c = slack.NewAPIDriver()
 	}
 	return c, c != nil
 }

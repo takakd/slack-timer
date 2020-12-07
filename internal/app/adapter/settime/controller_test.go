@@ -1,86 +1,135 @@
-// Package slackcontroller provides the slack Event API callback handler.
-// Ref: https://api.slack.com/events-api#the-events-api__receiving-events
 package settime
 
 import (
+	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"strconv"
+	"net/http"
+	"slacktimer/internal/app/util/di"
+	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestEventCallbackData_isVerificationEvent(t *testing.T) {
-	cases := []struct {
-		name         string
-		dataType     string
-		verification bool
-	}{
-		{"ok", "url_verification", true},
-		{"ng", "", false},
-	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			d := &EventCallbackData{
-				Type: c.dataType,
-			}
-			assert.Equal(t, d.isVerificationEvent(), c.verification)
-		})
-	}
+func TestNewController(t *testing.T) {
+	assert.NotPanics(t, func() {
+		NewController()
+	})
 }
 
-func TestMessageEvent_isSetEvent(t *testing.T) {
-	cases := []struct {
-		name      string
-		eventType string
-		text      string
-		isSet     bool
-	}{
-		{"ok", "message", "set 10", true},
-		{"ng:wrong type", "wrong", "set 10", false},
-		{"ng:wrong body", "messazge", "set a", false},
-		{"ng:empty body", "messazge", "", false},
-	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			d := &MessageEvent{
-				Type: c.eventType,
-				Text: c.text,
-			}
-			got := d.isSetTimeEvent()
-			assert.Equal(t, c.isSet, got)
-		})
-	}
+func TestController_Handle(t *testing.T) {
+	t.Run("ok:verification", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.TODO()
+
+		caseInput := HandleInput{
+			EventData: EventCallbackData{
+				Type:      "url_verification",
+				Challenge: "challenge",
+			},
+		}
+
+		wantResp := &Response{}
+
+		ml := log.NewMockLogger(ctrl)
+		ml.EXPECT().Info(gomock.Eq("url verification event"))
+		log.SetDefaultLogger(ml)
+
+		mu := NewMockURLVerificationRequestHandler(ctrl)
+		mu.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(caseInput.EventData)).Return(wantResp)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get(gomock.Eq("settime.URLVerificationRequestHandler")).Return(mu)
+		di.SetDi(md)
+
+		h := NewController()
+		got := h.Handle(ctx, caseInput)
+		assert.Equal(t, wantResp, got)
+	})
+
+	t.Run("not support event", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.TODO()
+
+		caseInput := HandleInput{
+			EventData: EventCallbackData{
+				Type: "not support",
+				MessageEvent: MessageEvent{
+					Type: "not support",
+				},
+			},
+		}
+
+		wantResp := newErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", caseInput.EventData.Type))
+
+		h := NewController()
+		got := h.Handle(ctx, caseInput)
+		assert.Equal(t, wantResp, got)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.TODO()
+
+		caseInput := HandleInput{
+			EventData: EventCallbackData{
+				MessageEvent: MessageEvent{
+					Type: "message",
+					Text: "set 10",
+				},
+			},
+		}
+
+		wantResp := &Response{
+			StatusCode: http.StatusOK,
+			Body:       "test",
+		}
+
+		mu := NewMockSaveEventHandler(ctrl)
+		mu.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(caseInput.EventData)).Return(wantResp)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get(gomock.Eq("settime.SaveEventHandler")).Return(mu)
+		di.SetDi(md)
+
+		h := NewController()
+		got := h.Handle(ctx, caseInput)
+		assert.Equal(t, wantResp, got)
+
+	})
 }
 
-func TestMessageEvent_eventUnixTimeStamp(t *testing.T) {
+func TestMakeErrorHandleResponse(t *testing.T) {
 	cases := []struct {
 		name    string
-		ts      string
-		tsNano  string
-		success bool
+		message string
+		detail  string
 	}{
-		{"ok", "1607165903", "000010", true},
-		{"ok:empty nano", "1607165903", "", true},
-		{"ng:invalid format", "abc", "", false},
-		{"ng:empty", "", "", false},
+		{"no error", "test", ""},
+		{"error", "test", "test err"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			d := &MessageEvent{
-				EventTs: fmt.Sprintf("%s.%s", c.ts, c.tsNano),
+			wantBody := &ResponseErrorBody{
+				Message: c.message,
 			}
-			got, err := d.eventUnixTimeStamp()
-
-			if c.success {
-				assert.NoError(t, err)
-				want, err := strconv.ParseInt(c.ts, 10, 64)
-				require.NoError(t, err)
-				assert.Equal(t, want, got)
-
-			} else {
-				assert.Error(t, err)
+			if c.detail != "" {
+				wantBody.Detail = c.detail
 			}
+			want := &Response{
+				StatusCode: http.StatusInternalServerError,
+				Body:       wantBody,
+			}
+
+			got := newErrorHandlerResponse(c.message, c.detail)
+			assert.Equal(t, want, got)
 		})
 	}
 }

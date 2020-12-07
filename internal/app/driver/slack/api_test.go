@@ -3,26 +3,27 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"slacktimer/internal/app/util/config"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestNewSlackApiDriver(t *testing.T) {
-	want := &SlackApiDriver{}
-	got := NewSlackApiDriver()
+func TestNewAPIDriver(t *testing.T) {
+	want := &APIDriver{}
+	got := NewAPIDriver()
 	assert.Equal(t, want, got)
 }
 
-func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
+func TestAPIDriver_ConversationsOpen(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
-		caseUserId := "test user"
-		caseChannelId := "test channel"
+		caseUserID := "test user"
+		caseChannelID := "test channel"
 		caseToken := "test token"
 
 		ctrl := gomock.NewController(t)
@@ -35,11 +36,11 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 			var reqBody ConversationsOpenRequestBody
 			err = json.Unmarshal(buf, &reqBody)
 			require.NoError(t, err)
-			assert.Equal(t, reqBody.Users, caseUserId)
+			assert.Equal(t, reqBody.Users, caseUserID)
 
 			respBody := &ConversationsOpenResponseBody{
 				Ok:      true,
-				Channel: ConversationsOpenResponseBodyChannel{caseChannelId},
+				Channel: ConversationsOpenResponseBodyChannel{caseChannelID},
 			}
 			resp, err := json.Marshal(respBody)
 			require.NoError(t, err)
@@ -56,9 +57,9 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL)
 		config.SetConfig(c)
 
-		d := NewSlackApiDriver()
-		got, err := d.ConversationsOpen(caseUserId)
-		assert.Equal(t, caseChannelId, got)
+		d := NewAPIDriver()
+		got, err := d.ConversationsOpen(caseUserID)
+		assert.Equal(t, caseChannelID, got)
 		assert.NoError(t, err)
 	})
 
@@ -72,7 +73,7 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 		config.SetConfig(c)
 
 		assert.Panics(t, func() {
-			d := NewSlackApiDriver()
+			d := NewAPIDriver()
 			d.ConversationsOpen("test")
 		})
 	})
@@ -102,7 +103,7 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL + "/wrong")
 		config.SetConfig(c)
 
-		d := NewSlackApiDriver()
+		d := NewAPIDriver()
 		got, err := d.ConversationsOpen("test")
 		assert.Empty(t, got)
 		assert.Error(t, err)
@@ -134,17 +135,17 @@ func TestSlackApiDriver_ConversationsOpen(t *testing.T) {
 			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL)
 		config.SetConfig(c)
 
-		d := NewSlackApiDriver()
+		d := NewAPIDriver()
 		got, err := d.ConversationsOpen("test")
 		assert.Empty(t, got)
 		assert.Error(t, err)
 	})
 }
 
-func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
+func TestAPIDriver_ChatPostMessage(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseToken := "test token"
-		caseChannelId := "test channel"
+		caseChannelID := "test channel"
 		caseText := "test message"
 
 		ctrl := gomock.NewController(t)
@@ -157,7 +158,7 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 			var reqBody ChatPostMessageRequestBody
 			err = json.Unmarshal(buf, &reqBody)
 			require.NoError(t, err)
-			assert.Equal(t, reqBody.Channel, caseChannelId)
+			assert.Equal(t, reqBody.Channel, caseChannelID)
 			assert.Equal(t, reqBody.Text, caseText)
 
 			respBody := &ChatPostMessageResponseBody{
@@ -178,8 +179,8 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return(server.URL)
 		config.SetConfig(c)
 
-		d := NewSlackApiDriver()
-		err := d.ChatPostMessage(caseChannelId, caseText)
+		d := NewAPIDriver()
+		err := d.ChatPostMessage(caseChannelID, caseText)
 		assert.NoError(t, err)
 	})
 
@@ -193,7 +194,7 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		assert.Panics(t, func() {
-			d := NewSlackApiDriver()
+			d := NewAPIDriver()
 			d.ChatPostMessage("test", "test")
 		})
 	})
@@ -222,7 +223,7 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return(server.URL + "/wrong")
 		config.SetConfig(c)
 
-		d := NewSlackApiDriver()
+		d := NewAPIDriver()
 		err := d.ChatPostMessage("test", "test")
 		assert.Error(t, err)
 	})
@@ -252,7 +253,7 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return(server.URL)
 		config.SetConfig(c)
 
-		d := NewSlackApiDriver()
+		d := NewAPIDriver()
 		err := d.ChatPostMessage("test", "test")
 		assert.Error(t, err)
 	})
@@ -261,7 +262,7 @@ func TestSlackApiDriver_ChatPostMessage(t *testing.T) {
 func TestPostJson(t *testing.T) {
 	t.Run("ng:marshal", func(t *testing.T) {
 		invalidBody := make(chan int)
-		resp, err := postJson("http://localhost", invalidBody)
+		resp, err := postJSON("http://localhost", invalidBody)
 		assert.Nil(t, resp)
 		assert.Error(t, err)
 	})
@@ -277,7 +278,7 @@ func TestPostJson(t *testing.T) {
 
 		// Schema error
 		body := &ConversationsOpenRequestBody{}
-		resp, err := postJson("not support protocol schema url", body)
+		resp, err := postJSON("not support protocol schema url", body)
 		t.Log(err)
 		assert.Nil(t, resp)
 		assert.Error(t, err)
@@ -303,7 +304,7 @@ func TestPostJson(t *testing.T) {
 
 		// Schema error
 		body := &ConversationsOpenRequestBody{}
-		resp, err := postJson(server.URL, body)
+		resp, err := postJSON(server.URL, body)
 		assert.NoError(t, err)
 
 		got, err := ioutil.ReadAll(resp.Body)

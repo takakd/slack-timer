@@ -1,29 +1,37 @@
-// package repository provides features that persist data.
+// Package repository provides features that persist event.
 package repository
 
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/config"
 	"strconv"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
-// Implements Repository interface with DynamoDB.
+// DynamoDb implements Repository interface with DynamoDB.
 type DynamoDb struct {
 	wrp DynamoDbWrapper
 }
 
+var _ updatetimerevent.Repository = (*DynamoDb)(nil)
+var _ enqueueevent.Repository = (*DynamoDb)(nil)
+var _ notifyevent.Repository = (*DynamoDb)(nil)
+
+// DbItemState represents the type of Queueing state.
 type DbItemState string
 
-// DAO for repository
+// TimerEventDbItem s DAO for repository.
 type TimerEventDbItem struct {
-	UserId           string `dynamodbav:"UserId"`
+	UserID           string `dynamodbav:"UserID"`
 	NotificationTime string `dynamodbav:"NotificationTime"`
 	IntervalMin      int    `dynamodbav:"IntervalMin"`
 	// Ref. https://forums.aws.amazon.com/thread.jspa?threadID=330244&tstart=0
@@ -33,9 +41,10 @@ type TimerEventDbItem struct {
 	Dummy int `dynamodbav:"Dummy"`
 }
 
+// NewTimerEventDbItem create new struct.
 func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 	t := &TimerEventDbItem{
-		UserId:           event.UserId,
+		UserID:           event.UserID,
 		NotificationTime: event.NotificationTime.Format(time.RFC3339),
 		IntervalMin:      event.IntervalMin,
 		State:            string(event.State),
@@ -43,9 +52,10 @@ func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 	return t
 }
 
+// TimerEvent generates enterpriserule.TimerEvent struct.
 func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 	e := &enterpriserule.TimerEvent{
-		UserId:      t.UserId,
+		UserID:      t.UserID,
 		IntervalMin: t.IntervalMin,
 		State:       enterpriserule.TimerEventState(t.State),
 	}
@@ -59,8 +69,9 @@ func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 	return e, nil
 }
 
-// Set wrp to null. In case unit test, set mock interface.
-func NewDynamoDb(wrp DynamoDbWrapper) updatetimerevent.Repository {
+// NewDynamoDb create new struct.
+// Set wrp to null. In case of unit test, set mock interface.
+func NewDynamoDb(wrp DynamoDbWrapper) *DynamoDb {
 	if wrp == nil {
 		wrp = &DynamoDbWrapperAdapter{
 			svc: dynamodb.New(session.New()),
@@ -71,15 +82,15 @@ func NewDynamoDb(wrp DynamoDbWrapper) updatetimerevent.Repository {
 	}
 }
 
-// Find timer event by user id.
-func (r DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *enterpriserule.TimerEvent, err error) {
+// FindTimerEvent finds an event by user id.
+func (r DynamoDb) FindTimerEvent(ctx context.Context, userID string) (event *enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":userid": {
-				S: aws.String(userId),
+				S: aws.String(userID),
 			},
 		},
-		KeyConditionExpression: aws.String("UserId = :userid"),
+		KeyConditionExpression: aws.String("UserID = :userid"),
 		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
 	}
 	result, err := r.wrp.Query(input)
@@ -93,7 +104,7 @@ func (r DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *ent
 		return
 	} else if itemLen > 1 {
 		event = nil
-		err = fmt.Errorf("item should be one, but found two, user_id=%v", userId)
+		err = fmt.Errorf("item should be one, but found two, user_id=%v", userID)
 		return
 	}
 
@@ -107,7 +118,7 @@ func (r DynamoDb) FindTimerEvent(ctx context.Context, userId string) (event *ent
 	return
 }
 
-// Find timer event from "from" to "to".
+// FindTimerEventByTime finds events from "from" to "to".
 func (r DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
@@ -148,8 +159,8 @@ func (r DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) 
 	return
 }
 
-// Save TimerEvent to DB.
-// Return error and saved event successfully.
+// SaveTimerEvent persists an event.
+// Return nil error and saved event if it is successful, if not, return an error.
 func (r DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	dbItem := NewTimerEventDbItem(event)
 
@@ -176,7 +187,7 @@ func (r DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.Time
 	return
 }
 
-// Find timer event before eventTime.
+// FindTimerEventsByTime finds events before eventTime.
 func (r DynamoDb) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{

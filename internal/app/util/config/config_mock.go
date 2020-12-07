@@ -5,8 +5,9 @@
 package config
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockConfig is a mock of Config interface

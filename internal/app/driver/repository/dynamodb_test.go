@@ -3,25 +3,26 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/config"
 	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewTimerEventDbItem(t *testing.T) {
 	caseTime := time.Now()
 	caseEvent := &enterpriserule.TimerEvent{
-		UserId:           "test_user",
+		UserID:           "test_user",
 		NotificationTime: caseTime,
 		IntervalMin:      3,
 	}
 	got := NewTimerEventDbItem(caseEvent)
-	assert.Equal(t, caseEvent.UserId, got.UserId)
+	assert.Equal(t, caseEvent.UserID, got.UserID)
 	assert.Equal(t, caseEvent.NotificationTime.Format(time.RFC3339), got.NotificationTime)
 	assert.Equal(t, caseEvent.IntervalMin, got.IntervalMin)
 }
@@ -30,7 +31,7 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseTime := time.Now().UTC().Truncate(time.Second)
 		want := &enterpriserule.TimerEvent{
-			UserId:           "test_user",
+			UserID:           "test_user",
 			NotificationTime: caseTime,
 			IntervalMin:      3,
 		}
@@ -42,7 +43,7 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ng:notification time", func(t *testing.T) {
 		caseTime := time.Now().Truncate(time.Second)
 		event := &enterpriserule.TimerEvent{
-			UserId:           "test_user",
+			UserID:           "test_user",
 			NotificationTime: caseTime,
 			IntervalMin:      3,
 		}
@@ -56,9 +57,7 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 
 func TestNewDynamoDb(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		repo := NewDynamoDb(nil)
-		concrete, ok := repo.(*DynamoDb)
-		assert.True(t, ok)
+		concrete := NewDynamoDb(nil)
 		assert.IsType(t, &DynamoDbWrapperAdapter{}, concrete.wrp)
 	})
 
@@ -67,9 +66,7 @@ func TestNewDynamoDb(t *testing.T) {
 		defer ctrl.Finish()
 
 		mock := NewMockDynamoDbWrapper(ctrl)
-		repo := NewDynamoDb(mock)
-		concrete, ok := repo.(*DynamoDb)
-		assert.True(t, ok)
+		concrete := NewDynamoDb(mock)
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }
@@ -95,15 +92,15 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 	})
 
 	t.Run("ng:Query returns two items", func(t *testing.T) {
-		caseUserId := "abc123"
+		caseUserID := "abc123"
 		caseTableName := "disable"
 		caseInput := &dynamodb.QueryInput{
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 				":userid": {
-					S: aws.String(caseUserId),
+					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserId = :userid"),
+			KeyConditionExpression: aws.String("UserID = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -132,7 +129,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
+		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
 		assert.Nil(t, got)
 		assert.Error(t, err)
 	})
@@ -167,15 +164,15 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 	})
 
 	t.Run("ok:Query returns 0 item", func(t *testing.T) {
-		caseUserId := "abc123"
+		caseUserID := "abc123"
 		caseTableName := "disable"
 		caseInput := &dynamodb.QueryInput{
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 				":userid": {
-					S: aws.String(caseUserId),
+					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserId = :userid"),
+			KeyConditionExpression: aws.String("UserID = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -193,21 +190,21 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
+		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
 		assert.Nil(t, got)
 		assert.NoError(t, err)
 	})
 
 	t.Run("ok: Query returns one item", func(t *testing.T) {
-		caseUserId := "abc123"
+		caseUserID := "abc123"
 		caseTableName := "disable"
 		caseInput := &dynamodb.QueryInput{
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 				":userid": {
-					S: aws.String(caseUserId),
+					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserId = :userid"),
+			KeyConditionExpression: aws.String("UserID = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -220,7 +217,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 			},
 		}
 		caseDbItem := &TimerEventDbItem{
-			UserId:           caseUserId,
+			UserID:           caseUserID,
 			NotificationTime: time.Now().Format(time.RFC3339),
 			Dummy:            1,
 		}
@@ -242,7 +239,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		})
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserId)
+		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
 		assert.NoError(t, err)
 
 		want, err := caseDbItem.TimerEvent()
@@ -344,12 +341,12 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		caseTime := time.Now().Format(time.RFC3339)
 		caseDbItems := []*TimerEventDbItem{
 			{
-				UserId:           "abc1",
+				UserID:           "abc1",
 				Dummy:            1,
 				NotificationTime: caseTime,
 			},
 			{
-				UserId:           "abc2",
+				UserID:           "abc2",
 				Dummy:            1,
 				NotificationTime: caseTime,
 			},
@@ -391,7 +388,7 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 	t.Run("ng:MarshalMap", func(t *testing.T) {
 		caseItem := &TimerEventDbItem{
-			UserId:           "test user",
+			UserID:           "test user",
 			Dummy:            1,
 			NotificationTime: time.Now().Format(time.RFC3339),
 		}
@@ -417,7 +414,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 
 	t.Run("ng:PutItem", func(t *testing.T) {
 		caseItem := &TimerEventDbItem{
-			UserId:           "test user",
+			UserID:           "test user",
 			Dummy:            1,
 			NotificationTime: time.Now().Format(time.RFC3339),
 		}
@@ -453,7 +450,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		caseItem := &TimerEventDbItem{
-			UserId:           "test user",
+			UserID:           "test user",
 			Dummy:            1,
 			NotificationTime: time.Now().Format(time.RFC3339),
 		}

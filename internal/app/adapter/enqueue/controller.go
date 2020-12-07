@@ -1,15 +1,39 @@
-// Package enqueue provides features that enqueue events reached the time.
+// Package enqueue provides that events reached the time enqueue queue.
 package enqueue
 
 import (
 	"context"
+	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/di"
+	"slacktimer/internal/app/util/log"
+	"time"
 )
 
-// Called by Lambda handler.
-type Controller interface {
-	Handle(ctx context.Context, input HandleInput)
+// Controller implements ControllerHandler.
+type Controller struct {
+	InputPort enqueueevent.InputPort
 }
 
-type HandleInput struct {
-	// Nothing currently
+var _ ControllerHandler = (*Controller)(nil)
+
+// NewController create new struct.
+func NewController() *Controller {
+	h := &Controller{
+		InputPort: di.Get("enqueueevent.InputPort").(enqueueevent.InputPort),
+	}
+	return h
+}
+
+// Handle enqueues events reached the time.
+func (e Controller) Handle(ctx context.Context, input HandleInput) {
+	log.Info("handler called", input)
+
+	// TODO: Getting time from Lambda context?
+	data := enqueueevent.InputData{
+		EventTime: time.Now().UTC(),
+	}
+
+	e.InputPort.EnqueueEvent(ctx, data)
+
+	log.Info("handler done")
 }

@@ -5,8 +5,9 @@
 package di
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockDI is a mock of DI interface

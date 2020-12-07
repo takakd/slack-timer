@@ -2,12 +2,17 @@ package settime
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/di"
 	"testing"
+
+	"fmt"
+	"slacktimer/internal/app/util/log"
+	"time"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
@@ -40,7 +45,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 				},
 			}
 
-			ct := NewSaveEventHandlerFunctor().(*SaveEventHandlerFunctor)
+			ct := NewSaveEventHandlerFunctor()
 
 			bag := ct.validate(caseData)
 			_, exists := bag.GetError("timestamp")
@@ -83,7 +88,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 				},
 			}
 
-			ct := NewSaveEventHandlerFunctor().(*SaveEventHandlerFunctor)
+			ct := NewSaveEventHandlerFunctor()
 
 			bag := ct.validate(caseData)
 			_, exists := bag.GetError("interval")
@@ -100,23 +105,23 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 		name string
 		text string
 		ts   string
-		resp *Response
+		resp Response
 	}{
-		{"timestamp validate error", "set 10", "", &Response{
+		{"timestamp validate error", "set 10", "", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
 				Detail:  "invalid format",
 			},
 		}},
-		{"set command validate error", "", "1606830655", &Response{
+		{"set command validate error", "", "1606830655", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
 				Detail:  "invalid format",
 			},
 		}},
-		{"ok", "set 10", "1606830655", &Response{
+		{"ok", "set 10", "1606830655.000010", Response{
 			StatusCode: http.StatusOK,
 			Body:       "success",
 		}},
@@ -146,13 +151,22 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				})
 			}
 
+			if c.resp.StatusCode == http.StatusOK {
+				ml := log.NewMockLogger(ctrl)
+
+				ts, _ := caseData.MessageEvent.eventUnixTimeStamp()
+				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", caseData.MessageEvent.User, time.Unix(ts, 0).UTC(), 10))
+				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", c.resp))
+				log.SetDefaultLogger(ml)
+			}
+
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mu)
 			di.SetDi(md)
 
 			h := NewSaveEventHandlerFunctor()
 			got := h.Handle(ctx, caseData)
-			assert.Equal(t, c.resp, got)
+			assert.Equal(t, &c.resp, got)
 		})
 	}
 }

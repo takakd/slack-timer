@@ -3,14 +3,15 @@ package settime
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewSaveEventOutputReceivePresenter(t *testing.T) {
@@ -50,7 +51,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 					Body:       "internal server error",
 					Error:      c.data.Result,
 				}
-				assert.Equal(t, want, p.Resp)
+				assert.Equal(t, want, &p.Resp)
 
 			} else {
 				var err error
@@ -64,7 +65,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 					Body:       "success",
 					Error:      c.data.Result,
 				}
-				assert.Equal(t, want, p.Resp)
+				assert.Equal(t, want, &p.Resp)
 			}
 
 		})

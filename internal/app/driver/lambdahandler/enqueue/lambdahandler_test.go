@@ -1,9 +1,10 @@
 package enqueue
 
 import (
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/adapter/enqueue"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLambdaInput_HandlerInput(t *testing.T) {

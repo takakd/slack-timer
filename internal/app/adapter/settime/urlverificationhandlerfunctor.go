@@ -7,26 +7,32 @@ import (
 	"slacktimer/internal/app/util/log"
 )
 
-type UrlVerificationRequestHandler interface {
+// URLVerificationRequestHandler handles "urlverification" command.
+type URLVerificationRequestHandler interface {
 	Handle(ctx context.Context, data EventCallbackData) *Response
 }
 
-// UrlVerificationRequestHandlerFunctor represents url_verification event
+// URLVerificationRequestHandlerFunctor represents url_verification event.
 // Ref. https://api.slack.com/events/url_verification
-type UrlVerificationRequestHandlerFunctor struct {
+type URLVerificationRequestHandlerFunctor struct {
 }
 
-type UrlVerificationResponseBody struct {
+// URLVerificationResponseBody represents the url verification event payload in EventCallbackData.
+type URLVerificationResponseBody struct {
 	Challenge string `json:"challenge"`
 }
 
-func NewUrlVerificationRequestHandlerFunctor() UrlVerificationRequestHandler {
-	return &UrlVerificationRequestHandlerFunctor{}
+var _ URLVerificationRequestHandler = (*URLVerificationRequestHandlerFunctor)(nil)
+
+// NewURLVerificationRequestHandlerFunctor create new struct.
+func NewURLVerificationRequestHandlerFunctor() *URLVerificationRequestHandlerFunctor {
+	return &URLVerificationRequestHandlerFunctor{}
 }
 
-func (ur UrlVerificationRequestHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
+// Handle response according to the Slack URL verification specification.
+func (ur URLVerificationRequestHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
 
-	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler challenge=%s", data.Challenge))
+	log.Info(fmt.Sprintf("URLVerificationRequestHandler.Handler challenge=%s", data.Challenge))
 
 	if data.Challenge == "" {
 		return newErrorHandlerResponse("invalid challenge", "empty")
@@ -35,12 +41,12 @@ func (ur UrlVerificationRequestHandlerFunctor) Handle(ctx context.Context, data 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.
 	resp := &Response{
 		StatusCode: http.StatusOK,
-		Body: UrlVerificationResponseBody{
+		Body: URLVerificationResponseBody{
 			data.Challenge,
 		},
 	}
 
-	log.Info(fmt.Sprintf("UrlVerificationRequestHandler.Handler output=%v", *resp))
+	log.Info(fmt.Sprintf("URLVerificationRequestHandler.Handler output=%v", *resp))
 
 	return resp
 }

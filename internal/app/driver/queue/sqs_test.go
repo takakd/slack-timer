@@ -3,20 +3,19 @@ package queue
 import (
 	"errors"
 	"fmt"
+	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/config"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"slacktimer/internal/app/usecase/enqueueevent"
-	"slacktimer/internal/app/util/config"
-	"testing"
 )
 
 func TestNewSqs(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		q := NewSqs(nil)
-		concrete, ok := q.(*Sqs)
-		assert.True(t, ok)
+		concrete := NewSqs(nil)
 		assert.IsType(t, &SqsWrapperAdapter{}, concrete.wrp)
 	})
 
@@ -25,9 +24,7 @@ func TestNewSqs(t *testing.T) {
 		defer ctrl.Finish()
 
 		mock := NewMockSqsWrapper(ctrl)
-		repo := NewSqs(mock)
-		concrete, ok := repo.(*Sqs)
-		assert.True(t, ok)
+		concrete := NewSqs(mock)
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }
@@ -35,12 +32,12 @@ func TestNewSqs(t *testing.T) {
 func TestSqs_Enqueue(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseMessage := enqueueevent.QueueMessage{
-			"id1",
+			UserID: "id1",
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
-			MessageBody:    aws.String(caseMessage.UserId),
-			MessageGroupId: aws.String(messageGroupId),
+			MessageBody:    aws.String(caseMessage.UserID),
+			MessageGroupId: aws.String(_messageGroupID),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseMessageOutput := &sqs.SendMessageOutput{
@@ -65,12 +62,12 @@ func TestSqs_Enqueue(t *testing.T) {
 
 	t.Run("ng:failed", func(t *testing.T) {
 		caseMessage := enqueueevent.QueueMessage{
-			"id1",
+			UserID: "id1",
 		}
 		caseSQSUrl := "sqs"
 		caseMessageInput := &sqs.SendMessageInput{
-			MessageBody:    aws.String(caseMessage.UserId),
-			MessageGroupId: aws.String(messageGroupId),
+			MessageBody:    aws.String(caseMessage.UserID),
+			MessageGroupId: aws.String(_messageGroupID),
 			QueueUrl:       aws.String(caseSQSUrl),
 		}
 		caseError := errors.New("error")

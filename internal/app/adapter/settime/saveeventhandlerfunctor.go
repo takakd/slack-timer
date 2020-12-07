@@ -15,18 +15,27 @@ import (
 	"time"
 )
 
+var (
+	// ErrInvalidFormat returns if parameter is invalid format.
+	ErrInvalidFormat = errors.New("invalid format")
+)
+
+// SaveEventHandler handles "set" command.
 type SaveEventHandler interface {
 	Handle(ctx context.Context, data EventCallbackData) *Response
 }
 
-// Handle "Set" command
+// SaveEventHandlerFunctor handle "Set" command.
 type SaveEventHandlerFunctor struct {
 	notificationTime    time.Time
 	remindIntervalInMin int
 	inputPort           updatetimerevent.InputPort
 }
 
-func NewSaveEventHandlerFunctor() SaveEventHandler {
+var _ SaveEventHandler = (*SaveEventHandlerFunctor)(nil)
+
+// NewSaveEventHandlerFunctor create new struct.
+func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	return &SaveEventHandlerFunctor{
 		inputPort: di.Get("updatetimerevent.InputPort").(updatetimerevent.InputPort),
 	}
@@ -40,13 +49,13 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	// Extract second part. e.g.1607054661.000200 -> 160705466.
 	s := strings.Split(data.MessageEvent.EventTs, ".")
 	if len(s) < 1 {
-		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+		bag.SetError("timestamp", "invalid format", ErrInvalidFormat)
 		return bag
 	}
 
 	eventTime, err := helper.ParseUnixStr(s[0])
 	if err != nil {
-		bag.SetError("timestamp", "invalid format", errors.New("invalid format"))
+		bag.SetError("timestamp", "invalid format", ErrInvalidFormat)
 	}
 	se.notificationTime = eventTime.UTC()
 
@@ -54,7 +63,7 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
 	m := re.FindStringSubmatch(data.MessageEvent.Text)
 	if m == nil {
-		bag.SetError("interval", "invalid format", errors.New("invalid format"))
+		bag.SetError("interval", "invalid format", ErrInvalidFormat)
 		return bag
 	}
 	minutes, _ := strconv.Atoi(m[2])
@@ -63,6 +72,7 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 	return bag
 }
 
+// Handle saves event sent by user.
 func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
 	if validateErrors := se.validate(data); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError
@@ -78,7 +88,7 @@ func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallback
 	presenter := NewSaveEventOutputReceivePresenter()
 	se.inputPort.SaveIntervalMin(ctx, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
 
-	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", *presenter.Resp))
+	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", presenter.Resp))
 
-	return presenter.Resp
+	return &presenter.Resp
 }

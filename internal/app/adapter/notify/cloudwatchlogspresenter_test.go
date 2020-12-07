@@ -3,11 +3,12 @@ package notify
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCloudWatchLogsPresenter(t *testing.T) {
@@ -19,7 +20,7 @@ func TestNewCloudWatchLogsPresenter(t *testing.T) {
 func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseData := notifyevent.OutputData{
-			UserId: "test user",
+			UserID: "test user",
 			Result: nil,
 		}
 
@@ -27,7 +28,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info(fmt.Sprintf("done notified user_id=%s", caseData.UserId))
+		l.EXPECT().Info(fmt.Sprintf("done notified user_id=%s", caseData.UserID))
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}
@@ -36,7 +37,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 
 	t.Run("ng", func(t *testing.T) {
 		caseData := notifyevent.OutputData{
-			UserId: "test user",
+			UserID: "test user",
 			Result: errors.New("error"),
 		}
 
@@ -44,7 +45,7 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Error(fmt.Sprintf("notify user_id=%s: %v", caseData.UserId, caseData.Result))
+		l.EXPECT().Error(fmt.Sprintf("notify user_id=%s: %v", caseData.UserID, caseData.Result))
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}

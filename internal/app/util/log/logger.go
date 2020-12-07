@@ -1,16 +1,19 @@
 // Package log provides logging feature.
 package log
 
+// Level represents the type of logging level.
 type Level int
 
-// Log level
 const (
+	// LevelError outputs Error logs.
 	LevelError Level = iota
+	// LevelInfo outputs Error and Info logs.
 	LevelInfo
+	// LevelDebug outputs all level logs.
 	LevelDebug
 )
 
-// Output logs interface
+// Logger defines logging methods.
 type Logger interface {
 	SetLevel(level Level)
 	Debug(v ...interface{})
@@ -24,12 +27,12 @@ var logger Logger
 // Output log above this level.
 var logLevel Level
 
-// Set default logger which is called log.Info, log.Error...
+// SetDefaultLogger sets default logger which is called log.Info, log.Error...
 func SetDefaultLogger(l Logger) {
 	logger = l
 }
 
-// Set logging level.
+// SetLevel sets logging level.
 func SetLevel(level string) {
 	if logger == nil {
 		return
@@ -46,21 +49,21 @@ func SetLevel(level string) {
 	logger.SetLevel(logLevel)
 }
 
-// Output debug log.
+// Debug outputs debug log.
 func Debug(v ...interface{}) {
 	if logger != nil {
 		logger.Debug(v...)
 	}
 }
 
-// Output info log.
+// Info outputs info log.
 func Info(v ...interface{}) {
 	if logger != nil {
 		logger.Info(v...)
 	}
 }
 
-// Output error log.
+// Error outputs info log.
 func Error(v ...interface{}) {
 	if logger != nil {
 		logger.Error(v...)

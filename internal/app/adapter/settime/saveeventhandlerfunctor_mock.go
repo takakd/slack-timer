@@ -6,8 +6,9 @@ package settime
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockSaveEventHandler is a mock of SaveEventHandler interface

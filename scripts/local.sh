@@ -40,6 +40,10 @@ build() {
 
 fmt() {
     go fmt ./...
+    # Ref: https://gist.github.com/bgentry/fd1ffef7dbde01857f66#gistcomment-1618537
+    goimports -w $(find . -type f -name "*.go" -not -path "./vendor/*")
+    golint ./cmd/... ./internal/...
+    go vet ./cmd/... ./internal/...
 }
 
 run() {

@@ -15,7 +15,7 @@ import (
 	"slacktimer/internal/pkg/helper"
 )
 
-// Call this first when the app launch.
+// AppInit calls when the app launch.
 func AppInit() {
 	setConfig()
 	setDi()
@@ -33,7 +33,7 @@ func setConfig() {
 		// Get .env path
 		appDir, err := helper.GetAppDir()
 		if err != nil {
-			panic(helper.MakePanicMessage("need app directory path."))
+			panic("need app directory path.")
 		}
 		names := make([]string, 0)
 		path := filepath.Join(appDir, ".env")

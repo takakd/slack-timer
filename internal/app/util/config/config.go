@@ -10,7 +10,7 @@ var (
 	config Config
 )
 
-// Get config values used in the app.
+// Config defines methods that returns config values used in the app.
 type Config interface {
 	Get(name string, defaultValue string) string
 }
@@ -33,7 +33,7 @@ func MustGet(name string) string {
 	return v
 }
 
-// Set config used "config.Get".
+// SetConfig sets config used "config.Get".
 func SetConfig(c Config) {
 	config = c
 }

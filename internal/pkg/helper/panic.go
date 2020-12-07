@@ -2,7 +2,8 @@ package helper
 
 import "fmt"
 
-func MakePanicMessage(detail interface{}) string {
+// NewPanicMessage create panic message.
+func NewPanicMessage(detail interface{}) string {
 	if detail == nil {
 		panic("PANIC: detail should not be nil.")
 	}

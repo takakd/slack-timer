@@ -1,14 +1,14 @@
 package helper
 
 import (
-	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRequestBody(t *testing.T) {
@@ -70,54 +70,6 @@ func TestGetResponseBody(t *testing.T) {
 		body, err := GetResponseBody(resp)
 		assert.NoError(t, err)
 		assert.Equal(t, "", string(body))
-	})
-}
-
-func TestNewErrorJsonResponse(t *testing.T) {
-	t.Run("ok", func(t *testing.T) {
-		body, err := NewErrorJsonResponse("summary", "code", "detail")
-		assert.NoError(t, err)
-
-		var response ErrorJsonResponse
-		err = json.Unmarshal(body, &response)
-		assert.NoError(t, err)
-		assert.Equal(t, response.Summary, "summary")
-		assert.Equal(t, response.ErrorCode, "code")
-		assert.Equal(t, response.Detail, "detail")
-	})
-
-	t.Run("ng:empty", func(t *testing.T) {
-
-		// case: empty
-		var empty string
-		body, err := NewErrorJsonResponse(empty, empty, empty)
-		assert.NoError(t, err)
-
-		var response ErrorJsonResponse
-		err = json.Unmarshal(body, &response)
-		assert.NoError(t, err)
-		assert.Equal(t, response.Summary, empty)
-		assert.Equal(t, response.ErrorCode, empty)
-		assert.Equal(t, response.Detail, empty)
-	})
-}
-
-func TestWriteErrorJsonResponse(t *testing.T) {
-	t.Run("ok", func(t *testing.T) {
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			WriteErrorJsonResponse(w, nil, http.StatusInternalServerError, "summary", "code", "detail")
-		}
-
-		w := httptest.NewRecorder()
-		req := httptest.NewRequest("GET", "/", strings.NewReader("hi"))
-		handler(w, req)
-
-		var response ErrorJsonResponse
-		err := json.Unmarshal(w.Body.Bytes(), &response)
-		assert.NoError(t, err)
-		assert.Equal(t, response.Summary, "summary")
-		assert.Equal(t, response.ErrorCode, "code")
-		assert.Equal(t, response.Detail, "detail")
 	})
 }
 

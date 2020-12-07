@@ -6,14 +6,15 @@ import (
 	"slacktimer/internal/app/adapter/enqueue"
 )
 
+// LambdaHandler defines the interface called by AWS Lambda.
 type LambdaHandler interface {
 	Handle(ctx context.Context, input LambdaInput)
 }
 
-// CloudWatchEvent passes this.
+// LambdaInput is passed from CloudWatchEvent.
 type LambdaInput struct {
 	Version    string   `json:"version"`
-	Id         string   `json:"id"`
+	ID         string   `json:"id"`
 	DetailType string   `json:"detail-type"`
 	Source     string   `json:"source"`
 	Account    string   `json:"account"`
@@ -30,7 +31,7 @@ type LambdaInput struct {
 	} `json:"detail"`
 }
 
-// To input data for controller.
-func (s LambdaInput) HandleInput() enqueue.HandleInput {
+// HandleInput convert to the data for controller.
+func (l LambdaInput) HandleInput() enqueue.HandleInput {
 	return enqueue.HandleInput{}
 }

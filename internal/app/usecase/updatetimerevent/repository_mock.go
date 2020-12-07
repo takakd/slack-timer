@@ -6,10 +6,11 @@ package updatetimerevent
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 	enterpriserule "slacktimer/internal/app/enterpriserule"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockRepository is a mock of Repository interface
@@ -36,18 +37,18 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // FindTimerEvent mocks base method
-func (m *MockRepository) FindTimerEvent(ctx context.Context, userId string) (*enterpriserule.TimerEvent, error) {
+func (m *MockRepository) FindTimerEvent(ctx context.Context, userID string) (*enterpriserule.TimerEvent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindTimerEvent", ctx, userId)
+	ret := m.ctrl.Call(m, "FindTimerEvent", ctx, userID)
 	ret0, _ := ret[0].(*enterpriserule.TimerEvent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindTimerEvent indicates an expected call of FindTimerEvent
-func (mr *MockRepositoryMockRecorder) FindTimerEvent(ctx, userId interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) FindTimerEvent(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTimerEvent", reflect.TypeOf((*MockRepository)(nil).FindTimerEvent), ctx, userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTimerEvent", reflect.TypeOf((*MockRepository)(nil).FindTimerEvent), ctx, userID)
 }
 
 // FindTimerEventByTime mocks base method

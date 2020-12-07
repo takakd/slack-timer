@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -9,11 +8,16 @@ import (
 	"reflect"
 )
 
-// Get body as string from http.request.
+var (
+	// ErrHTTPShoudNotBeNil is returned if parameter is nil.
+	ErrHTTPShoudNotBeNil = errors.New("arguments should not be nil")
+)
+
+// GetRequestBody returns body as string from http.request.
 // Ref: https://developer.twitter.com/en/docs/basics/response-codes
 func GetRequestBody(req *http.Request) ([]byte, error) {
 	if req == nil {
-		return nil, errors.New("arguments should not be nil.")
+		return nil, ErrHTTPShoudNotBeNil
 	}
 
 	body := make([]byte, req.ContentLength)
@@ -23,11 +27,11 @@ func GetRequestBody(req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-// Get body as string from http.Response.
+// GetResponseBody returns body as string from http.Response.
 // More about details are https://golang.org/pkg/net/http/
 func GetResponseBody(resp *http.Response) ([]byte, error) {
 	if resp == nil {
-		return nil, errors.New("arguments should not be nil.")
+		return nil, ErrHTTPShoudNotBeNil
 	}
 
 	defer resp.Body.Close()
@@ -35,33 +39,34 @@ func GetResponseBody(resp *http.Response) ([]byte, error) {
 	return body, err
 }
 
-type ErrorJsonResponse struct {
-	Summary   string `json:"summary"`
-	ErrorCode string `json:"error_code"`
-	Detail    string `json:"detail"`
-}
+//
+//type ErrorJsonResponse struct {
+//	Summary   string `json:"summary"`
+//	ErrorCode string `json:"error_code"`
+//	Detail    string `json:"detail"`
+//}
+//
+//// Create error response in json format.
+//func NewErrorJsonResponse(summary string, errorCode string, detail string) ([]byte, error) {
+//	response := &ErrorJsonResponse{
+//		Summary:   summary,
+//		ErrorCode: errorCode,
+//		Detail:    detail,
+//	}
+//	return json.Marshal(response)
+//}
 
-// Create error response in json format.
-func NewErrorJsonResponse(summary string, errorCode string, detail string) ([]byte, error) {
-	response := &ErrorJsonResponse{
-		Summary:   summary,
-		ErrorCode: errorCode,
-		Detail:    detail,
-	}
-	return json.Marshal(response)
-}
+//// Write error response data to http.ResponseWriter.
+//func WriteErrorJsonResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, summary, errorCode, detail string) error {
+//	body, err := NewErrorJsonResponse(summary, errorCode, detail)
+//	if err != nil {
+//		return err
+//	}
+//	return WriteJSONResponse(w, headers, httpStatusCode, body)
+//}
 
-// Write error response data to http.ResponseWriter.
-func WriteErrorJsonResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, summary, errorCode, detail string) error {
-	body, err := NewErrorJsonResponse(summary, errorCode, detail)
-	if err != nil {
-		return err
-	}
-	return WriteJsonResponse(w, headers, httpStatusCode, body)
-}
-
-// Write response data to http.ResponseWriter.
-func WriteJsonResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, body []byte) error {
+// WriteJSONResponse sets JSON response data to http.ResponseWriter.
+func WriteJSONResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, body []byte) error {
 	w.Header().Set("Content-Type", "application/json")
 	for k, v := range headers {
 		w.Header().Set(k, v)
@@ -71,7 +76,7 @@ func WriteJsonResponse(w http.ResponseWriter, headers map[string]string, httpSta
 	return nil
 }
 
-// Set FormValues to struct
+// SetFormValueToStruct sets FormValues to struct.
 func SetFormValueToStruct(values url.Values, structPtr interface{}) error {
 	if len(values) == 0 {
 		// No values
@@ -79,19 +84,19 @@ func SetFormValueToStruct(values url.Values, structPtr interface{}) error {
 	}
 
 	if structPtr == nil {
-		return errors.New("http/SetFormValueToStruct: structPtr is nil")
+		return errors.New("structPtr is nil")
 	}
 
 	// Get struct pointer
 	ptr := reflect.ValueOf(structPtr)
 	if ptr.Type().Kind() != reflect.Ptr {
-		return errors.New("http/SetFormValueToStruct: structPtr is not pointer")
+		return errors.New("structPtr is not pointer")
 	}
 
 	// Get struct value
 	value := ptr.Elem()
 	if value.Type().Kind() != reflect.Struct {
-		return errors.New("http/SetFormValueToStruct: structPtr is not struct pointer")
+		return errors.New("structPtr is not struct pointer")
 	}
 
 	// Set value to struct field
