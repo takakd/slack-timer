@@ -8,4 +8,5 @@ type Queue interface {
 // QueueMessage is parameter of Queue.Enqueue.
 type QueueMessage struct {
 	UserID string
+	Text   string
 }

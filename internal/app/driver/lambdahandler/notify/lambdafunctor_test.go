@@ -7,6 +7,9 @@ import (
 	"slacktimer/internal/app/util/di"
 	"testing"
 
+	"encoding/json"
+	"slacktimer/internal/app/driver/queue"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,10 +36,14 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 
 		ctx := context.TODO()
 
+		caseBody, err := json.Marshal(queue.SqsMessageBody{
+			UserID: "test user",
+			Text:   "test text",
+		})
 		caseInput := LambdaInput{
 			Records: []SqsMessage{
 				{
-					Body: "test user",
+					Body: string(caseBody),
 				},
 			},
 		}
@@ -52,7 +59,7 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		di.SetDi(md)
 
 		h := NewLambdaFunctor()
-		err := h.Handle(ctx, caseInput)
+		err = h.Handle(ctx, caseInput)
 		assert.NoError(t, err)
 	})
 
@@ -62,10 +69,14 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 
 		ctx := context.TODO()
 
+		caseBody, err := json.Marshal(queue.SqsMessageBody{
+			UserID: "test user",
+			Text:   "test text",
+		})
 		caseInput := LambdaInput{
 			Records: []SqsMessage{
 				{
-					Body: "test_user",
+					Body: string(caseBody),
 				},
 			},
 		}
@@ -82,7 +93,7 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		di.SetDi(md)
 
 		h := NewLambdaFunctor()
-		err := h.Handle(ctx, caseInput)
+		err = h.Handle(ctx, caseInput)
 		assert.Error(t, errors.New("error happend count=1"), err)
 	})
 }

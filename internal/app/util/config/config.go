@@ -2,6 +2,7 @@
 package config
 
 import (
+	"fmt"
 	"slacktimer/internal/app/util/log"
 )
 
@@ -28,7 +29,7 @@ func Get(name string, defaultValue string) string {
 func MustGet(name string) string {
 	v := config.Get(name, "")
 	if v == "" {
-		panic("error MustGet")
+		panic(fmt.Sprintf("error MustGet name=%s", name))
 	}
 	return v
 }

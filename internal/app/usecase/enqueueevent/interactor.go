@@ -45,6 +45,7 @@ func (s Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 		// Enqueue notification message, and send notify by other lambda corresponded queue.
 		id, err := s.queue.Enqueue(QueueMessage{
 			UserID: e.UserID,
+			Text:   "test",
 		})
 		if err != nil {
 			log.Error(fmt.Sprintf("enqueue error user_id=%s: %v", e.UserID, err))

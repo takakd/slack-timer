@@ -6,9 +6,12 @@ import (
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/config"
 
+	"encoding/json"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/google/uuid"
 )
 
 const (
@@ -38,14 +41,27 @@ func NewSqs(wrp SqsWrapper) *Sqs {
 
 // Enqueue enqueues a message to SQS.
 func (s Sqs) Enqueue(message enqueueevent.QueueMessage) (string, error) {
+	body := NewSqsMessageBody()
+	body.UserID = message.UserID
+	body.Text = message.Text
+	bodyJSON, err := json.Marshal(body)
+	if err != nil {
+		return "", fmt.Errorf("marshal error %w", err)
+	}
+
 	r, err := s.wrp.SendMessage(&sqs.SendMessageInput{
-		MessageBody:    aws.String(message.UserID),
-		MessageGroupId: aws.String(_messageGroupID),
-		QueueUrl:       aws.String(config.Get("SQS_URL", "")),
+		MessageBody:            aws.String(string(bodyJSON)),
+		MessageGroupId:         aws.String(_messageGroupID),
+		QueueUrl:               aws.String(config.Get("SQS_URL", "")),
+		MessageDeduplicationId: aws.String(newMessageDeduplicationID(message)),
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to enqueue %w", err)
 	}
 
 	return *r.MessageId, nil
+}
+
+func newMessageDeduplicationID(message enqueueevent.QueueMessage) string {
+	return uuid.New().String()
 }
