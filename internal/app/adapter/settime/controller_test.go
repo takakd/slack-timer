@@ -35,7 +35,7 @@ func TestController_Handle(t *testing.T) {
 		wantResp := &Response{}
 
 		ml := log.NewMockLogger(ctrl)
-		ml.EXPECT().Info(gomock.Eq("url verification event"))
+		ml.EXPECT().Info("URL verification event")
 		log.SetDefaultLogger(ml)
 
 		mu := NewMockURLVerificationRequestHandler(ctrl)

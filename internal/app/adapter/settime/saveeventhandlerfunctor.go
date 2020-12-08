@@ -3,7 +3,6 @@ package settime
 import (
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
@@ -83,12 +82,16 @@ func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallback
 		return newErrorHandlerResponse("invalid parameter", firstError.Summary)
 	}
 
-	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin))
+	log.Info("call inputport", map[string]interface{}{
+		"user":              data.MessageEvent.User,
+		"interval":          se.remindIntervalInMin,
+		"notification time": se.notificationTime,
+	})
 
 	presenter := NewSaveEventOutputReceivePresenter()
 	se.inputPort.SaveIntervalMin(ctx, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
 
-	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", presenter.Resp))
+	log.Info("return from inputport", presenter.Resp)
 
 	return &presenter.Resp
 }

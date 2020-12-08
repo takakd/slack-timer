@@ -25,7 +25,10 @@ var _ LambdaHandler = (*LambdaFunctor)(nil)
 // Handle is called by SQS.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (n LambdaFunctor) Handle(ctx context.Context, input LambdaInput) error {
-	log.Info(fmt.Sprintf("lambda handler input count=%d, recourds=%v", len(input.Records), input.Records))
+	log.Info("lambda handler", map[string]interface{}{
+		"count":   len(input.Records),
+		"records": input.Records,
+	})
 
 	count := 0
 	for _, m := range input.Records {

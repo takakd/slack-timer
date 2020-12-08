@@ -51,6 +51,10 @@ func SetLevel(level string) {
 
 // Debug outputs debug log.
 func Debug(v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
 	if logger != nil {
 		logger.Debug(v...)
 	}
@@ -58,6 +62,10 @@ func Debug(v ...interface{}) {
 
 // Info outputs info log.
 func Info(v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
 	if logger != nil {
 		logger.Info(v...)
 	}
@@ -65,6 +73,10 @@ func Info(v ...interface{}) {
 
 // Error outputs info log.
 func Error(v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
 	if logger != nil {
 		logger.Error(v...)
 	}

@@ -34,7 +34,7 @@ func (s LambdaFunctor) Handle(ctx context.Context, input LambdaInput) (*LambdaOu
 	// Extract Slack event data.
 	data, err := input.HandleInput()
 	if err != nil {
-		log.Info(fmt.Errorf("invalid request: %w", err))
+		log.Info("invalid request", err)
 		o := &LambdaOutput{
 			IsBase64Encoded: true,
 			StatusCode:      http.StatusInternalServerError,
@@ -53,7 +53,7 @@ func (s LambdaFunctor) Handle(ctx context.Context, input LambdaInput) (*LambdaOu
 	if helper.IsStruct(resp.Body) {
 		body, err := json.Marshal(resp.Body)
 		if err != nil {
-			log.Info(fmt.Errorf("internal sesrver error: %w", err))
+			log.Info("internal sesrver error", err)
 			return nil, errors.New("internal server error")
 		}
 		respBody = string(body)

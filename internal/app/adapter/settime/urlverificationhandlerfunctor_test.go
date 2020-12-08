@@ -2,7 +2,6 @@ package settime
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/util/log"
 	"testing"
@@ -47,9 +46,9 @@ func TestURLVerificationRequestHandlerFunctor_Handle(t *testing.T) {
 			defer ctrl.Finish()
 
 			ml := log.NewMockLogger(ctrl)
-			ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("URLVerificationRequestHandler.Handler challenge=%s", caseData.Challenge)))
+			ml.EXPECT().Info("URLVerification called", caseData.Challenge)
 			if caseData.Challenge != "" {
-				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("URLVerificationRequestHandler.Handler output=%v", *c.resp)))
+				ml.EXPECT().Info("URLVerification outputs", *c.resp)
 			}
 			log.SetDefaultLogger(ml)
 

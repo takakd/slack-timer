@@ -2,7 +2,6 @@ package settime
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/util/log"
 )
@@ -32,7 +31,7 @@ func NewURLVerificationRequestHandlerFunctor() *URLVerificationRequestHandlerFun
 // Handle response according to the Slack URL verification specification.
 func (ur URLVerificationRequestHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
 
-	log.Info(fmt.Sprintf("URLVerificationRequestHandler.Handler challenge=%s", data.Challenge))
+	log.Info("URLVerification called", data.Challenge)
 
 	if data.Challenge == "" {
 		return newErrorHandlerResponse("invalid challenge", "empty")
@@ -46,7 +45,7 @@ func (ur URLVerificationRequestHandlerFunctor) Handle(ctx context.Context, data 
 		},
 	}
 
-	log.Info(fmt.Sprintf("URLVerificationRequestHandler.Handler output=%v", *resp))
+	log.Info("URLVerification outputs", *resp)
 
 	return resp
 }

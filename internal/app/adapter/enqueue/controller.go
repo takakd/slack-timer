@@ -26,14 +26,12 @@ func NewController() *Controller {
 
 // Handle enqueues events reached the time.
 func (e Controller) Handle(ctx context.Context, input HandleInput) {
-	log.Info("handler called", input)
-
 	// TODO: Getting time from Lambda context?
 	data := enqueueevent.InputData{
 		EventTime: time.Now().UTC(),
 	}
 
+	log.Info("call inputport", input)
 	e.InputPort.EnqueueEvent(ctx, data)
-
-	log.Info("handler done")
+	log.Info("return from inputport")
 }

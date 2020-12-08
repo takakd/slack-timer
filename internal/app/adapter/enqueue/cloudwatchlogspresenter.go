@@ -1,7 +1,6 @@
 package enqueue
 
 import (
-	"fmt"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/log"
 )
@@ -25,6 +24,9 @@ func (c CloudWatchLogsPresenter) Output(data enqueueevent.OutputData) {
 	}
 
 	for i, v := range data.NotifiedUserIDList {
-		log.Info(fmt.Sprintf("enqueued user_id=%s message_id=%s", v, data.QueueMessageIDList[i]))
+		log.Info("enqueued", map[string]interface{}{
+			"user_id":    v,
+			"message_id": data.QueueMessageIDList[i],
+		})
 	}
 }

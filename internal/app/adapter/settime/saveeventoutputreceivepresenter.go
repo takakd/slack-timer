@@ -1,7 +1,6 @@
 package settime
 
 import (
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
@@ -31,7 +30,7 @@ func (s *SaveEventOutputReceivePresenter) Output(data updatetimerevent.OutputDat
 	}
 
 	if data.Result != nil {
-		log.Info(fmt.Sprintf("SaveEventOutputReceivePresenter.Output error=%v", data.Result))
+		log.Error("settime outputport", data.Result)
 		s.Resp.StatusCode = http.StatusInternalServerError
 		s.Resp.Body = "internal server error"
 		return

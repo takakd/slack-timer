@@ -44,8 +44,14 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info("enqueued user_id=id1 message_id=mid1")
-		l.EXPECT().Info("enqueued user_id=id2 message_id=mid2")
+		l.EXPECT().Info("enqueued", map[string]interface{}{
+			"user_id":    caseData.NotifiedUserIDList[0],
+			"message_id": caseData.QueueMessageIDList[0],
+		})
+		l.EXPECT().Info("enqueued", map[string]interface{}{
+			"user_id":    caseData.NotifiedUserIDList[1],
+			"message_id": caseData.QueueMessageIDList[1],
+		})
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}

@@ -7,7 +7,6 @@ import (
 	"slacktimer/internal/app/util/di"
 	"testing"
 
-	"fmt"
 	"slacktimer/internal/app/util/log"
 	"time"
 
@@ -155,8 +154,13 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				ml := log.NewMockLogger(ctrl)
 
 				ts, _ := caseData.MessageEvent.eventUnixTimeStamp()
-				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", caseData.MessageEvent.User, time.Unix(ts, 0).UTC(), 10))
-				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", c.resp))
+				ml.EXPECT().Info("call inputport", map[string]interface{}{
+					"user":              caseData.MessageEvent.User,
+					"interval":          10,
+					"notification time": time.Unix(ts, 0).UTC(),
+				})
+
+				ml.EXPECT().Info("return from inputport", c.resp)
 				log.SetDefaultLogger(ml)
 			}
 

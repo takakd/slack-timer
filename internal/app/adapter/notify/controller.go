@@ -24,13 +24,16 @@ func NewController() *Controller {
 
 // Handle notifies the event to user.
 func (n Controller) Handle(ctx context.Context, input HandleInput) *Response {
-	log.Info("handler input", input)
+
+	log.Info("call inputport", input)
 
 	data := notifyevent.InputData{
 		UserID:  input.UserID,
 		Message: input.Message,
 	}
 	err := n.InputPort.NotifyEvent(ctx, data)
+
+	log.Info("return from inputport", err)
 
 	resp := &Response{
 		Error: err,

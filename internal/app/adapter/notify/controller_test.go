@@ -38,10 +38,9 @@ func TestController_Handle(t *testing.T) {
 	caseError := errors.New("test error")
 
 	ml := log.NewMockLogger(ctrl)
-	gomock.InOrder(
-		ml.EXPECT().Info(gomock.Any(), gomock.Any()),
-		ml.EXPECT().Info(gomock.Any()),
-	)
+	ml.EXPECT().Info("call inputport", gomock.Any())
+	ml.EXPECT().Info("return from inputport", gomock.Any())
+	ml.EXPECT().Info("handler output", gomock.Any())
 	log.SetDefaultLogger(ml)
 
 	i := notifyevent.NewMockInputPort(ctrl)

@@ -2,7 +2,6 @@ package settime
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
@@ -41,7 +40,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 
 			if c.data.Result != nil {
 				ml := log.NewMockLogger(ctrl)
-				ml.EXPECT().Info(gomock.Eq(fmt.Sprintf("SaveEventOutputReceivePresenter.Output error=%v", c.data.Result)))
+				ml.EXPECT().Error("settime outputport", c.data.Result)
 				log.SetDefaultLogger(ml)
 
 				p.Output(*c.data)

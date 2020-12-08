@@ -24,7 +24,7 @@ var _ ControllerHandler = (*Controller)(nil)
 func (s Controller) Handle(ctx context.Context, input HandleInput) *Response {
 	// URL verification event
 	if input.EventData.isVerificationEvent() {
-		log.Info("url verification event")
+		log.Info("URL verification event")
 		rh := di.Get("settime.URLVerificationRequestHandler").(URLVerificationRequestHandler)
 		return rh.Handle(ctx, input.EventData)
 	}

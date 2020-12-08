@@ -2,7 +2,6 @@ package notify
 
 import (
 	"errors"
-	"fmt"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/log"
 	"testing"
@@ -28,7 +27,10 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info(fmt.Sprintf("done notified user_id=%s", caseData.UserID))
+		l.EXPECT().
+			Info("done notified", map[string]interface{}{
+				"user_id": caseData.UserID,
+			})
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}
@@ -45,7 +47,10 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 		defer ctrl.Finish()
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Error(fmt.Sprintf("notify user_id=%s: %v", caseData.UserID, caseData.Result))
+		l.EXPECT().
+			Error("notify", map[string]interface{}{
+				"data": caseData,
+			})
 		log.SetDefaultLogger(l)
 
 		o := &CloudWatchLogsPresenter{}
