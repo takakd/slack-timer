@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"slacktimer/internal/app/adapter/settime"
-	"slacktimer/internal/app/util/appinitializer"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/helper"
@@ -30,8 +29,6 @@ var _ LambdaHandler = (*LambdaFunctor)(nil)
 // Handle is called by API Gateway.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (s LambdaFunctor) Handle(ctx context.Context, input LambdaInput) (*LambdaOutput, error) {
-	appinitializer.AppInit()
-
 	log.Info("lambda handler input", input)
 
 	// Extract Slack event data.

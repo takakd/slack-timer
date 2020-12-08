@@ -100,7 +100,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserID = :userid"),
+			KeyConditionExpression: aws.String("UserId = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -172,7 +172,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserID = :userid"),
+			KeyConditionExpression: aws.String("UserId = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{
@@ -204,7 +204,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 					S: aws.String(caseUserID),
 				},
 			},
-			KeyConditionExpression: aws.String("UserID = :userid"),
+			KeyConditionExpression: aws.String("UserId = :userid"),
 			TableName:              aws.String(caseTableName),
 		}
 		caseItem := &dynamodb.QueryOutput{

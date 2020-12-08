@@ -3,7 +3,9 @@ package notify
 
 import (
 	"context"
+	"encoding/json"
 	"slacktimer/internal/app/adapter/notify"
+	"slacktimer/internal/app/driver/queue"
 )
 
 // LambdaHandler defines the interface called by AWS Lambda.
@@ -33,10 +35,15 @@ type SqsMessage struct {
 }
 
 // HandleInput convert to the data for controller.
-func (s SqsMessage) HandleInput() notify.HandleInput {
-	return notify.HandleInput{
-		UserID: s.Body,
-		// TODO: Get userid and message from body.
-		Message: "test",
+func (s SqsMessage) HandleInput() (input notify.HandleInput, err error) {
+	var body queue.SqsMessageBody
+	err = json.Unmarshal([]byte(s.Body), &body)
+	if err != nil {
+		return
 	}
+
+	return notify.HandleInput{
+		UserID:  body.UserID,
+		Message: body.Text,
+	}, nil
 }

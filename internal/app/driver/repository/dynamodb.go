@@ -31,7 +31,7 @@ type DbItemState string
 
 // TimerEventDbItem s DAO for repository.
 type TimerEventDbItem struct {
-	UserID           string `dynamodbav:"UserID"`
+	UserID           string `dynamodbav:"UserId"`
 	NotificationTime string `dynamodbav:"NotificationTime"`
 	IntervalMin      int    `dynamodbav:"IntervalMin"`
 	// Ref. https://forums.aws.amazon.com/thread.jspa?threadID=330244&tstart=0
@@ -90,7 +90,7 @@ func (r DynamoDb) FindTimerEvent(ctx context.Context, userID string) (event *ent
 				S: aws.String(userID),
 			},
 		},
-		KeyConditionExpression: aws.String("UserID = :userid"),
+		KeyConditionExpression: aws.String("UserId = :userid"),
 		TableName:              aws.String(config.MustGet("DYNAMODB_TABLE")),
 	}
 	result, err := r.wrp.Query(input)

@@ -101,6 +101,12 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref EventTimerTable
 #      Environment:
+#        APP_ENV: "def"
+#        DYNAMODB_TABLE: "event"
+#        DYNAMODB_INDEX_PRIMARY_KEY_VALUE: "1"
+#        DYNAMODB_INDEX_NAME: "TimeIndex"
+#        DYNAMODB_TABLE: ""
+#        DYNAMODB_TABLE: ""
 #        DYNAMODB_TABLE: ""
 
   # CloudWatch - Lambda
@@ -147,7 +153,8 @@ Resources:
     Properties:
       FifoQueue: true
       QueueName: EventQueue.fifo
-      ContentBasedDeduplication: true
+      ContentBasedDeduplication: false
+      MessageRetentionPeriod: 60
 
   # SQS - Lambda
   NotifyFunction:
@@ -168,6 +175,10 @@ Resources:
             TableName: !Ref EventTimerTable
         - SQSPollerPolicy:
             QueueName: !Ref NotifyQueue
+      Environment:
+        #SLACK_API_URL_CONVERSATIONSOPEN
+        #SLACK_API_URL_CHATPOSTMESSAGE
+        #SLACK_API_BOT_TOKEN
 
   # SQS - Lambda - Permission
   NotifyFunctionPermission:
@@ -212,7 +223,7 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: INCLUDE
-            NonKeyAttributes: ["State"]
+            NonKeyAttributes: ["State", "IntervalMin"]
 
 Outputs:
   # Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
