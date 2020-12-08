@@ -3,6 +3,7 @@ package driver
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -29,7 +30,7 @@ func (l *CloudWatchLogger) SetLevel(level log2.Level) {
 	l.level = level
 }
 
-func (l CloudWatchLogger) outputLog(level log2.Level, v []interface{}) {
+func (l CloudWatchLogger) outputLog(ctx context.Context, level log2.Level, v []interface{}) {
 	if l.level < level {
 		// Ignore the log with lower priorities than the output level.
 		return
@@ -54,6 +55,14 @@ func (l CloudWatchLogger) outputLog(level log2.Level, v []interface{}) {
 		"level": label,
 		"msg":   v,
 	}
+
+	// Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-context.html
+	if ctx != nil {
+		if v := ctx.Value("AwsRequestID"); v != nil {
+			data["AwsRequestID"] = v
+		}
+	}
+
 	if length == 1 {
 		data["msg"] = v[0]
 	}
@@ -75,15 +84,30 @@ func (l CloudWatchLogger) outputLog(level log2.Level, v []interface{}) {
 
 // Debug implements Logger.Debug.
 func (l CloudWatchLogger) Debug(v ...interface{}) {
-	l.outputLog(log2.LevelDebug, v)
+	l.outputLog(nil, log2.LevelDebug, v)
 }
 
 // Info implements Logger.Info.
 func (l CloudWatchLogger) Info(v ...interface{}) {
-	l.outputLog(log2.LevelInfo, v)
+	l.outputLog(nil, log2.LevelInfo, v)
 }
 
 // Error implements Logger.Error.
 func (l CloudWatchLogger) Error(v ...interface{}) {
-	l.outputLog(log2.LevelError, v)
+	l.outputLog(nil, log2.LevelError, v)
+}
+
+// DebugWithContext implements Logger.DebugWithContext.
+func (l CloudWatchLogger) DebugWithContext(ctx context.Context, v ...interface{}) {
+	l.outputLog(ctx, log2.LevelDebug, v)
+}
+
+// InfoWithContext implements Logger.InfoWithContext.
+func (l CloudWatchLogger) InfoWithContext(ctx context.Context, v ...interface{}) {
+	l.outputLog(ctx, log2.LevelInfo, v)
+}
+
+// ErrorWithContext implements Logger.ErrorWithContext.
+func (l CloudWatchLogger) ErrorWithContext(ctx context.Context, v ...interface{}) {
+	l.outputLog(ctx, log2.LevelError, v)
 }

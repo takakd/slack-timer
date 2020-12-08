@@ -31,6 +31,10 @@ func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 		UserID: input.UserID,
 	}
 
+	logDetail := map[string]interface{}{
+		"user_id": input.UserID,
+	}
+
 	var event *enterpriserule.TimerEvent
 	event, outputData.Result = s.repository.FindTimerEvent(ctx, input.UserID)
 	if outputData.Result != nil {
@@ -38,11 +42,11 @@ func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 		return outputData.Result
 	}
 
-	log.Info("found event", input.UserID)
+	log.Info("found event", logDetail)
 
 	// Check item to be notified
 	if !event.Queued() {
-		log.Info("already notified", input.UserID)
+		log.Info("already notified", logDetail)
 		s.outputPort.Output(outputData)
 		return nil
 	}
@@ -54,7 +58,7 @@ func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 		return outputData.Result
 	}
 
-	log.Info("notified", input.UserID)
+	log.Info("notified", logDetail)
 
 	event.IncrementNotificationTime()
 	event.SetWait()
@@ -65,7 +69,7 @@ func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 		return outputData.Result
 	}
 
-	log.Info("updated event", input.UserID)
+	log.Info("updated event", logDetail)
 
 	outputData.Result = nil
 	s.outputPort.Output(outputData)

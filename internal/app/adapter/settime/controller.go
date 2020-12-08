@@ -2,7 +2,7 @@ package settime
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
@@ -31,7 +31,7 @@ func (s Controller) Handle(ctx context.Context, input HandleInput) *Response {
 
 	// Set interval minutes event
 	if !input.EventData.MessageEvent.isSetTimeEvent() {
-		return newErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", input.EventData.MessageEvent.Type))
+		return newErrorHandlerResponse("invalid event", input.EventData)
 	}
 
 	rh := di.Get("settime.SaveEventHandler").(SaveEventHandler)
@@ -44,12 +44,16 @@ type ResponseErrorBody struct {
 	Detail  string
 }
 
-func newErrorHandlerResponse(message string, detail string) *Response {
+func newErrorHandlerResponse(message string, detail interface{}) *Response {
 	body := &ResponseErrorBody{
 		Message: message,
 	}
-	if detail != "" {
-		body.Detail = detail
+	if detail != nil {
+		if detailJSON, err := json.Marshal(detail); err != nil {
+			log.Error("marshal error", err)
+		} else {
+			body.Detail = string(detailJSON)
+		}
 	}
 	return &Response{
 		StatusCode: http.StatusInternalServerError,

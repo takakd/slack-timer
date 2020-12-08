@@ -110,14 +110,14 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
-				Detail:  "invalid format",
+				Detail:  `"invalid format"`,
 			},
 		}},
 		{"set command validate error", "", "1606830655", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
-				Detail:  "invalid format",
+				Detail:  `"invalid format"`,
 			},
 		}},
 		{"ok", "set 10", "1606830655.000010", Response{

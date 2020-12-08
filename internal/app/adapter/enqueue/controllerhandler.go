@@ -1,12 +1,10 @@
 package enqueue
 
-import (
-	"context"
-)
+import "github.com/aws/aws-lambda-go/lambdacontext"
 
 // ControllerHandler is called by Lambda handler.
 type ControllerHandler interface {
-	Handle(ctx context.Context, input HandleInput)
+	Handle(ctx lambdacontext.LambdaContext, input HandleInput)
 }
 
 // HandleInput is input parameter of Controller.

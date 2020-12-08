@@ -2,7 +2,6 @@ package settime
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
@@ -58,14 +57,12 @@ func TestController_Handle(t *testing.T) {
 
 		caseInput := HandleInput{
 			EventData: EventCallbackData{
-				Type: "not support",
-				MessageEvent: MessageEvent{
-					Type: "not support",
-				},
+				Type:         "not support",
+				MessageEvent: MessageEvent{},
 			},
 		}
 
-		wantResp := newErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", caseInput.EventData.Type))
+		wantResp := newErrorHandlerResponse("invalid event", caseInput.EventData)
 
 		h := NewController()
 		got := h.Handle(ctx, caseInput)
@@ -106,22 +103,23 @@ func TestController_Handle(t *testing.T) {
 	})
 }
 
-func TestMakeErrorHandleResponse(t *testing.T) {
+func TestNewErrorHandleResponse(t *testing.T) {
 	cases := []struct {
 		name    string
 		message string
-		detail  string
+		detail  interface{}
+		want    string
 	}{
-		{"no error", "test", ""},
-		{"error", "test", "test err"},
+		{"no detail", "test", nil, ""},
+		{"error", "test", "test err", `"test err"`},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			wantBody := &ResponseErrorBody{
 				Message: c.message,
 			}
-			if c.detail != "" {
-				wantBody.Detail = c.detail
+			if c.detail != nil {
+				wantBody.Detail = c.want
 			}
 			want := &Response{
 				StatusCode: http.StatusInternalServerError,

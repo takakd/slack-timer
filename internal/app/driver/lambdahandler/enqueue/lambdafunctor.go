@@ -5,6 +5,7 @@ import (
 	"slacktimer/internal/app/adapter/enqueue"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
+	"github.com/aws/aws-lambda-go/lambdacontext"
 )
 
 // LambdaFunctor provides the method that is set to AWS Lambda.
@@ -24,9 +25,10 @@ func NewLambdaFunctor() *LambdaFunctor {
 // Handle is called by CloudWatchEvent.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (e LambdaFunctor) Handle(ctx context.Context, input LambdaInput) {
+	lc, _ = lambdacontext.FromContext(ctx)
 	log.Info("handler called", input)
 
-	e.ctrl.Handle(ctx, input.HandleInput())
+	e.ctrl.Handle(lc, input.HandleInput())
 
 	log.Info("handler done")
 }

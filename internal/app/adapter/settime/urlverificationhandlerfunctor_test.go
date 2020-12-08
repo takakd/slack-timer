@@ -25,7 +25,7 @@ func TestURLVerificationRequestHandlerFunctor_Handle(t *testing.T) {
 		{"empty challenge", "", &Response{
 			Body: &ResponseErrorBody{
 				Message: "invalid challenge",
-				Detail:  "empty",
+				Detail:  `"empty"`,
 			},
 			StatusCode: http.StatusInternalServerError,
 		}},

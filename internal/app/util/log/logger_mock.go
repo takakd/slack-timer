@@ -5,6 +5,7 @@
 package log
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -91,4 +92,55 @@ func (m *MockLogger) Error(v ...interface{}) {
 func (mr *MockLoggerMockRecorder) Error(v ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockLogger)(nil).Error), v...)
+}
+
+// DebugWithContext mocks base method
+func (m *MockLogger) DebugWithContext(ctx context.Context, v ...interface{}) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range v {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "DebugWithContext", varargs...)
+}
+
+// DebugWithContext indicates an expected call of DebugWithContext
+func (mr *MockLoggerMockRecorder) DebugWithContext(ctx interface{}, v ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, v...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DebugWithContext", reflect.TypeOf((*MockLogger)(nil).DebugWithContext), varargs...)
+}
+
+// InfoWithContext mocks base method
+func (m *MockLogger) InfoWithContext(ctx context.Context, v ...interface{}) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range v {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "InfoWithContext", varargs...)
+}
+
+// InfoWithContext indicates an expected call of InfoWithContext
+func (mr *MockLoggerMockRecorder) InfoWithContext(ctx interface{}, v ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, v...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InfoWithContext", reflect.TypeOf((*MockLogger)(nil).InfoWithContext), varargs...)
+}
+
+// ErrorWithContext mocks base method
+func (m *MockLogger) ErrorWithContext(ctx context.Context, v ...interface{}) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range v {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "ErrorWithContext", varargs...)
+}
+
+// ErrorWithContext indicates an expected call of ErrorWithContext
+func (mr *MockLoggerMockRecorder) ErrorWithContext(ctx interface{}, v ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, v...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ErrorWithContext", reflect.TypeOf((*MockLogger)(nil).ErrorWithContext), varargs...)
 }

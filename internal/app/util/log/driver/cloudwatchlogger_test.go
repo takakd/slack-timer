@@ -8,8 +8,14 @@ import (
 	"slacktimer/internal/app/util/log"
 	"testing"
 
+	"context"
+
 	"github.com/stretchr/testify/assert"
 )
+
+type testCtxKey string
+
+const testAwsRequestIDKey testCtxKey = "test key"
 
 func TestNewCloudWatchLogger(t *testing.T) {
 	assert.NotPanics(t, func() {
@@ -33,14 +39,14 @@ func TestCloudWatchLogger_outputLog(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := gotTestLogOutput(log.LevelDebug, log.LevelDebug, c.value)
+			got := gotTestLogOutput(nil, log.LevelDebug, log.LevelDebug, c.value)
 			want := "marshal error in logging\n"
 			assert.Equal(t, want, got)
 		})
 	}
 }
 
-func gotTestLogOutput(levelSetting log.Level, level log.Level, msg interface{}) string {
+func gotTestLogOutput(ctx context.Context, levelSetting log.Level, level log.Level, msg interface{}) string {
 	// Ref: https://stackoverflow.com/questions/10473800/in-go-how-do-i-capture-stdout-of-a-function-into-a-string
 	old := os.Stdout
 	r, w, _ := os.Pipe()
@@ -50,13 +56,24 @@ func gotTestLogOutput(levelSetting log.Level, level log.Level, msg interface{}) 
 
 	logger.SetLevel(levelSetting)
 
-	switch level {
-	case log.LevelDebug:
-		logger.Debug(msg)
-	case log.LevelInfo:
-		logger.Info(msg)
-	case log.LevelError:
-		logger.Error(msg)
+	if ctx == nil {
+		switch level {
+		case log.LevelDebug:
+			logger.Debug(msg)
+		case log.LevelInfo:
+			logger.Info(msg)
+		case log.LevelError:
+			logger.Error(msg)
+		}
+	} else {
+		switch level {
+		case log.LevelDebug:
+			logger.DebugWithContext(ctx, msg)
+		case log.LevelInfo:
+			logger.InfoWithContext(ctx, msg)
+		case log.LevelError:
+			logger.ErrorWithContext(ctx, msg)
+		}
 	}
 
 	w.Close()
@@ -74,21 +91,37 @@ func TestCloudWatchLogger_Debug(t *testing.T) {
 		name         string
 		levelSetting log.Level
 		msg          string
+		withContext  bool
 	}{
-		{"ok:debug", log.LevelDebug, "a b テスト"},
-		{"ok:info", log.LevelInfo, ""},
-		{"ok:error", log.LevelError, ""},
+		{"ok:debug", log.LevelDebug, "a b テスト", false},
+		{"ok:info", log.LevelInfo, "", false},
+		{"ok:error", log.LevelError, "", false},
+		{"ok:debug with ctx", log.LevelDebug, "a b テスト", true},
+		{"ok:info with ctx", log.LevelInfo, "", true},
+		{"ok:error with ctx", log.LevelError, "", true},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := gotTestLogOutput(c.levelSetting, log.LevelDebug, c.msg)
+			if c.withContext {
+				ctx := context.WithValue(nil, testAwsRequestIDKey, "test ID")
+				got := gotTestLogOutput(ctx, c.levelSetting, log.LevelDebug, c.msg)
 
-			if c.msg == "" {
-				assert.Empty(t, got)
+				if c.msg == "" {
+					assert.Empty(t, got)
+				} else {
+					want := fmt.Sprintf(`{"AwsRequestID":"test ID","level":"DEBUG","msg":"%s"}`+"\n", c.msg)
+					assert.Equal(t, want, got)
+				}
 			} else {
-				want := fmt.Sprintf(`{"level":"DEBUG","msg":"%s"}`+"\n", c.msg)
-				assert.Equal(t, want, got)
+				got := gotTestLogOutput(nil, c.levelSetting, log.LevelDebug, c.msg)
+
+				if c.msg == "" {
+					assert.Empty(t, got)
+				} else {
+					want := fmt.Sprintf(`{"level":"DEBUG","msg":"%s"}`+"\n", c.msg)
+					assert.Equal(t, want, got)
+				}
 			}
 		})
 	}
@@ -99,21 +132,37 @@ func TestCloudWatchLogger_Info(t *testing.T) {
 		name         string
 		levelSetting log.Level
 		msg          string
+		withContext  bool
 	}{
-		{"ok:debug", log.LevelDebug, "a b テスト"},
-		{"ok:info", log.LevelInfo, "a b テスト"},
-		{"ok:error", log.LevelError, ""},
+		{"ok:debug", log.LevelDebug, "a b テスト", false},
+		{"ok:info", log.LevelInfo, "a b テスト", false},
+		{"ok:error", log.LevelError, "", false},
+		{"ok:debug with context", log.LevelDebug, "a b テスト", true},
+		{"ok:info with context", log.LevelInfo, "a b テスト", true},
+		{"ok:error with context", log.LevelError, "", true},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := gotTestLogOutput(c.levelSetting, log.LevelInfo, c.msg)
+			if c.withContext {
+				ctx := context.WithValue(nil, testAwsRequestIDKey, "test ID")
+				got := gotTestLogOutput(ctx, c.levelSetting, log.LevelInfo, c.msg)
 
-			if c.msg == "" {
-				assert.Empty(t, got)
+				if c.msg == "" {
+					assert.Empty(t, got)
+				} else {
+					want := fmt.Sprintf(`{"AwsRequestID":"test ID","level":"INFO","msg":"%s"}`+"\n", c.msg)
+					assert.Equal(t, want, got)
+				}
 			} else {
-				want := fmt.Sprintf(`{"level":"INFO","msg":"%s"}`+"\n", c.msg)
-				assert.Equal(t, want, got)
+				got := gotTestLogOutput(nil, c.levelSetting, log.LevelInfo, c.msg)
+
+				if c.msg == "" {
+					assert.Empty(t, got)
+				} else {
+					want := fmt.Sprintf(`{"level":"INFO","msg":"%s"}`+"\n", c.msg)
+					assert.Equal(t, want, got)
+				}
 			}
 		})
 	}
@@ -124,21 +173,37 @@ func TestCloudWatchLogger_Error(t *testing.T) {
 		name         string
 		levelSetting log.Level
 		msg          string
+		withContext  bool
 	}{
-		{"ok:debug", log.LevelDebug, "a b テスト"},
-		{"ok:info", log.LevelInfo, "a b テスト"},
-		{"ok:error", log.LevelError, "a b テスト"},
+		{"ok:debug", log.LevelDebug, "a b テスト", false},
+		{"ok:info", log.LevelInfo, "a b テスト", false},
+		{"ok:error", log.LevelError, "a b テスト", false},
+		{"ok:debug with context", log.LevelDebug, "a b テスト", true},
+		{"ok:info with context", log.LevelInfo, "a b テスト", true},
+		{"ok:error with context", log.LevelError, "a b テスト", true},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := gotTestLogOutput(c.levelSetting, log.LevelError, c.msg)
+			if c.withContext {
+				ctx := context.WithValue(nil, testAwsRequestIDKey, "test ID")
+				got := gotTestLogOutput(ctx, c.levelSetting, log.LevelError, c.msg)
 
-			if c.msg == "" {
-				assert.Empty(t, got)
+				if c.msg == "" {
+					assert.Empty(t, got)
+				} else {
+					want := fmt.Sprintf(`{"AwsRequestID":"test ID","level":"ERROR","msg":"%s"}`+"\n", c.msg)
+					assert.Equal(t, want, got)
+				}
 			} else {
-				want := fmt.Sprintf(`{"level":"ERROR","msg":"%s"}`+"\n", c.msg)
-				assert.Equal(t, want, got)
+				got := gotTestLogOutput(nil, c.levelSetting, log.LevelError, c.msg)
+
+				if c.msg == "" {
+					assert.Empty(t, got)
+				} else {
+					want := fmt.Sprintf(`{"level":"ERROR","msg":"%s"}`+"\n", c.msg)
+					assert.Equal(t, want, got)
+				}
 			}
 		})
 	}

@@ -1,6 +1,8 @@
 // Package log provides logging feature.
 package log
 
+import "context"
+
 // Level represents the type of logging level.
 type Level int
 
@@ -19,6 +21,9 @@ type Logger interface {
 	Debug(v ...interface{})
 	Info(v ...interface{})
 	Error(v ...interface{})
+	DebugWithContext(ctx context.Context, v ...interface{})
+	InfoWithContext(ctx context.Context, v ...interface{})
+	ErrorWithContext(ctx context.Context, v ...interface{})
 }
 
 // Use this interface for logging.
@@ -79,5 +84,38 @@ func Error(v ...interface{}) {
 
 	if logger != nil {
 		logger.Error(v...)
+	}
+}
+
+// DebugWithContext outputs debug log with context information.
+func DebugWithContext(ctx context.Context, v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
+	if logger != nil {
+		logger.DebugWithContext(ctx, v...)
+	}
+}
+
+// InfoWithContext outputs info log with context information.
+func InfoWithContext(ctx context.Context, v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
+	if logger != nil {
+		logger.InfoWithContext(ctx, v...)
+	}
+}
+
+// ErrorWithContext outputs info log with context information.
+func ErrorWithContext(ctx context.Context, v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
+	if logger != nil {
+		logger.ErrorWithContext(ctx, v...)
 	}
 }
