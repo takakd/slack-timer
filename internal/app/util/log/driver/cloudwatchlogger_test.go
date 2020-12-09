@@ -8,14 +8,13 @@ import (
 	"slacktimer/internal/app/util/log"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
 	"context"
 
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/stretchr/testify/assert"
 )
-
-type testCtxKey string
-
-const testAwsRequestIDKey testCtxKey = "test key"
 
 func TestNewCloudWatchLogger(t *testing.T) {
 	assert.NotPanics(t, func() {
@@ -46,7 +45,7 @@ func TestCloudWatchLogger_outputLog(t *testing.T) {
 	}
 }
 
-func gotTestLogOutput(ctx context.Context, levelSetting log.Level, level log.Level, msg interface{}) string {
+func gotTestLogOutput(ac appcontext.AppContext, levelSetting log.Level, level log.Level, msg interface{}) string {
 	// Ref: https://stackoverflow.com/questions/10473800/in-go-how-do-i-capture-stdout-of-a-function-into-a-string
 	old := os.Stdout
 	r, w, _ := os.Pipe()
@@ -56,7 +55,7 @@ func gotTestLogOutput(ctx context.Context, levelSetting log.Level, level log.Lev
 
 	logger.SetLevel(levelSetting)
 
-	if ctx == nil {
+	if ac == nil {
 		switch level {
 		case log.LevelDebug:
 			logger.Debug(msg)
@@ -68,11 +67,11 @@ func gotTestLogOutput(ctx context.Context, levelSetting log.Level, level log.Lev
 	} else {
 		switch level {
 		case log.LevelDebug:
-			logger.DebugWithContext(ctx, msg)
+			logger.DebugWithContext(ac, msg)
 		case log.LevelInfo:
-			logger.InfoWithContext(ctx, msg)
+			logger.InfoWithContext(ac, msg)
 		case log.LevelError:
-			logger.ErrorWithContext(ctx, msg)
+			logger.ErrorWithContext(ac, msg)
 		}
 	}
 
@@ -104,8 +103,13 @@ func TestCloudWatchLogger_Debug(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			if c.withContext {
-				ctx := context.WithValue(nil, testAwsRequestIDKey, "test ID")
-				got := gotTestLogOutput(ctx, c.levelSetting, log.LevelDebug, c.msg)
+				lc := &lambdacontext.LambdaContext{
+					AwsRequestID: "test ID",
+				}
+				ctx := lambdacontext.NewContext(context.TODO(), lc)
+				ac, _ := appcontext.FromContext(ctx)
+
+				got := gotTestLogOutput(ac, c.levelSetting, log.LevelDebug, c.msg)
 
 				if c.msg == "" {
 					assert.Empty(t, got)
@@ -145,8 +149,13 @@ func TestCloudWatchLogger_Info(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			if c.withContext {
-				ctx := context.WithValue(nil, testAwsRequestIDKey, "test ID")
-				got := gotTestLogOutput(ctx, c.levelSetting, log.LevelInfo, c.msg)
+				lc := &lambdacontext.LambdaContext{
+					AwsRequestID: "test ID",
+				}
+				ctx := lambdacontext.NewContext(context.TODO(), lc)
+				ac, _ := appcontext.FromContext(ctx)
+
+				got := gotTestLogOutput(ac, c.levelSetting, log.LevelInfo, c.msg)
 
 				if c.msg == "" {
 					assert.Empty(t, got)
@@ -186,8 +195,13 @@ func TestCloudWatchLogger_Error(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			if c.withContext {
-				ctx := context.WithValue(nil, testAwsRequestIDKey, "test ID")
-				got := gotTestLogOutput(ctx, c.levelSetting, log.LevelError, c.msg)
+				lc := &lambdacontext.LambdaContext{
+					AwsRequestID: "test ID",
+				}
+				ctx := lambdacontext.NewContext(context.TODO(), lc)
+				ac, _ := appcontext.FromContext(ctx)
+
+				got := gotTestLogOutput(ac, c.levelSetting, log.LevelError, c.msg)
 
 				if c.msg == "" {
 					assert.Empty(t, got)

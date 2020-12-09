@@ -2,13 +2,13 @@
 package notifyevent
 
 import (
-	"context"
+	"slacktimer/internal/app/util/appcontext"
 )
 
 // InputPort defines notifying events usecase.
 type InputPort interface {
 	// Notify an event to the user and update the entity.
-	NotifyEvent(ctx context.Context, input InputData) error
+	NotifyEvent(ac appcontext.AppContext, input InputData) error
 }
 
 // InputData is parameter of InputPort.

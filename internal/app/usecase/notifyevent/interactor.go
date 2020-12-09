@@ -1,8 +1,8 @@
 package notifyevent
 
 import (
-	"context"
 	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -26,7 +26,7 @@ func NewInteractor() *Interactor {
 }
 
 // NotifyEvent notifies events to users.
-func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
+func (s Interactor) NotifyEvent(ac appcontext.AppContext, input InputData) error {
 	outputData := OutputData{
 		UserID: input.UserID,
 	}
@@ -36,43 +36,43 @@ func (s Interactor) NotifyEvent(ctx context.Context, input InputData) error {
 	}
 
 	var event *enterpriserule.TimerEvent
-	event, outputData.Result = s.repository.FindTimerEvent(ctx, input.UserID)
+	event, outputData.Result = s.repository.FindTimerEvent(input.UserID)
 	if outputData.Result != nil {
-		s.outputPort.Output(outputData)
+		s.outputPort.Output(ac, outputData)
 		return outputData.Result
 	}
 
-	log.Info("found event", logDetail)
+	log.InfoWithContext(ac, "found event", logDetail)
 
 	// Check item to be notified
 	if !event.Queued() {
-		log.Info("already notified", logDetail)
-		s.outputPort.Output(outputData)
+		log.InfoWithContext(ac, "already notified", logDetail)
+		s.outputPort.Output(ac, outputData)
 		return nil
 	}
 
 	// Send notify.
 	outputData.Result = s.notifier.Notify(input.UserID, input.Message)
 	if outputData.Result != nil {
-		s.outputPort.Output(outputData)
+		s.outputPort.Output(ac, outputData)
 		return outputData.Result
 	}
 
-	log.Info("notified", logDetail)
+	log.InfoWithContext(ac, "notified", logDetail)
 
 	event.IncrementNotificationTime()
 	event.SetWait()
 
-	_, outputData.Result = s.repository.SaveTimerEvent(ctx, event)
+	_, outputData.Result = s.repository.SaveTimerEvent(event)
 	if outputData.Result != nil {
-		s.outputPort.Output(outputData)
+		s.outputPort.Output(ac, outputData)
 		return outputData.Result
 	}
 
-	log.Info("updated event", logDetail)
+	log.InfoWithContext(ac, "updated event", logDetail)
 
 	outputData.Result = nil
-	s.outputPort.Output(outputData)
+	s.outputPort.Output(ac, outputData)
 
 	return nil
 }

@@ -9,6 +9,8 @@ import (
 	"slacktimer/internal/app/util/config"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,12 +24,12 @@ func TestNewAPIDriver(t *testing.T) {
 
 func TestAPIDriver_ConversationsOpen(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
 		caseUserID := "test user"
 		caseChannelID := "test channel"
 		caseToken := "test token"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			buf, err := ioutil.ReadAll(r.Body)
@@ -50,15 +52,15 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		}))
 		defer server.Close()
 
-		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
+		mc := config.NewMockConfig(ctrl)
+		mc.EXPECT().Get(gomock.Eq(
 			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return(caseToken)
-		c.EXPECT().Get(gomock.Eq(
+		mc.EXPECT().Get(gomock.Eq(
 			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL)
-		config.SetConfig(c)
+		config.SetConfig(mc)
 
 		d := NewAPIDriver()
-		got, err := d.ConversationsOpen(caseUserID)
+		got, err := d.ConversationsOpen(appcontext.TODO(), caseUserID)
 		assert.Equal(t, caseChannelID, got)
 		assert.NoError(t, err)
 	})
@@ -74,7 +76,7 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 
 		assert.Panics(t, func() {
 			d := NewAPIDriver()
-			d.ConversationsOpen("test")
+			d.ConversationsOpen(appcontext.TODO(), "test")
 		})
 	})
 
@@ -104,7 +106,7 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		got, err := d.ConversationsOpen("test")
+		got, err := d.ConversationsOpen(appcontext.TODO(), "test")
 		assert.Empty(t, got)
 		assert.Error(t, err)
 	})
@@ -136,7 +138,7 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		got, err := d.ConversationsOpen("test")
+		got, err := d.ConversationsOpen(appcontext.TODO(), "test")
 		assert.Empty(t, got)
 		assert.Error(t, err)
 	})
@@ -144,12 +146,12 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 
 func TestAPIDriver_ChatPostMessage(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
 		caseToken := "test token"
 		caseChannelID := "test channel"
 		caseText := "test message"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			buf, err := ioutil.ReadAll(r.Body)
@@ -180,7 +182,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		err := d.ChatPostMessage(caseChannelID, caseText)
+		err := d.ChatPostMessage(appcontext.TODO(), caseChannelID, caseText)
 		assert.NoError(t, err)
 	})
 
@@ -195,7 +197,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 
 		assert.Panics(t, func() {
 			d := NewAPIDriver()
-			d.ChatPostMessage("test", "test")
+			d.ChatPostMessage(appcontext.TODO(), "test", "test")
 		})
 	})
 
@@ -224,7 +226,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		err := d.ChatPostMessage("test", "test")
+		err := d.ChatPostMessage(appcontext.TODO(), "test", "test")
 		assert.Error(t, err)
 	})
 
@@ -254,7 +256,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		err := d.ChatPostMessage("test", "test")
+		err := d.ChatPostMessage(appcontext.TODO(), "test", "test")
 		assert.Error(t, err)
 	})
 }

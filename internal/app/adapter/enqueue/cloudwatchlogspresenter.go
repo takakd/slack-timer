@@ -2,6 +2,7 @@ package enqueue
 
 import (
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/log"
 )
 
@@ -17,14 +18,14 @@ func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
 }
 
 // Output used as outputport by interactor.
-func (c CloudWatchLogsPresenter) Output(data enqueueevent.OutputData) {
+func (c CloudWatchLogsPresenter) Output(ac appcontext.AppContext, data enqueueevent.OutputData) {
 	if len(data.NotifiedUserIDList) == 0 {
-		log.Info("no items to be enqueued")
+		log.InfoWithContext(ac, "no items to be enqueued")
 		return
 	}
 
 	for i, v := range data.NotifiedUserIDList {
-		log.Info("enqueued", map[string]interface{}{
+		log.InfoWithContext(ac, "enqueued", map[string]interface{}{
 			"user_id":    v,
 			"message_id": data.QueueMessageIDList[i],
 		})

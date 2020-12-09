@@ -1,10 +1,10 @@
 package enqueue
 
-import "github.com/aws/aws-lambda-go/lambdacontext"
+import "slacktimer/internal/app/util/appcontext"
 
 // ControllerHandler is called by Lambda handler.
 type ControllerHandler interface {
-	Handle(ctx lambdacontext.LambdaContext, input HandleInput)
+	Handle(ac appcontext.AppContext, input HandleInput)
 }
 
 // HandleInput is input parameter of Controller.

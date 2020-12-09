@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"context"
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -84,37 +84,37 @@ func TestDebugWithContext(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.TODO()
+	ac := appcontext.TODO()
 
 	ml := NewMockLogger(ctrl)
-	ml.EXPECT().DebugWithContext(ctx, "test")
+	ml.EXPECT().DebugWithContext(ac, "test")
 
 	SetDefaultLogger(ml)
-	DebugWithContext(ctx, "test")
+	DebugWithContext(ac, "test")
 }
 
 func TestInfoWithContext(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.TODO()
+	ac := appcontext.TODO()
 
 	ml := NewMockLogger(ctrl)
-	ml.EXPECT().InfoWithContext(ctx, "test")
+	ml.EXPECT().InfoWithContext(ac, "test")
 
 	SetDefaultLogger(ml)
-	InfoWithContext(ctx, "test")
+	InfoWithContext(ac, "test")
 }
 
 func TestErrorWithContext(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.TODO()
+	ac := appcontext.TODO()
 
 	ml := NewMockLogger(ctrl)
-	ml.EXPECT().ErrorWithContext(ctx, "test")
+	ml.EXPECT().ErrorWithContext(ac, "test")
 
 	SetDefaultLogger(ml)
-	ErrorWithContext(ctx, "test")
+	ErrorWithContext(ac, "test")
 }

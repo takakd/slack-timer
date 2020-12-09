@@ -1,10 +1,13 @@
 package updatetimerevent
 
-import "slacktimer/internal/app/enterpriserule"
+import (
+	"slacktimer/internal/app/enterpriserule"
+	"slacktimer/internal/app/util/appcontext"
+)
 
 // OutputPort defines outputport method of updating timer events usecase.
 type OutputPort interface {
-	Output(data OutputData)
+	Output(ac appcontext.AppContext, data OutputData)
 }
 
 // OutputData is parameter of OutputPort.

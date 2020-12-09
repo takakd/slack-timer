@@ -1,10 +1,11 @@
 package settime
 
 import (
-	"context"
 	"net/http"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -38,22 +39,24 @@ func TestURLVerificationRequestHandlerFunctor_Handle(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			ac := appcontext.TODO()
+
 			caseData := EventCallbackData{
 				Challenge: c.challenge,
 			}
 
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
 			ml := log.NewMockLogger(ctrl)
-			ml.EXPECT().Info("URLVerification called", caseData.Challenge)
+			ml.EXPECT().InfoWithContext(ac, "URLVerification called", caseData.Challenge)
 			if caseData.Challenge != "" {
-				ml.EXPECT().Info("URLVerification outputs", *c.resp)
+				ml.EXPECT().InfoWithContext(ac, "URLVerification outputs", *c.resp)
 			}
 			log.SetDefaultLogger(ml)
 
 			h := NewURLVerificationRequestHandlerFunctor()
-			got := h.Handle(context.TODO(), caseData)
+			got := h.Handle(appcontext.TODO(), caseData)
 			assert.Equal(t, c.resp, got)
 		})
 	}

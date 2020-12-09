@@ -5,6 +5,8 @@ import (
 	"slacktimer/internal/app/util/log"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,21 +19,28 @@ func TestNewCloudWatchLogsPresenter(t *testing.T) {
 
 func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		caseData := enqueueevent.OutputData{}
-		caseData.NotifiedUserIDList = make([]string, 0)
-
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info("no items to be enqueued")
-		log.SetDefaultLogger(l)
+		ac := appcontext.TODO()
+
+		caseData := enqueueevent.OutputData{}
+		caseData.NotifiedUserIDList = make([]string, 0)
+
+		ml := log.NewMockLogger(ctrl)
+		ml.EXPECT().InfoWithContext(ac, "no items to be enqueued")
+		log.SetDefaultLogger(ml)
 
 		o := &CloudWatchLogsPresenter{}
-		o.Output(caseData)
+		o.Output(ac, caseData)
 	})
 
 	t.Run("exist", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := appcontext.TODO()
+
 		caseData := enqueueevent.OutputData{}
 		caseData.NotifiedUserIDList = []string{
 			"id1", "id2",
@@ -40,21 +49,18 @@ func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 			"mid1", "mid2",
 		}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info("enqueued", map[string]interface{}{
+		ml := log.NewMockLogger(ctrl)
+		ml.EXPECT().InfoWithContext(ac, "enqueued", map[string]interface{}{
 			"user_id":    caseData.NotifiedUserIDList[0],
 			"message_id": caseData.QueueMessageIDList[0],
 		})
-		l.EXPECT().Info("enqueued", map[string]interface{}{
+		ml.EXPECT().InfoWithContext(ac, "enqueued", map[string]interface{}{
 			"user_id":    caseData.NotifiedUserIDList[1],
 			"message_id": caseData.QueueMessageIDList[1],
 		})
-		log.SetDefaultLogger(l)
+		log.SetDefaultLogger(ml)
 
 		o := &CloudWatchLogsPresenter{}
-		o.Output(caseData)
+		o.Output(appcontext.TODO(), caseData)
 	})
 }

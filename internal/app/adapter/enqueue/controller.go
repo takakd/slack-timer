@@ -2,8 +2,8 @@
 package enqueue
 
 import (
-	"context"
 	"slacktimer/internal/app/usecase/enqueueevent"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"time"
@@ -25,13 +25,13 @@ func NewController() *Controller {
 }
 
 // Handle enqueues events reached the time.
-func (e Controller) Handle(ctx context.Context, input HandleInput) {
+func (e Controller) Handle(ac appcontext.AppContext, input HandleInput) {
 	// TODO: Getting time from Lambda context?
 	data := enqueueevent.InputData{
 		EventTime: time.Now().UTC(),
 	}
 
-	log.Info("call inputport", input)
-	e.InputPort.EnqueueEvent(ctx, data)
-	log.Info("return from inputport")
+	log.InfoWithContext(ac, "call inputport", input)
+	e.InputPort.EnqueueEvent(ac, data)
+	log.InfoWithContext(ac, "return from inputport")
 }

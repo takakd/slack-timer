@@ -8,6 +8,8 @@ import (
 	"slacktimer/internal/app/util/log"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,14 +38,16 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			ac := appcontext.TODO()
+
 			p := NewSaveEventOutputReceivePresenter()
 
 			if c.data.Result != nil {
 				ml := log.NewMockLogger(ctrl)
-				ml.EXPECT().Error("settime outputport", c.data.Result)
+				ml.EXPECT().ErrorWithContext(ac, "settime outputport", c.data.Result)
 				log.SetDefaultLogger(ml)
 
-				p.Output(*c.data)
+				p.Output(appcontext.TODO(), *c.data)
 
 				want := &Response{
 					StatusCode: http.StatusInternalServerError,
@@ -57,7 +61,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 				c.data.SavedEvent, err = enterpriserule.NewTimerEvent("test")
 				require.NoError(t, err)
 
-				p.Output(*c.data)
+				p.Output(appcontext.TODO(), *c.data)
 
 				want := &Response{
 					StatusCode: http.StatusOK,

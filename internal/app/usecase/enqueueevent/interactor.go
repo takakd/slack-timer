@@ -1,8 +1,8 @@
 package enqueueevent
 
 import (
-	"context"
 	"fmt"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -26,13 +26,13 @@ func NewInteractor() *Interactor {
 var _ InputPort = (*Interactor)(nil)
 
 // EnqueueEvent enqueues a notification event.
-func (s Interactor) EnqueueEvent(ctx context.Context, data InputData) {
+func (s Interactor) EnqueueEvent(ac appcontext.AppContext, data InputData) {
 	outputData := OutputData{}
 
-	events, err := s.repository.FindTimerEventsByTime(ctx, data.EventTime)
+	events, err := s.repository.FindTimerEventsByTime(data.EventTime)
 	if err != nil {
 		outputData.Result = fmt.Errorf("find error time=%v: %w", data.EventTime, err)
-		s.outputPort.Output(outputData)
+		s.outputPort.Output(ac, outputData)
 		return
 	}
 
@@ -48,14 +48,14 @@ func (s Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 			Text:   "test",
 		})
 		if err != nil {
-			log.Error(fmt.Sprintf("enqueue error user_id=%s: %v", e.UserID, err))
+			log.ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %v", e.UserID, err))
 			continue
 		}
 
 		// Update state.
 		e.SetQueued()
-		if _, err := s.repository.SaveTimerEvent(ctx, e); err != nil {
-			log.Error(fmt.Sprintf("update error user_id=%s: %v", e.UserID, err))
+		if _, err := s.repository.SaveTimerEvent(e); err != nil {
+			log.ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %v", e.UserID, err))
 			continue
 		}
 
@@ -63,5 +63,5 @@ func (s Interactor) EnqueueEvent(ctx context.Context, data InputData) {
 		outputData.QueueMessageIDList = append(outputData.QueueMessageIDList, id)
 	}
 
-	s.outputPort.Output(outputData)
+	s.outputPort.Output(ac, outputData)
 }

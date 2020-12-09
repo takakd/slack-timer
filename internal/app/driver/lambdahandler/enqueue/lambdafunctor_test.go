@@ -6,6 +6,9 @@ import (
 	"slacktimer/internal/app/util/di"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,12 +34,14 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			ctx := context.TODO()
+			lc := &lambdacontext.LambdaContext{}
+			ctx := lambdacontext.NewContext(context.TODO(), lc)
+			ac, _ := appcontext.FromContext(ctx)
 
 			caseInput := LambdaInput{}
 
 			mc := enqueue.NewMockControllerHandler(ctrl)
-			mc.EXPECT().Handle(gomock.Eq(ctx), gomock.Any())
+			mc.EXPECT().Handle(ac, gomock.Any())
 
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("enqueue.ControllerHandler").Return(mc)

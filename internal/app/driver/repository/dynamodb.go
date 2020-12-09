@@ -2,7 +2,6 @@
 package repository
 
 import (
-	"context"
 	"fmt"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/enqueueevent"
@@ -83,7 +82,7 @@ func NewDynamoDb(wrp DynamoDbWrapper) *DynamoDb {
 }
 
 // FindTimerEvent finds an event by user id.
-func (r DynamoDb) FindTimerEvent(ctx context.Context, userID string) (event *enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) FindTimerEvent(userID string) (event *enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":userid": {
@@ -119,7 +118,7 @@ func (r DynamoDb) FindTimerEvent(ctx context.Context, userID string) (event *ent
 }
 
 // FindTimerEventByTime finds events from "from" to "to".
-func (r DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) FindTimerEventByTime(from, to time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":dummy": {
@@ -161,7 +160,7 @@ func (r DynamoDb) FindTimerEventByTime(ctx context.Context, from, to time.Time) 
 
 // SaveTimerEvent persists an event.
 // Return nil error and saved event if it is successful, if not, return an error.
-func (r DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) SaveTimerEvent(event *enterpriserule.TimerEvent) (saved *enterpriserule.TimerEvent, err error) {
 	dbItem := NewTimerEventDbItem(event)
 
 	dbItem.Dummy, err = strconv.Atoi(config.MustGet("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"))
@@ -188,7 +187,7 @@ func (r DynamoDb) SaveTimerEvent(ctx context.Context, event *enterpriserule.Time
 }
 
 // FindTimerEventsByTime finds events before eventTime.
-func (r DynamoDb) FindTimerEventsByTime(ctx context.Context, eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
+func (r DynamoDb) FindTimerEventsByTime(eventTime time.Time) (events []*enterpriserule.TimerEvent, err error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":dummy": {

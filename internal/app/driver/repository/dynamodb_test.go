@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"errors"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/config"
@@ -86,7 +85,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
+		got, err := repo.FindTimerEvent("dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -129,7 +128,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
+		got, err := repo.FindTimerEvent(caseUserID)
 		assert.Nil(t, got)
 		assert.Error(t, err)
 	})
@@ -158,7 +157,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
+		got, err := repo.FindTimerEvent("dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -190,7 +189,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
+		got, err := repo.FindTimerEvent(caseUserID)
 		assert.Nil(t, got)
 		assert.NoError(t, err)
 	})
@@ -239,7 +238,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		})
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
+		got, err := repo.FindTimerEvent(caseUserID)
 		assert.NoError(t, err)
 
 		want, err := caseDbItem.TimerEvent()
@@ -265,7 +264,7 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEventByTime(context.TODO(), time.Now(), time.Now().Add(100))
+		got, err := repo.FindTimerEventByTime(time.Now(), time.Now().Add(100))
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -307,7 +306,7 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
+		got, err := repo.FindTimerEventByTime(caseFrom, caseTo)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -379,7 +378,7 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		})
 
 		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
+		got, err := repo.FindTimerEventByTime(caseFrom, caseTo)
 		assert.NoError(t, err)
 		assert.EqualValues(t, caseEvents, got)
 	})
@@ -407,7 +406,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 		repo := NewDynamoDb(s)
 		event, err := caseItem.TimerEvent()
 		assert.NoError(t, err)
-		got, err := repo.SaveTimerEvent(context.TODO(), event)
+		got, err := repo.SaveTimerEvent(event)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -443,7 +442,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 
 		repo := NewDynamoDb(s)
 		event, err := caseItem.TimerEvent()
-		got, err := repo.SaveTimerEvent(context.TODO(), event)
+		got, err := repo.SaveTimerEvent(event)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -479,7 +478,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 		repo := NewDynamoDb(s)
 		event, err := caseItem.TimerEvent()
 		assert.NoError(t, err)
-		got, err := repo.SaveTimerEvent(context.TODO(), event)
+		got, err := repo.SaveTimerEvent(event)
 		assert.NoError(t, err)
 		assert.EqualValues(t, event, got)
 	})

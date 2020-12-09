@@ -1,8 +1,8 @@
 package notify
 
 import (
-	"context"
 	"slacktimer/internal/app/usecase/notifyevent"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -23,23 +23,22 @@ func NewController() *Controller {
 }
 
 // Handle notifies the event to user.
-func (n Controller) Handle(ctx context.Context, input HandleInput) *Response {
-
-	log.Info("call inputport", input)
+func (n Controller) Handle(ac appcontext.AppContext, input HandleInput) *Response {
+	log.InfoWithContext(ac, "call inputport", input)
 
 	data := notifyevent.InputData{
 		UserID:  input.UserID,
 		Message: input.Message,
 	}
-	err := n.InputPort.NotifyEvent(ctx, data)
+	err := n.InputPort.NotifyEvent(ac, data)
 
-	log.Info("return from inputport", err)
+	log.InfoWithContext(ac, "return from inputport", err)
 
 	resp := &Response{
 		Error: err,
 	}
 
-	log.Info("handler output", *resp)
+	log.InfoWithContext(ac, "handler output", *resp)
 
 	return resp
 }

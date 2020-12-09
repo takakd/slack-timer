@@ -8,6 +8,9 @@ import (
 	"slacktimer/internal/app/util/di"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +20,9 @@ func TestLambdaHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		lc := &lambdacontext.LambdaContext{}
+		ctx := lambdacontext.NewContext(context.TODO(), lc)
+		ac, _ := appcontext.FromContext(ctx)
 
 		data := settime.HandleInput{
 			EventData: settime.EventCallbackData{
@@ -50,7 +55,7 @@ func TestLambdaHandler(t *testing.T) {
 		}
 
 		mh := settime.NewMockControllerHandler(ctrl)
-		mh.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(data)).Return(&caseResp)
+		mh.EXPECT().Handle(ac, data).Return(&caseResp)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
@@ -75,7 +80,9 @@ func TestLambdaHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		lc := &lambdacontext.LambdaContext{}
+		ctx := lambdacontext.NewContext(context.TODO(), lc)
+		ac, _ := appcontext.FromContext(ctx)
 
 		data := settime.HandleInput{
 			EventData: settime.EventCallbackData{
@@ -104,7 +111,7 @@ func TestLambdaHandler(t *testing.T) {
 		}
 
 		mh := settime.NewMockControllerHandler(ctrl)
-		mh.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(data)).Return(&caseResp)
+		mh.EXPECT().Handle(ac, gomock.Eq(data)).Return(&caseResp)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get(gomock.Eq("settime.ControllerHandler")).Return(mh)
@@ -128,7 +135,9 @@ func TestLambdaHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		lc := &lambdacontext.LambdaContext{}
+		ctx := lambdacontext.NewContext(context.TODO(), lc)
+
 		caseInput := LambdaInput{
 			Body: "{invalid format",
 		}

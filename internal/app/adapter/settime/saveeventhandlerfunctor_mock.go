@@ -5,8 +5,8 @@
 package settime
 
 import (
-	context "context"
 	reflect "reflect"
+	appcontext "slacktimer/internal/app/util/appcontext"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,15 +35,15 @@ func (m *MockSaveEventHandler) EXPECT() *MockSaveEventHandlerMockRecorder {
 }
 
 // Handle mocks base method
-func (m *MockSaveEventHandler) Handle(ctx context.Context, data EventCallbackData) *Response {
+func (m *MockSaveEventHandler) Handle(ac appcontext.AppContext, data EventCallbackData) *Response {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Handle", ctx, data)
+	ret := m.ctrl.Call(m, "Handle", ac, data)
 	ret0, _ := ret[0].(*Response)
 	return ret0
 }
 
 // Handle indicates an expected call of Handle
-func (mr *MockSaveEventHandlerMockRecorder) Handle(ctx, data interface{}) *gomock.Call {
+func (mr *MockSaveEventHandlerMockRecorder) Handle(ac, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockSaveEventHandler)(nil).Handle), ctx, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockSaveEventHandler)(nil).Handle), ac, data)
 }

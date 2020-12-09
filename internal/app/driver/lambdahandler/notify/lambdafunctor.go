@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slacktimer/internal/app/adapter/notify"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -25,7 +26,13 @@ var _ LambdaHandler = (*LambdaFunctor)(nil)
 // Handle is called by SQS.
 // Ref: https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html
 func (n LambdaFunctor) Handle(ctx context.Context, input LambdaInput) error {
-	log.Info("lambda handler", map[string]interface{}{
+	ac, err := appcontext.FromContext(ctx)
+	if err != nil {
+		log.Error("context error", err, ctx)
+		return fmt.Errorf("context error: %w", err)
+	}
+
+	log.InfoWithContext(ac, "lambda handler", map[string]interface{}{
 		"count":   len(input.Records),
 		"records": input.Records,
 	})
@@ -38,19 +45,17 @@ func (n LambdaFunctor) Handle(ctx context.Context, input LambdaInput) error {
 			continue
 		}
 
-		resp := n.ctrl.Handle(ctx, hi)
+		resp := n.ctrl.Handle(ac, hi)
 		if resp.Error != nil {
 			count++
 		}
 	}
 
-	var err error
-
 	if count > 0 {
 		err = fmt.Errorf("count=%d", count)
 	}
 
-	log.Info("lambda handler output", err)
+	log.InfoWithContext(ac, "lambda handler output", err)
 
 	return err
 }

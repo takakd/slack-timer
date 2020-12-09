@@ -1,7 +1,6 @@
 package settime
 
 import (
-	"context"
 	"net/http"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/di"
@@ -9,6 +8,8 @@ import (
 
 	"slacktimer/internal/app/util/log"
 	"time"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -139,11 +140,11 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				},
 			}
 
-			ctx := context.TODO()
+			ac := appcontext.TODO()
 
 			mu := updatetimerevent.NewMockInputPort(ctrl)
 			if c.text != "" && c.ts != "" {
-				mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(caseData.MessageEvent.User), gomock.Any(), gomock.Eq(10), gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
+				mu.EXPECT().SaveIntervalMin(ac, caseData.MessageEvent.User, gomock.Any(), gomock.Eq(10), gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
 
 					output := outputPort.(*SaveEventOutputReceivePresenter)
 					output.Resp = c.resp
@@ -154,13 +155,13 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				ml := log.NewMockLogger(ctrl)
 
 				ts, _ := caseData.MessageEvent.eventUnixTimeStamp()
-				ml.EXPECT().Info("call inputport", map[string]interface{}{
+				ml.EXPECT().InfoWithContext(ac, "call inputport", map[string]interface{}{
 					"user":              caseData.MessageEvent.User,
 					"interval":          10,
 					"notification time": time.Unix(ts, 0).UTC(),
 				})
 
-				ml.EXPECT().Info("return from inputport", c.resp)
+				ml.EXPECT().InfoWithContext(ac, "return from inputport", c.resp)
 				log.SetDefaultLogger(ml)
 			}
 
@@ -169,7 +170,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			di.SetDi(md)
 
 			h := NewSaveEventHandlerFunctor()
-			got := h.Handle(ctx, caseData)
+			got := h.Handle(ac, caseData)
 			assert.Equal(t, &c.resp, got)
 		})
 	}

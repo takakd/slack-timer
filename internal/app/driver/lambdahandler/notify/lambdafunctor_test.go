@@ -10,6 +10,9 @@ import (
 	"encoding/json"
 	"slacktimer/internal/app/driver/queue"
 
+	"slacktimer/internal/app/util/appcontext"
+
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +37,9 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		lc := &lambdacontext.LambdaContext{}
+		ctx := lambdacontext.NewContext(context.TODO(), lc)
+		ac, _ := appcontext.FromContext(ctx)
 
 		caseBody, err := json.Marshal(queue.SqsMessageBody{
 			UserID: "test user",
@@ -52,7 +57,7 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		}
 
 		mi := notify.NewMockControllerHandler(ctrl)
-		mi.EXPECT().Handle(gomock.Eq(ctx), gomock.Any()).Return(caseResponse)
+		mi.EXPECT().Handle(ac, gomock.Any()).Return(caseResponse)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("notify.ControllerHandler").Return(mi)
@@ -67,7 +72,9 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		lc := &lambdacontext.LambdaContext{}
+		ctx := lambdacontext.NewContext(context.TODO(), lc)
+		ac, _ := appcontext.FromContext(ctx)
 
 		caseBody, err := json.Marshal(queue.SqsMessageBody{
 			UserID: "test user",
@@ -86,7 +93,7 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		}
 
 		mi := notify.NewMockControllerHandler(ctrl)
-		mi.EXPECT().Handle(gomock.Eq(ctx), gomock.Any()).Return(caseResponse)
+		mi.EXPECT().Handle(ac, gomock.Any()).Return(caseResponse)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("notify.ControllerHandler").Return(mi)

@@ -1,14 +1,14 @@
 package settime
 
 import (
-	"context"
 	"net/http"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/log"
 )
 
 // URLVerificationRequestHandler handles "urlverification" command.
 type URLVerificationRequestHandler interface {
-	Handle(ctx context.Context, data EventCallbackData) *Response
+	Handle(ac appcontext.AppContext, data EventCallbackData) *Response
 }
 
 // URLVerificationRequestHandlerFunctor represents url_verification event.
@@ -29,12 +29,12 @@ func NewURLVerificationRequestHandlerFunctor() *URLVerificationRequestHandlerFun
 }
 
 // Handle response according to the Slack URL verification specification.
-func (ur URLVerificationRequestHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
+func (ur URLVerificationRequestHandlerFunctor) Handle(ac appcontext.AppContext, data EventCallbackData) *Response {
 
-	log.Info("URLVerification called", data.Challenge)
+	log.InfoWithContext(ac, "URLVerification called", data.Challenge)
 
 	if data.Challenge == "" {
-		return newErrorHandlerResponse("invalid challenge", "empty")
+		return newErrorHandlerResponse(ac, "invalid challenge", "empty")
 	}
 
 	// URL verification process just depends on Slack Event API, so no usecase and outputport.
@@ -45,7 +45,7 @@ func (ur URLVerificationRequestHandlerFunctor) Handle(ctx context.Context, data 
 		},
 	}
 
-	log.Info("URLVerification outputs", *resp)
+	log.InfoWithContext(ac, "URLVerification outputs", *resp)
 
 	return resp
 }
