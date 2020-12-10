@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"time"
+
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,10 +16,10 @@ func TestNewLambdaContext(t *testing.T) {
 			AwsRequestID: "test ID",
 		}
 		ctx := lambdacontext.NewContext(context.TODO(), lc)
-		FromContext(ctx)
+		NewLambdaAppContext(ctx, time.Now())
 	})
 	assert.Panics(t, func() {
-		FromContext(nil)
+		NewLambdaAppContext(nil, time.Now())
 	})
 }
 

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
+func TestSaveEventHandlerFunctor_parseTs(t *testing.T) {
 	cases := []struct {
 		name  string
 		text  string
@@ -34,7 +34,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get(gomock.Eq("updatetimerevent.InputPort")).Return(mi)
+			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -47,7 +47,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 
 			ct := NewSaveEventHandlerFunctor()
 
-			bag := ct.validate(caseData)
+			bag := ct.parse(caseData)
 			_, exists := bag.GetError("timestamp")
 			assert.Equal(t, c.valid, !exists)
 			if c.valid {
@@ -57,7 +57,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 	}
 }
 
-func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
+func TestSaveEventHandlerFunctor_parseSet(t *testing.T) {
 	cases := []struct {
 		name  string
 		text  string
@@ -77,7 +77,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get(gomock.Eq("updatetimerevent.InputPort")).Return(mi)
+			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -90,7 +90,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 
 			ct := NewSaveEventHandlerFunctor()
 
-			bag := ct.validate(caseData)
+			bag := ct.parse(caseData)
 			_, exists := bag.GetError("interval")
 			assert.Equal(t, c.valid, !exists)
 			if c.valid {
@@ -144,7 +144,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 
 			mu := updatetimerevent.NewMockInputPort(ctrl)
 			if c.text != "" && c.ts != "" {
-				mu.EXPECT().SaveIntervalMin(ac, caseData.MessageEvent.User, gomock.Any(), gomock.Eq(10), gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
+				mu.EXPECT().SaveIntervalMin(ac, caseData.MessageEvent.User, gomock.Any(), 10, gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
 
 					output := outputPort.(*SaveEventOutputReceivePresenter)
 					output.Resp = c.resp

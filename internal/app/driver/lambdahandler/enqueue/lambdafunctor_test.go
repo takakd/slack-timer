@@ -8,10 +8,28 @@ import (
 
 	"slacktimer/internal/app/util/appcontext"
 
+	"time"
+
+	"fmt"
+
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
+
+type AppContextMatcher struct {
+	testValue appcontext.AppContext
+}
+
+func (m *AppContextMatcher) String() string {
+	return fmt.Sprintf("%v", m.testValue)
+}
+func (m *AppContextMatcher) Matches(x interface{}) bool {
+	another, _ := x.(appcontext.AppContext)
+	matched := true
+	matched = matched && m.testValue.RequestID() == another.RequestID()
+	return matched
+}
 
 func TestNewLambdaFunctor(t *testing.T) {
 	assert.NotPanics(t, func() {
@@ -36,12 +54,15 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 
 			lc := &lambdacontext.LambdaContext{}
 			ctx := lambdacontext.NewContext(context.TODO(), lc)
-			ac, _ := appcontext.FromContext(ctx)
+			ac, _ := appcontext.NewLambdaAppContext(ctx, time.Now())
 
 			caseInput := LambdaInput{}
 
 			mc := enqueue.NewMockControllerHandler(ctrl)
-			mc.EXPECT().Handle(ac, gomock.Any())
+			matcher := &AppContextMatcher{
+				testValue: ac,
+			}
+			mc.EXPECT().Handle(matcher, gomock.Any())
 
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("enqueue.ControllerHandler").Return(mc)

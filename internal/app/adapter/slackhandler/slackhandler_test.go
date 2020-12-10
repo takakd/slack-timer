@@ -18,7 +18,7 @@ func TestNewSlackHandler(t *testing.T) {
 
 	s := slack.NewMockAPI(ctrl)
 	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get(gomock.Eq("slack.API")).Return(s)
+	d.EXPECT().Get("slack.API").Return(s)
 	di.SetDi(d)
 
 	h := NewSlackHandler()
@@ -35,11 +35,11 @@ func TestSlackApi_Notify(t *testing.T) {
 		defer ctrl.Finish()
 
 		ms := slack.NewMockAPI(ctrl)
-		ms.EXPECT().ConversationsOpen(appcontext.TODO(), gomock.Eq(caseUserID)).Return(caseChannelID, nil)
-		ms.EXPECT().ChatPostMessage(appcontext.TODO(), gomock.Eq(caseChannelID), gomock.Eq(caseMessage)).Return(nil)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), caseChannelID, caseMessage).Return(nil)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("slack.API")).Return(ms)
+		md.EXPECT().Get("slack.API").Return(ms)
 		di.SetDi(md)
 
 		h := NewSlackHandler()
@@ -54,10 +54,10 @@ func TestSlackApi_Notify(t *testing.T) {
 		caseError := errors.New("test error")
 
 		ms := slack.NewMockAPI(ctrl)
-		ms.EXPECT().ConversationsOpen(appcontext.TODO(), gomock.Eq(caseUserID)).Return("", caseError)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return("", caseError)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("slack.API")).Return(ms)
+		md.EXPECT().Get("slack.API").Return(ms)
 		di.SetDi(md)
 
 		h := NewSlackHandler()
@@ -72,11 +72,11 @@ func TestSlackApi_Notify(t *testing.T) {
 		caseError := errors.New("test error")
 
 		ms := slack.NewMockAPI(ctrl)
-		ms.EXPECT().ConversationsOpen(appcontext.TODO(), gomock.Eq(caseUserID)).Return(caseChannelID, nil)
-		ms.EXPECT().ChatPostMessage(appcontext.TODO(), gomock.Eq(caseChannelID), gomock.Eq(caseMessage)).Return(caseError)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), caseChannelID, caseMessage).Return(caseError)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("slack.API")).Return(ms)
+		md.EXPECT().Get("slack.API").Return(ms)
 		di.SetDi(md)
 
 		h := NewSlackHandler()

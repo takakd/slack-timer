@@ -6,7 +6,6 @@ import (
 	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
-	"time"
 )
 
 // Controller implements ControllerHandler.
@@ -26,9 +25,8 @@ func NewController() *Controller {
 
 // Handle enqueues events reached the time.
 func (e Controller) Handle(ac appcontext.AppContext, input HandleInput) {
-	// TODO: Getting time from Lambda context?
 	data := enqueueevent.InputData{
-		EventTime: time.Now().UTC(),
+		EventTime: ac.HandlerCalledTime(),
 	}
 
 	log.InfoWithContext(ac, "call inputport", input)

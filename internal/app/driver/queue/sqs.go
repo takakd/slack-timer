@@ -8,8 +8,9 @@ import (
 
 	"encoding/json"
 
+	"slacktimer/internal/app/util/di"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/google/uuid"
 )
@@ -26,16 +27,9 @@ type Sqs struct {
 var _ enqueueevent.Queue = (*Sqs)(nil)
 
 // NewSqs create new struct.
-// TODO: not null parameter, get from DI in the function
-// Set wrp to null. In case unit test, set mock interface.
-func NewSqs(wrp SqsWrapper) *Sqs {
-	if wrp == nil {
-		wrp = &SqsWrapperAdapter{
-			sqs: sqs.New(session.New()),
-		}
-	}
+func NewSqs() *Sqs {
 	return &Sqs{
-		wrp: wrp,
+		wrp: di.Get("queue.SqsWrapper").(SqsWrapper),
 	}
 }
 

@@ -40,9 +40,8 @@ func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	}
 }
 
-// Validate parameters.
-// TODO: naming parse? because set remindinterval value.
-func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.ValidateErrorBag {
+// validate and parse parameters.
+func (se *SaveEventHandlerFunctor) parse(data EventCallbackData) *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
 	// Extract second part. e.g.1607054661.000200 -> 160705466.
@@ -73,7 +72,7 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 
 // Handle saves event sent by user.
 func (se SaveEventHandlerFunctor) Handle(ac appcontext.AppContext, data EventCallbackData) *Response {
-	if validateErrors := se.validate(data); len(validateErrors.GetErrors()) > 0 {
+	if validateErrors := se.parse(data); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError
 		for _, v := range validateErrors.GetErrors() {
 			firstError = v

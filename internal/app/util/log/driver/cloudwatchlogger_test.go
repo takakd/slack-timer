@@ -12,6 +12,8 @@ import (
 
 	"context"
 
+	"time"
+
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/stretchr/testify/assert"
 )
@@ -107,7 +109,7 @@ func TestCloudWatchLogger_Debug(t *testing.T) {
 					AwsRequestID: "test ID",
 				}
 				ctx := lambdacontext.NewContext(context.TODO(), lc)
-				ac, _ := appcontext.FromContext(ctx)
+				ac, _ := appcontext.NewLambdaAppContext(ctx, time.Now())
 
 				got := gotTestLogOutput(ac, c.levelSetting, log.LevelDebug, c.msg)
 
@@ -153,7 +155,7 @@ func TestCloudWatchLogger_Info(t *testing.T) {
 					AwsRequestID: "test ID",
 				}
 				ctx := lambdacontext.NewContext(context.TODO(), lc)
-				ac, _ := appcontext.FromContext(ctx)
+				ac, _ := appcontext.NewLambdaAppContext(ctx, time.Now())
 
 				got := gotTestLogOutput(ac, c.levelSetting, log.LevelInfo, c.msg)
 
@@ -199,7 +201,7 @@ func TestCloudWatchLogger_Error(t *testing.T) {
 					AwsRequestID: "test ID",
 				}
 				ctx := lambdacontext.NewContext(context.TODO(), lc)
-				ac, _ := appcontext.FromContext(ctx)
+				ac, _ := appcontext.NewLambdaAppContext(ctx, time.Now())
 
 				got := gotTestLogOutput(ac, c.levelSetting, log.LevelError, c.msg)
 

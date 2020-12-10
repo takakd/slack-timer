@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewTimerEvent(t *testing.T) {
@@ -53,13 +54,29 @@ func TestTimerEvent_Equal(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			// TODO
 			assert.Equal(t, c.lhs.Equal(*c.rhs), c.result)
-			//if c.lhs.Equal(c.rhs) != c.result {
-			//	t.Error(helper.MakeTestMessageWithGotWant(c.lhs, c.rhs))
-			//}
 		})
 	}
 }
 
-// TODO: add unit test
+func TestTimerEvent_Queued(t *testing.T) {
+	got, err := NewTimerEvent("test")
+	require.NoError(t, err)
+
+	got.State = _timerEventStateWait
+	assert.Equal(t, false, got.Queued())
+
+	got.SetQueued()
+	assert.Equal(t, true, got.Queued())
+}
+
+func TestTimerEvent_SetWait(t *testing.T) {
+	got, err := NewTimerEvent("test")
+	require.NoError(t, err)
+
+	got.SetQueued()
+	assert.NotEqual(t, _timerEventStateWait, got.State)
+
+	got.SetWait()
+	assert.Equal(t, _timerEventStateWait, got.State)
+}

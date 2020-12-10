@@ -11,8 +11,9 @@ import (
 	"strconv"
 	"time"
 
+	"slacktimer/internal/app/util/di"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
@@ -69,15 +70,9 @@ func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 }
 
 // NewDynamoDb create new struct.
-// Set wrp to null. In case of unit test, set mock interface.
-func NewDynamoDb(wrp DynamoDbWrapper) *DynamoDb {
-	if wrp == nil {
-		wrp = &DynamoDbWrapperAdapter{
-			svc: dynamodb.New(session.New()),
-		}
-	}
+func NewDynamoDb() *DynamoDb {
 	return &DynamoDb{
-		wrp: wrp,
+		wrp: di.Get("repository.DynamoDbWrapper").(DynamoDbWrapper),
 	}
 }
 

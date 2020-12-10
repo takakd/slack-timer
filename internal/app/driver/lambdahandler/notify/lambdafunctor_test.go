@@ -12,10 +12,28 @@ import (
 
 	"slacktimer/internal/app/util/appcontext"
 
+	"time"
+
+	"fmt"
+
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
+
+type AppContextMatcher struct {
+	testValue appcontext.AppContext
+}
+
+func (m *AppContextMatcher) String() string {
+	return fmt.Sprintf("%v", m.testValue)
+}
+func (m *AppContextMatcher) Matches(x interface{}) bool {
+	another, _ := x.(appcontext.AppContext)
+	matched := true
+	matched = matched && m.testValue.RequestID() == another.RequestID()
+	return matched
+}
 
 func TestNewLambdaFunctor(t *testing.T) {
 	assert.NotPanics(t, func() {
@@ -39,7 +57,7 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 
 		lc := &lambdacontext.LambdaContext{}
 		ctx := lambdacontext.NewContext(context.TODO(), lc)
-		ac, _ := appcontext.FromContext(ctx)
+		ac, _ := appcontext.NewLambdaAppContext(ctx, time.Now())
 
 		caseBody, err := json.Marshal(queue.SqsMessageBody{
 			UserID: "test user",
@@ -57,7 +75,10 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		}
 
 		mi := notify.NewMockControllerHandler(ctrl)
-		mi.EXPECT().Handle(ac, gomock.Any()).Return(caseResponse)
+		matcher := &AppContextMatcher{
+			testValue: ac,
+		}
+		mi.EXPECT().Handle(matcher, gomock.Any()).Return(caseResponse)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("notify.ControllerHandler").Return(mi)
@@ -74,7 +95,7 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 
 		lc := &lambdacontext.LambdaContext{}
 		ctx := lambdacontext.NewContext(context.TODO(), lc)
-		ac, _ := appcontext.FromContext(ctx)
+		ac, _ := appcontext.NewLambdaAppContext(ctx, time.Now())
 
 		caseBody, err := json.Marshal(queue.SqsMessageBody{
 			UserID: "test user",
@@ -93,7 +114,10 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 		}
 
 		mi := notify.NewMockControllerHandler(ctrl)
-		mi.EXPECT().Handle(ac, gomock.Any()).Return(caseResponse)
+		matcher := &AppContextMatcher{
+			testValue: ac,
+		}
+		mi.EXPECT().Handle(matcher, gomock.Any()).Return(caseResponse)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("notify.ControllerHandler").Return(mi)

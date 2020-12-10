@@ -68,17 +68,17 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		}
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(caseInput.EventTime)).
+		m.EXPECT().FindTimerEventsByTime(caseInput.EventTime).
 			Return(caseEvents, nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(caseEvents[0])).Return(caseEvents[0], nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(caseEvents[1])).Return(caseEvents[1], nil)
+		m.EXPECT().SaveTimerEvent(caseEvents[0]).Return(caseEvents[0], nil)
+		m.EXPECT().SaveTimerEvent(caseEvents[1]).Return(caseEvents[1], nil)
 
 		q := NewMockQueue(ctrl)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[0])).Return(caseOutputData.QueueMessageIDList[0], nil)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[1])).Return(caseOutputData.QueueMessageIDList[1], nil)
+		q.EXPECT().Enqueue(caseQueueMsg[0]).Return(caseOutputData.QueueMessageIDList[0], nil)
+		q.EXPECT().Enqueue(caseQueueMsg[1]).Return(caseOutputData.QueueMessageIDList[1], nil)
 
 		o := NewMockOutputPort(ctrl)
-		o.EXPECT().Output(appcontext.TODO(), gomock.Eq(caseOutputData))
+		o.EXPECT().Output(appcontext.TODO(), caseOutputData)
 
 		interactor := &Interactor{
 			repository: m,
@@ -99,7 +99,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 
 		caseFindError := errors.New("repository error")
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(caseInput.EventTime)).
+		m.EXPECT().FindTimerEventsByTime(caseInput.EventTime).
 			Return(nil, caseFindError)
 
 		caseOutputData := OutputData{
@@ -150,13 +150,13 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseError := errors.New("error")
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(caseInput.EventTime)).
+		m.EXPECT().FindTimerEventsByTime(caseInput.EventTime).
 			Return(caseEvents, nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(caseEvents[0])).Return(caseEvents[0], nil)
+		m.EXPECT().SaveTimerEvent(caseEvents[0]).Return(caseEvents[0], nil)
 
 		q := NewMockQueue(ctrl)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[0])).Return(caseOutputData.QueueMessageIDList[0], nil)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[1])).Return("", caseError)
+		q.EXPECT().Enqueue(caseQueueMsg[0]).Return(caseOutputData.QueueMessageIDList[0], nil)
+		q.EXPECT().Enqueue(caseQueueMsg[1]).Return("", caseError)
 
 		o := NewMockOutputPort(ctrl)
 		o.EXPECT().Output(appcontext.TODO(), caseOutputData)
@@ -208,14 +208,14 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		caseError := errors.New("error")
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEventsByTime(gomock.Eq(caseInput.EventTime)).
+		m.EXPECT().FindTimerEventsByTime(caseInput.EventTime).
 			Return(caseEvents, nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(caseEvents[0])).Return(caseEvents[0], nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(caseEvents[1])).Return(nil, caseError)
+		m.EXPECT().SaveTimerEvent(caseEvents[0]).Return(caseEvents[0], nil)
+		m.EXPECT().SaveTimerEvent(caseEvents[1]).Return(nil, caseError)
 
 		q := NewMockQueue(ctrl)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[0])).Return(caseOutputData.QueueMessageIDList[0], nil)
-		q.EXPECT().Enqueue(gomock.Eq(caseQueueMsg[1])).Return("dummy", nil)
+		q.EXPECT().Enqueue(caseQueueMsg[0]).Return(caseOutputData.QueueMessageIDList[0], nil)
+		q.EXPECT().Enqueue(caseQueueMsg[1]).Return("dummy", nil)
 
 		o := NewMockOutputPort(ctrl)
 		o.EXPECT().Output(appcontext.TODO(), caseOutputData)

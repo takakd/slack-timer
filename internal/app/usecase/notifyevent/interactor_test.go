@@ -55,16 +55,16 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(ac, gomock.Eq(OutputData{
+		o.EXPECT().Output(ac, OutputData{
 			Result: nil,
 			UserID: caseInput.UserID,
-		}))
+		})
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(gomock.Eq(caseInput.UserID), gomock.Eq(caseInput.Message)).Return(nil)
+		n.EXPECT().Notify(caseInput.UserID, caseInput.Message).Return(nil)
 
-		r.EXPECT().SaveTimerEvent(gomock.Eq(caseEvent)).Return(caseEvent, nil)
+		r.EXPECT().SaveTimerEvent(caseEvent).Return(caseEvent, nil)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)
@@ -99,11 +99,11 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(ac, gomock.Eq(OutputData{
+		o.EXPECT().Output(ac, OutputData{
 			UserID: caseInput.UserID,
-		}))
+		})
 
-		r.EXPECT().FindTimerEvent(gomock.Eq(caseInput.UserID)).Return(caseEvent, nil)
+		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)
@@ -140,14 +140,14 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(ac, gomock.Eq(OutputData{
+		o.EXPECT().Output(ac, OutputData{
 			Result: caseError,
 			UserID: caseInput.UserID,
-		}))
+		})
 
-		r.EXPECT().FindTimerEvent(gomock.Eq(caseInput.UserID)).Return(caseEvent, nil)
+		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(gomock.Eq(caseInput.UserID), gomock.Eq(caseInput.Message)).Return(caseError)
+		n.EXPECT().Notify(caseInput.UserID, caseInput.Message).Return(caseError)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)
@@ -176,12 +176,12 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(ac, gomock.Eq(OutputData{
+		o.EXPECT().Output(ac, OutputData{
 			Result: caseError,
 			UserID: caseInput.UserID,
-		}))
+		})
 
-		r.EXPECT().FindTimerEvent(gomock.Eq(caseInput.UserID)).Return(nil, caseError)
+		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(nil, caseError)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)
@@ -217,16 +217,16 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		n := NewMockNotifier(ctrl)
 		d := di.NewMockDI(ctrl)
 
-		o.EXPECT().Output(ac, gomock.Eq(OutputData{
+		o.EXPECT().Output(ac, OutputData{
 			Result: caseError,
 			UserID: caseInput.UserID,
-		}))
+		})
 
-		r.EXPECT().FindTimerEvent(gomock.Eq(caseInput.UserID)).Return(caseEvent, nil)
+		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(gomock.Eq(caseInput.UserID), gomock.Eq(caseInput.Message)).Return(nil)
+		n.EXPECT().Notify(caseInput.UserID, caseInput.Message).Return(nil)
 
-		r.EXPECT().SaveTimerEvent(gomock.Eq(caseEvent)).Return(nil, caseError)
+		r.EXPECT().SaveTimerEvent(caseEvent).Return(nil, caseError)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)

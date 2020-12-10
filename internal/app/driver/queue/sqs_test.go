@@ -9,6 +9,8 @@ import (
 
 	"encoding/json"
 
+	"slacktimer/internal/app/util/di"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang/mock/gomock"
@@ -17,23 +19,37 @@ import (
 
 func TestNewSqs(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		concrete := NewSqs(nil)
-		assert.IsType(t, &SqsWrapperAdapter{}, concrete.wrp)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ms := NewMockSqsWrapper(ctrl)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("queue.SqsWrapper").Return(ms)
+		di.SetDi(md)
+
+		concrete := NewSqs()
+		assert.IsType(t, ms, concrete.wrp)
 	})
 
 	t.Run("mock", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		ms := NewMockSqsWrapper(ctrl)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("queue.SqsWrapper").Return(ms)
+		di.SetDi(md)
+
 		mock := NewMockSqsWrapper(ctrl)
-		concrete := NewSqs(mock)
+		concrete := NewSqs()
 		assert.IsType(t, mock, concrete.wrp)
 	})
 }
 
 type MessageInputMatcher struct {
 	caseValue *sqs.SendMessageInput
-	xv        interface{}
 }
 
 func (q *MessageInputMatcher) String() string {
@@ -73,16 +89,21 @@ func TestSqs_Enqueue(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("SQS_URL"), "").Return(caseSQSUrl)
+		c.EXPECT().Get("SQS_URL", "").Return(caseSQSUrl)
 		config.SetConfig(c)
 
 		matcher := &MessageInputMatcher{
 			caseValue: caseMessageInput,
 		}
-		w := NewMockSqsWrapper(ctrl)
-		w.EXPECT().SendMessage(matcher).Return(caseMessageOutput, nil)
 
-		q := NewSqs(w)
+		ms := NewMockSqsWrapper(ctrl)
+		ms.EXPECT().SendMessage(matcher).Return(caseMessageOutput, nil)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("queue.SqsWrapper").Return(ms)
+		di.SetDi(md)
+
+		q := NewSqs()
 		r, err := q.Enqueue(caseMessage)
 		assert.Equal(t, *caseMessageOutput.MessageId, r)
 		assert.NoError(t, err)
@@ -109,16 +130,21 @@ func TestSqs_Enqueue(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("SQS_URL"), "").Return(caseSQSUrl)
+		c.EXPECT().Get("SQS_URL", "").Return(caseSQSUrl)
 		config.SetConfig(c)
 
 		matcher := &MessageInputMatcher{
 			caseValue: caseMessageInput,
 		}
-		w := NewMockSqsWrapper(ctrl)
-		w.EXPECT().SendMessage(matcher).Return(nil, caseError)
 
-		q := NewSqs(w)
+		ms := NewMockSqsWrapper(ctrl)
+		ms.EXPECT().SendMessage(matcher).Return(nil, caseError)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("queue.SqsWrapper").Return(ms)
+		di.SetDi(md)
+
+		q := NewSqs()
 		r, err := q.Enqueue(caseMessage)
 		assert.Empty(t, r)
 		assert.Equal(t, fmt.Errorf("failed to enqueue %w", caseError), err)

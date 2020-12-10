@@ -18,7 +18,7 @@ func TestNewController(t *testing.T) {
 
 	mi := enqueueevent.NewMockInputPort(ctrl)
 	md := di.NewMockDI(ctrl)
-	md.EXPECT().Get(gomock.Eq("enqueueevent.InputPort")).Return(mi)
+	md.EXPECT().Get("enqueueevent.InputPort").Return(mi)
 
 	di.SetDi(md)
 

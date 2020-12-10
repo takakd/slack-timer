@@ -53,10 +53,8 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		defer server.Close()
 
 		mc := config.NewMockConfig(ctrl)
-		mc.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return(caseToken)
-		mc.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL)
+		mc.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return(caseToken)
+		mc.EXPECT().Get("SLACK_API_URL_CONVERSATIONSOPEN", "").Return(server.URL)
 		config.SetConfig(mc)
 
 		d := NewAPIDriver()
@@ -70,8 +68,7 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return("")
+		c.EXPECT().Get("SLACK_API_URL_CONVERSATIONSOPEN", "").Return("")
 		config.SetConfig(c)
 
 		assert.Panics(t, func() {
@@ -99,10 +96,8 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		defer server.Close()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL + "/wrong")
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return("test")
+		c.EXPECT().Get("SLACK_API_URL_CONVERSATIONSOPEN", "").Return(server.URL + "/wrong")
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
@@ -110,8 +105,6 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		assert.Empty(t, got)
 		assert.Error(t, err)
 	})
-
-	// TODO: fix httputils to use interface, mockable.
 
 	t.Run("ng:response NG", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
@@ -131,10 +124,8 @@ func TestAPIDriver_ConversationsOpen(t *testing.T) {
 		defer server.Close()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CONVERSATIONSOPEN"), gomock.Eq("")).Return(server.URL)
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return("test")
+		c.EXPECT().Get("SLACK_API_URL_CONVERSATIONSOPEN", "").Return(server.URL)
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
@@ -175,10 +166,8 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		defer server.Close()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return(caseToken)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return(server.URL)
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return(caseToken)
+		c.EXPECT().Get("SLACK_API_URL_CHATPOSTMESSAGE", "").Return(server.URL)
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
@@ -191,8 +180,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return("")
+		c.EXPECT().Get("SLACK_API_URL_CHATPOSTMESSAGE", "").Return("")
 		config.SetConfig(c)
 
 		assert.Panics(t, func() {
@@ -219,18 +207,14 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		defer server.Close()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return(server.URL + "/wrong")
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return("test")
+		c.EXPECT().Get("SLACK_API_URL_CHATPOSTMESSAGE", "").Return(server.URL + "/wrong")
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
 		err := d.ChatPostMessage(appcontext.TODO(), "test", "test")
 		assert.Error(t, err)
 	})
-
-	// TODO: fix httputils to use interface, mockable.
 
 	t.Run("ng:response NG", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
@@ -249,10 +233,8 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		defer server.Close()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_URL_CHATPOSTMESSAGE"), gomock.Eq("")).Return(server.URL)
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return("test")
+		c.EXPECT().Get("SLACK_API_URL_CHATPOSTMESSAGE", "").Return(server.URL)
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
@@ -274,8 +256,7 @@ func TestPostJson(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return("test")
 		config.SetConfig(c)
 
 		// Schema error
@@ -300,8 +281,7 @@ func TestPostJson(t *testing.T) {
 		defer server.Close()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq(
-			"SLACK_API_BOT_TOKEN"), gomock.Eq("")).Return("test")
+		c.EXPECT().Get("SLACK_API_BOT_TOKEN", "").Return("test")
 		config.SetConfig(c)
 
 		// Schema error

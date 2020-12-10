@@ -35,6 +35,9 @@ func (d *Container) Get(name string) interface{} {
 	if c, ok := getNotifyConcrete(name); ok {
 		return c
 	}
+	if c, ok := getDriverConcrete(name); ok {
+		return c
+	}
 	return nil
 }
 
@@ -59,7 +62,7 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 	case "updatetimerevent.InputPort":
 		c = updatetimerevent.NewInteractor()
 	case "updatetimerevent.Repository":
-		c = repository.NewDynamoDb(nil)
+		c = repository.NewDynamoDb()
 	}
 	return c, c != nil
 }
@@ -74,9 +77,9 @@ func getEnqueueConcrete(name string) (interface{}, bool) {
 	case "enqueueevent.OutputPort":
 		c = enqueue.NewCloudWatchLogsPresenter()
 	case "enqueueevent.Repository":
-		c = repository.NewDynamoDb(nil)
+		c = repository.NewDynamoDb()
 	case "enqueueevent.Queue":
-		c = queue.NewSqs(nil)
+		c = queue.NewSqs()
 	}
 	return c, c != nil
 }
@@ -91,11 +94,22 @@ func getNotifyConcrete(name string) (interface{}, bool) {
 	case "notifyevent.OutputPort":
 		c = notify.NewCloudWatchLogsPresenter()
 	case "notifyevent.Repository":
-		c = repository.NewDynamoDb(nil)
+		c = repository.NewDynamoDb()
 	case "notifyevent.Notifier":
 		c = slackhandler.NewSlackHandler()
 	case "slack.API":
 		c = slack.NewAPIDriver()
+	}
+	return c, c != nil
+}
+
+func getDriverConcrete(name string) (interface{}, bool) {
+	var c interface{}
+	switch name {
+	case "queue.SqsWrapper":
+		c = queue.NewSqsWrapperAdapter()
+	case "repository.DynamoDbWrapper":
+		c = repository.NewDynamoDbWrapperAdapter()
 	}
 	return c, c != nil
 }

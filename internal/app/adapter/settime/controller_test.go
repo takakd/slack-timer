@@ -42,7 +42,7 @@ func TestController_Handle(t *testing.T) {
 		mu.EXPECT().Handle(ac, caseInput.EventData).Return(wantResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.URLVerificationRequestHandler")).Return(mu)
+		md.EXPECT().Get("settime.URLVerificationRequestHandler").Return(mu)
 		di.SetDi(md)
 
 		h := NewController()
@@ -92,7 +92,7 @@ func TestController_Handle(t *testing.T) {
 		mu.EXPECT().Handle(ac, caseInput.EventData).Return(wantResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.SaveEventHandler")).Return(mu)
+		md.EXPECT().Get("settime.SaveEventHandler").Return(mu)
 		di.SetDi(md)
 
 		h := NewController()

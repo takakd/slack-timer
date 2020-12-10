@@ -3,6 +3,8 @@ package appcontext
 import (
 	"context"
 
+	"time"
+
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/pkg/errors"
 )
@@ -10,10 +12,11 @@ import (
 // LambdaAppContext implements AppContext with lambdacontext.LambdaContext.
 type LambdaAppContext struct {
 	requestID string
+	called    time.Time
 }
 
-// FromContext creates new struct.
-func FromContext(ctx context.Context) (*LambdaAppContext, error) {
+// NewLambdaAppContext creates new struct.
+func NewLambdaAppContext(ctx context.Context, called time.Time) (*LambdaAppContext, error) {
 	lc, ok := lambdacontext.FromContext(ctx)
 	if !ok {
 		return nil, errors.New("context error")
@@ -21,6 +24,7 @@ func FromContext(ctx context.Context) (*LambdaAppContext, error) {
 
 	return &LambdaAppContext{
 		requestID: lc.AwsRequestID,
+		called:    called.UTC(),
 	}, nil
 }
 
@@ -32,4 +36,9 @@ func TODO() *LambdaAppContext {
 // RequestID returns the current request ID.
 func (r *LambdaAppContext) RequestID() string {
 	return r.requestID
+}
+
+// HandlerCalledTime returns time of calling handler.
+func (r *LambdaAppContext) HandlerCalledTime() time.Time {
+	return r.called
 }
