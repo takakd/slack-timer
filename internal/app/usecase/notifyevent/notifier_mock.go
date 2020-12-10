@@ -6,6 +6,7 @@ package notifyevent
 
 import (
 	reflect "reflect"
+	appcontext "slacktimer/internal/app/util/appcontext"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -34,15 +35,15 @@ func (m *MockNotifier) EXPECT() *MockNotifierMockRecorder {
 }
 
 // Notify mocks base method
-func (m *MockNotifier) Notify(userID, message string) error {
+func (m *MockNotifier) Notify(ac appcontext.AppContext, userID, message string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Notify", userID, message)
+	ret := m.ctrl.Call(m, "Notify", ac, userID, message)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Notify indicates an expected call of Notify
-func (mr *MockNotifierMockRecorder) Notify(userID, message interface{}) *gomock.Call {
+func (mr *MockNotifierMockRecorder) Notify(ac, userID, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Notify", reflect.TypeOf((*MockNotifier)(nil).Notify), userID, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Notify", reflect.TypeOf((*MockNotifier)(nil).Notify), ac, userID, message)
 }
