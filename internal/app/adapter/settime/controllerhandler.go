@@ -2,9 +2,9 @@
 package settime
 
 import (
-	"context"
 	"fmt"
 	"regexp"
+	"slacktimer/internal/app/util/appcontext"
 	"strconv"
 	"strings"
 )
@@ -16,7 +16,7 @@ const (
 
 // ControllerHandler is called by Lambda handler.
 type ControllerHandler interface {
-	Handle(ctx context.Context, input HandleInput) *Response
+	Handle(ac appcontext.AppContext, input HandleInput) *Response
 }
 
 // Response is returns of Controller.

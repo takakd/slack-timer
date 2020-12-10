@@ -8,7 +8,7 @@ import (
 
 // LambdaHandler defines the interface called by AWS Lambda.
 type LambdaHandler interface {
-	Handle(ctx context.Context, input LambdaInput)
+	Handle(ctx context.Context, input LambdaInput) error
 }
 
 // LambdaInput is passed from CloudWatchEvent.

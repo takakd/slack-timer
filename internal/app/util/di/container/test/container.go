@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 )
@@ -14,6 +13,6 @@ var _ di.DI = (*Container)(nil)
 
 // Get returns interfaces corresponding name.
 func (t *Container) Get(name string) interface{} {
-	log.Info(fmt.Sprintf("call di.Get name=%s", name))
+	log.Info("di.Get", name)
 	return nil
 }

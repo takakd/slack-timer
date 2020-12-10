@@ -2,12 +2,12 @@
 package notify
 
 import (
-	"context"
+	"slacktimer/internal/app/util/appcontext"
 )
 
 // ControllerHandler is called by Lambda handler.
 type ControllerHandler interface {
-	Handle(ctx context.Context, input HandleInput) *Response
+	Handle(ac appcontext.AppContext, input HandleInput) *Response
 }
 
 // Response is returns of Controller.

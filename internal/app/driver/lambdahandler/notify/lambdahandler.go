@@ -22,11 +22,10 @@ type LambdaInput struct {
 
 // SqsMessage is one of SQS message in handler parameters.
 type SqsMessage struct {
-	MessageID     string            `json:"messageId"`
-	ReceiptHandle string            `json:"receiptHandle"`
-	Body          string            `json:"body"`
-	Attributes    map[string]string `json:"attributes"`
-	// TODO: check schema
+	MessageID         string                 `json:"messageId"`
+	ReceiptHandle     string                 `json:"receiptHandle"`
+	Body              string                 `json:"body"`
+	Attributes        map[string]string      `json:"attributes"`
 	MessageAttributes map[string]interface{} `json:"messageAttributes"`
 	MD5OfBody         string                 `json:"md5OfBody"`
 	EventSource       string                 `json:"eventSource"`

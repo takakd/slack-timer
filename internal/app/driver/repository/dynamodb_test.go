@@ -1,12 +1,13 @@
 package repository
 
 import (
-	"context"
 	"errors"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/config"
 	"testing"
 	"time"
+
+	"slacktimer/internal/app/util/di"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -57,17 +58,31 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 
 func TestNewDynamoDb(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		concrete := NewDynamoDb(nil)
-		assert.IsType(t, &DynamoDbWrapperAdapter{}, concrete.wrp)
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mw := NewMockDynamoDbWrapper(ctrl)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		concrete := NewDynamoDb()
+		assert.IsType(t, mw, concrete.wrp)
 	})
 
 	t.Run("mock", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mock := NewMockDynamoDbWrapper(ctrl)
-		concrete := NewDynamoDb(mock)
-		assert.IsType(t, mock, concrete.wrp)
+		mw := NewMockDynamoDbWrapper(ctrl)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		concrete := NewDynamoDb()
+		assert.IsType(t, mw, concrete.wrp)
 	})
 }
 
@@ -79,14 +94,18 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return("dummy")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return("dummy")
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEvent("dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -122,14 +141,18 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(caseInput).Return(caseItem, nil)
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEvent(caseUserID)
 		assert.Nil(t, got)
 		assert.Error(t, err)
 	})
@@ -150,15 +173,19 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return("dummy")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return("dummy")
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Any()).Return(caseItem, nil)
-		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(gomock.Any()).Return(caseItem, nil)
+		mw.EXPECT().UnmarshalListOfMaps(caseItem.Items, gomock.Any()).Return(caseErr)
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), "dummy")
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEvent("dummy")
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -183,14 +210,18 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(caseInput).Return(caseItem, nil)
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEvent(caseUserID)
 		assert.Nil(t, got)
 		assert.NoError(t, err)
 	})
@@ -226,20 +257,24 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
-		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(caseInput).Return(caseItem, nil)
+		mw.EXPECT().UnmarshalListOfMaps(caseItem.Items, gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
 			events := out.(*[]TimerEventDbItem)
 			*events = make([]TimerEventDbItem, 1)
 			(*events)[0] = *caseDbItem
 			return nil
 		})
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEvent(context.TODO(), caseUserID)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEvent(caseUserID)
 		assert.NoError(t, err)
 
 		want, err := caseDbItem.TimerEvent()
@@ -256,16 +291,20 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return("dummy")
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), gomock.Eq("")).Return("dummy")
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), "").Return("1")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return("dummy")
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), "").Return("dummy")
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(gomock.Any()).Return(nil, caseErr)
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEventByTime(context.TODO(), time.Now(), time.Now().Add(100))
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEventByTime(time.Now(), time.Now().Add(100))
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -297,17 +336,21 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), gomock.Eq("")).Return("dummy")
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), "").Return("1")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), "").Return("dummy")
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
-		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).Return(caseErr)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(caseInput).Return(caseItem, nil)
+		mw.EXPECT().UnmarshalListOfMaps(caseItem.Items, gomock.Any()).Return(caseErr)
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEventByTime(caseFrom, caseTo)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -363,14 +406,14 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), gomock.Eq("")).Return("dummy")
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), "").Return("1")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_NAME"), "").Return("dummy")
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().Query(gomock.Eq(caseInput)).Return(caseItem, nil)
-		s.EXPECT().UnmarshalListOfMaps(gomock.Eq(caseItem.Items), gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().Query(caseInput).Return(caseItem, nil)
+		mw.EXPECT().UnmarshalListOfMaps(caseItem.Items, gomock.Any()).DoAndReturn(func(_, out interface{}) interface{} {
 			events := out.(*[]TimerEventDbItem)
 			*events = make([]TimerEventDbItem, 2)
 			(*events)[0] = *caseDbItems[0]
@@ -378,8 +421,12 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 			return nil
 		})
 
-		repo := NewDynamoDb(s)
-		got, err := repo.FindTimerEventByTime(context.TODO(), caseFrom, caseTo)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
+		got, err := repo.FindTimerEventByTime(caseFrom, caseTo)
 		assert.NoError(t, err)
 		assert.EqualValues(t, caseEvents, got)
 	})
@@ -398,16 +445,20 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), "").Return("1")
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(nil, caseErr)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().MarshalMap(caseItem).Return(nil, caseErr)
 
-		repo := NewDynamoDb(s)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
 		event, err := caseItem.TimerEvent()
 		assert.NoError(t, err)
-		got, err := repo.SaveTimerEvent(context.TODO(), event)
+		got, err := repo.SaveTimerEvent(event)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -433,17 +484,21 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), "").Return("1")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(caseInput.Item, nil)
-		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, caseErr)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().MarshalMap(caseItem).Return(caseInput.Item, nil)
+		mw.EXPECT().PutItem(caseInput).Return(nil, caseErr)
 
-		repo := NewDynamoDb(s)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
 		event, err := caseItem.TimerEvent()
-		got, err := repo.SaveTimerEvent(context.TODO(), event)
+		got, err := repo.SaveTimerEvent(event)
 		assert.Nil(t, got)
 		assert.Equal(t, caseErr, err)
 	})
@@ -468,18 +523,22 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		c := config.NewMockConfig(ctrl)
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), gomock.Eq("")).Return("1")
-		c.EXPECT().Get(gomock.Eq("DYNAMODB_TABLE"), gomock.Eq("")).Return(caseTableName)
+		c.EXPECT().Get(gomock.Eq("DYNAMODB_INDEX_PRIMARY_KEY_VALUE"), "").Return("1")
+		c.EXPECT().Get("DYNAMODB_TABLE", "").Return(caseTableName)
 		config.SetConfig(c)
 
-		s := NewMockDynamoDbWrapper(ctrl)
-		s.EXPECT().MarshalMap(gomock.Eq(caseItem)).Return(caseInput.Item, nil)
-		s.EXPECT().PutItem(gomock.Eq(caseInput)).Return(nil, nil)
+		mw := NewMockDynamoDbWrapper(ctrl)
+		mw.EXPECT().MarshalMap(caseItem).Return(caseInput.Item, nil)
+		mw.EXPECT().PutItem(caseInput).Return(nil, nil)
 
-		repo := NewDynamoDb(s)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("repository.DynamoDbWrapper").Return(mw)
+		di.SetDi(md)
+
+		repo := NewDynamoDb()
 		event, err := caseItem.TimerEvent()
 		assert.NoError(t, err)
-		got, err := repo.SaveTimerEvent(context.TODO(), event)
+		got, err := repo.SaveTimerEvent(event)
 		assert.NoError(t, err)
 		assert.EqualValues(t, event, got)
 	})

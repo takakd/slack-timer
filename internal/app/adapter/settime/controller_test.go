@@ -1,12 +1,12 @@
 package settime
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func TestController_Handle(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		ac := appcontext.TODO()
 
 		caseInput := HandleInput{
 			EventData: EventCallbackData{
@@ -35,18 +35,18 @@ func TestController_Handle(t *testing.T) {
 		wantResp := &Response{}
 
 		ml := log.NewMockLogger(ctrl)
-		ml.EXPECT().Info(gomock.Eq("url verification event"))
+		ml.EXPECT().InfoWithContext(ac, "URL verification event")
 		log.SetDefaultLogger(ml)
 
 		mu := NewMockURLVerificationRequestHandler(ctrl)
-		mu.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(caseInput.EventData)).Return(wantResp)
+		mu.EXPECT().Handle(ac, caseInput.EventData).Return(wantResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.URLVerificationRequestHandler")).Return(mu)
+		md.EXPECT().Get("settime.URLVerificationRequestHandler").Return(mu)
 		di.SetDi(md)
 
 		h := NewController()
-		got := h.Handle(ctx, caseInput)
+		got := h.Handle(ac, caseInput)
 		assert.Equal(t, wantResp, got)
 	})
 
@@ -54,21 +54,17 @@ func TestController_Handle(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
-
 		caseInput := HandleInput{
 			EventData: EventCallbackData{
-				Type: "not support",
-				MessageEvent: MessageEvent{
-					Type: "not support",
-				},
+				Type:         "not support",
+				MessageEvent: MessageEvent{},
 			},
 		}
 
-		wantResp := newErrorHandlerResponse("invalid event", fmt.Sprintf("type=%s", caseInput.EventData.Type))
+		wantResp := newErrorHandlerResponse(appcontext.TODO(), "invalid event", caseInput.EventData)
 
 		h := NewController()
-		got := h.Handle(ctx, caseInput)
+		got := h.Handle(appcontext.TODO(), caseInput)
 		assert.Equal(t, wantResp, got)
 	})
 
@@ -76,7 +72,7 @@ func TestController_Handle(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
+		ac := appcontext.TODO()
 
 		caseInput := HandleInput{
 			EventData: EventCallbackData{
@@ -93,42 +89,43 @@ func TestController_Handle(t *testing.T) {
 		}
 
 		mu := NewMockSaveEventHandler(ctrl)
-		mu.EXPECT().Handle(gomock.Eq(ctx), gomock.Eq(caseInput.EventData)).Return(wantResp)
+		mu.EXPECT().Handle(ac, caseInput.EventData).Return(wantResp)
 
 		md := di.NewMockDI(ctrl)
-		md.EXPECT().Get(gomock.Eq("settime.SaveEventHandler")).Return(mu)
+		md.EXPECT().Get("settime.SaveEventHandler").Return(mu)
 		di.SetDi(md)
 
 		h := NewController()
-		got := h.Handle(ctx, caseInput)
+		got := h.Handle(ac, caseInput)
 		assert.Equal(t, wantResp, got)
 
 	})
 }
 
-func TestMakeErrorHandleResponse(t *testing.T) {
+func TestNewErrorHandleResponse(t *testing.T) {
 	cases := []struct {
 		name    string
 		message string
-		detail  string
+		detail  interface{}
+		want    string
 	}{
-		{"no error", "test", ""},
-		{"error", "test", "test err"},
+		{"no detail", "test", nil, ""},
+		{"error", "test", "test err", `"test err"`},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			wantBody := &ResponseErrorBody{
 				Message: c.message,
 			}
-			if c.detail != "" {
-				wantBody.Detail = c.detail
+			if c.detail != nil {
+				wantBody.Detail = c.want
 			}
 			want := &Response{
 				StatusCode: http.StatusInternalServerError,
 				Body:       wantBody,
 			}
 
-			got := newErrorHandlerResponse(c.message, c.detail)
+			got := newErrorHandlerResponse(appcontext.TODO(), c.message, c.detail)
 			assert.Equal(t, want, got)
 		})
 	}

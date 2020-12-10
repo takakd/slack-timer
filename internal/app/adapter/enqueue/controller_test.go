@@ -1,11 +1,12 @@
 package enqueue
 
 import (
-	"context"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ func TestNewController(t *testing.T) {
 
 	mi := enqueueevent.NewMockInputPort(ctrl)
 	md := di.NewMockDI(ctrl)
-	md.EXPECT().Get(gomock.Eq("enqueueevent.InputPort")).Return(mi)
+	md.EXPECT().Get("enqueueevent.InputPort").Return(mi)
 
 	di.SetDi(md)
 
@@ -26,28 +27,28 @@ func TestNewController(t *testing.T) {
 }
 
 func TestController_Handle(t *testing.T) {
-	ctx := context.TODO()
-	caseInput := HandleInput{}
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	ac := appcontext.TODO()
+	caseInput := HandleInput{}
+
 	ml := log.NewMockLogger(ctrl)
 	gomock.InOrder(
-		ml.EXPECT().Info(gomock.Any(), gomock.Any()),
-		ml.EXPECT().Info(gomock.Any()),
+		ml.EXPECT().InfoWithContext(ac, gomock.Any(), gomock.Any()),
+		ml.EXPECT().InfoWithContext(ac, gomock.Any()),
 	)
 	log.SetDefaultLogger(ml)
 
-	i := enqueueevent.NewMockInputPort(ctrl)
-	i.EXPECT().EnqueueEvent(gomock.Eq(ctx), gomock.Any())
+	mi := enqueueevent.NewMockInputPort(ctrl)
+	mi.EXPECT().EnqueueEvent(ac, gomock.Any())
 
-	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get("enqueueevent.InputPort").Return(i)
-	di.SetDi(d)
+	md := di.NewMockDI(ctrl)
+	md.EXPECT().Get("enqueueevent.InputPort").Return(mi)
+	di.SetDi(md)
 
 	assert.NotPanics(t, func() {
 		h := NewController()
-		h.Handle(ctx, caseInput)
+		h.Handle(ac, caseInput)
 	})
 }

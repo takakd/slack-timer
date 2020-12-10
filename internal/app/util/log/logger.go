@@ -1,6 +1,10 @@
 // Package log provides logging feature.
 package log
 
+import (
+	"slacktimer/internal/app/util/appcontext"
+)
+
 // Level represents the type of logging level.
 type Level int
 
@@ -19,6 +23,9 @@ type Logger interface {
 	Debug(v ...interface{})
 	Info(v ...interface{})
 	Error(v ...interface{})
+	DebugWithContext(ac appcontext.AppContext, v ...interface{})
+	InfoWithContext(ac appcontext.AppContext, v ...interface{})
+	ErrorWithContext(ac appcontext.AppContext, v ...interface{})
 }
 
 // Use this interface for logging.
@@ -51,6 +58,10 @@ func SetLevel(level string) {
 
 // Debug outputs debug log.
 func Debug(v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
 	if logger != nil {
 		logger.Debug(v...)
 	}
@@ -58,6 +69,10 @@ func Debug(v ...interface{}) {
 
 // Info outputs info log.
 func Info(v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
 	if logger != nil {
 		logger.Info(v...)
 	}
@@ -65,7 +80,44 @@ func Info(v ...interface{}) {
 
 // Error outputs info log.
 func Error(v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
 	if logger != nil {
 		logger.Error(v...)
+	}
+}
+
+// DebugWithContext outputs debug log with context information.
+func DebugWithContext(ac appcontext.AppContext, v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
+	if logger != nil {
+		logger.DebugWithContext(ac, v...)
+	}
+}
+
+// InfoWithContext outputs info log with context information.
+func InfoWithContext(ac appcontext.AppContext, v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
+	if logger != nil {
+		logger.InfoWithContext(ac, v...)
+	}
+}
+
+// ErrorWithContext outputs info log with context information.
+func ErrorWithContext(ac appcontext.AppContext, v ...interface{}) {
+	defer func() {
+		// don't panic
+	}()
+
+	if logger != nil {
+		logger.ErrorWithContext(ac, v...)
 	}
 }

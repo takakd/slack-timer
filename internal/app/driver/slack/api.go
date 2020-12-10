@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/config"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/helper"
@@ -13,8 +14,8 @@ import (
 
 // API lists the Slack API using in the app.
 type API interface {
-	ConversationsOpen(userID string) (string, error)
-	ChatPostMessage(channelID string, message string) error
+	ConversationsOpen(ac appcontext.AppContext, userID string) (string, error)
+	ChatPostMessage(ac appcontext.AppContext, channelID string, message string) error
 }
 
 // APIDriver implements API interface.
@@ -51,7 +52,7 @@ type ConversationsOpenResponseBodyChannel struct {
 
 // ConversationsOpen opens DM Slack channel.
 // Ref: https://api.slack.com/methods/conversations.open
-func (s APIDriver) ConversationsOpen(userID string) (string, error) {
+func (s APIDriver) ConversationsOpen(ac appcontext.AppContext, userID string) (string, error) {
 	body := &ConversationsOpenRequestBody{
 		userID,
 	}
@@ -71,7 +72,7 @@ func (s APIDriver) ConversationsOpen(userID string) (string, error) {
 		return "", fmt.Errorf("response reading error slack conversations.open user_id=%s: %w", userID, err)
 	}
 
-	log.Debug("response body slack conversations.open", respBuf)
+	log.DebugWithContext(ac, "response body slack conversations.open", respBuf)
 
 	var respBody ConversationsOpenResponseBody
 	err = json.Unmarshal(respBuf, &respBody)
@@ -106,7 +107,7 @@ type ChatPostMessageResponseBody struct {
 
 // ChatPostMessage send message to DM Slack channel.
 // Ref: https://api.slack.com/methods/chat.postMessage
-func (s APIDriver) ChatPostMessage(channelID string, message string) error {
+func (s APIDriver) ChatPostMessage(ac appcontext.AppContext, channelID string, message string) error {
 	body := &ChatPostMessageRequestBody{
 		Channel: channelID,
 		Text:    message,
@@ -127,7 +128,7 @@ func (s APIDriver) ChatPostMessage(channelID string, message string) error {
 		return fmt.Errorf("response reading error slack chat.postMessage channel_id=%s message=%s: %w", channelID, message, err)
 	}
 
-	log.Debug("response body slack chat.postMessage", respBuf)
+	log.DebugWithContext(ac, "response body slack chat.postMessage", respBuf)
 
 	var respBody ChatPostMessageResponseBody
 	err = json.Unmarshal(respBuf, &respBody)

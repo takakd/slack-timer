@@ -1,12 +1,10 @@
 package enqueue
 
-import (
-	"context"
-)
+import "slacktimer/internal/app/util/appcontext"
 
 // ControllerHandler is called by Lambda handler.
 type ControllerHandler interface {
-	Handle(ctx context.Context, input HandleInput)
+	Handle(ac appcontext.AppContext, input HandleInput)
 }
 
 // HandleInput is input parameter of Controller.

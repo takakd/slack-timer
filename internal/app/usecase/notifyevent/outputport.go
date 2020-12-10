@@ -1,8 +1,10 @@
 package notifyevent
 
+import "slacktimer/internal/app/util/appcontext"
+
 // OutputPort defines outputport method of notifying events usecase.
 type OutputPort interface {
-	Output(data OutputData)
+	Output(ac appcontext.AppContext, data OutputData)
 }
 
 // OutputData is parameter of OutputPort.

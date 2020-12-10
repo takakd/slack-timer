@@ -1,8 +1,8 @@
 package notify
 
 import (
-	"fmt"
 	"slacktimer/internal/app/usecase/notifyevent"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/log"
 )
 
@@ -18,11 +18,14 @@ func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
 }
 
 // Output used as outputport by interactor.
-func (c CloudWatchLogsPresenter) Output(data notifyevent.OutputData) {
+func (c CloudWatchLogsPresenter) Output(ac appcontext.AppContext, data notifyevent.OutputData) {
 	if data.Result != nil {
-		log.Error(fmt.Sprintf("notify user_id=%s: %v", data.UserID, data.Result))
+		log.ErrorWithContext(ac, "notify", map[string]interface{}{
+			"data": data,
+		})
 		return
 	}
-
-	log.Info(fmt.Sprintf("done notified user_id=%s", data.UserID))
+	log.InfoWithContext(ac, "done notified", map[string]interface{}{
+		"user_id": data.UserID,
+	})
 }

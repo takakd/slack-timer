@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,10 +15,10 @@ func TestSetDefaultLogger(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		m := NewMockLogger(ctrl)
+		ml := NewMockLogger(ctrl)
 
-		SetDefaultLogger(m)
-		assert.Equal(t, reflect.TypeOf(m), reflect.TypeOf(logger))
+		SetDefaultLogger(ml)
+		assert.Equal(t, reflect.TypeOf(ml), reflect.TypeOf(logger))
 	})
 }
 
@@ -35,10 +37,10 @@ func TestSetLevel(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			m := NewMockLogger(ctrl)
-			m.EXPECT().SetLevel(gomock.Eq(c.logLevel))
+			ml := NewMockLogger(ctrl)
+			ml.EXPECT().SetLevel(c.logLevel)
 
-			SetDefaultLogger(m)
+			SetDefaultLogger(ml)
 
 			SetLevel(c.level)
 		})
@@ -49,10 +51,10 @@ func TestDebug(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	m := NewMockLogger(ctrl)
-	m.EXPECT().Debug(gomock.Eq("test"))
+	ml := NewMockLogger(ctrl)
+	ml.EXPECT().Debug("test")
 
-	SetDefaultLogger(m)
+	SetDefaultLogger(ml)
 	Debug("test")
 }
 
@@ -60,10 +62,10 @@ func TestInfo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	m := NewMockLogger(ctrl)
-	m.EXPECT().Info(gomock.Eq("test"))
+	ml := NewMockLogger(ctrl)
+	ml.EXPECT().Info("test")
 
-	SetDefaultLogger(m)
+	SetDefaultLogger(ml)
 	Info("test")
 }
 
@@ -71,9 +73,48 @@ func TestError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	m := NewMockLogger(ctrl)
-	m.EXPECT().Error(gomock.Eq("test"))
+	ml := NewMockLogger(ctrl)
+	ml.EXPECT().Error("test")
 
-	SetDefaultLogger(m)
+	SetDefaultLogger(ml)
 	Error("test")
+}
+
+func TestDebugWithContext(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ac := appcontext.TODO()
+
+	ml := NewMockLogger(ctrl)
+	ml.EXPECT().DebugWithContext(ac, "test")
+
+	SetDefaultLogger(ml)
+	DebugWithContext(ac, "test")
+}
+
+func TestInfoWithContext(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ac := appcontext.TODO()
+
+	ml := NewMockLogger(ctrl)
+	ml.EXPECT().InfoWithContext(ac, "test")
+
+	SetDefaultLogger(ml)
+	InfoWithContext(ac, "test")
+}
+
+func TestErrorWithContext(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ac := appcontext.TODO()
+
+	ml := NewMockLogger(ctrl)
+	ml.EXPECT().ErrorWithContext(ac, "test")
+
+	SetDefaultLogger(ml)
+	ErrorWithContext(ac, "test")
 }

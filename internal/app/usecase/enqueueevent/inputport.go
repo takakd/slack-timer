@@ -2,14 +2,14 @@
 package enqueueevent
 
 import (
-	"context"
+	"slacktimer/internal/app/util/appcontext"
 	"time"
 )
 
 // InputPort defines enqueueing events usecase.
 type InputPort interface {
 	// Enqueue notification event, which notification time overs eventTime.
-	EnqueueEvent(ctx context.Context, data InputData)
+	EnqueueEvent(ac appcontext.AppContext, data InputData)
 }
 
 // InputData is parameter of InputPort.

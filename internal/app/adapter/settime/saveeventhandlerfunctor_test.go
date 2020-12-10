@@ -1,21 +1,21 @@
 package settime
 
 import (
-	"context"
 	"net/http"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/di"
 	"testing"
 
-	"fmt"
 	"slacktimer/internal/app/util/log"
 	"time"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
+func TestSaveEventHandlerFunctor_parseTs(t *testing.T) {
 	cases := []struct {
 		name  string
 		text  string
@@ -34,7 +34,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get(gomock.Eq("updatetimerevent.InputPort")).Return(mi)
+			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -47,7 +47,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 
 			ct := NewSaveEventHandlerFunctor()
 
-			bag := ct.validate(caseData)
+			bag := ct.parse(caseData)
 			_, exists := bag.GetError("timestamp")
 			assert.Equal(t, c.valid, !exists)
 			if c.valid {
@@ -57,7 +57,7 @@ func TestSaveEventHandlerFunctor_validateTs(t *testing.T) {
 	}
 }
 
-func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
+func TestSaveEventHandlerFunctor_parseSet(t *testing.T) {
 	cases := []struct {
 		name  string
 		text  string
@@ -77,7 +77,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
 			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get(gomock.Eq("updatetimerevent.InputPort")).Return(mi)
+			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -90,7 +90,7 @@ func TestSaveEventHandlerFunctor_validateSet(t *testing.T) {
 
 			ct := NewSaveEventHandlerFunctor()
 
-			bag := ct.validate(caseData)
+			bag := ct.parse(caseData)
 			_, exists := bag.GetError("interval")
 			assert.Equal(t, c.valid, !exists)
 			if c.valid {
@@ -111,14 +111,14 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
-				Detail:  "invalid format",
+				Detail:  `"invalid format"`,
 			},
 		}},
 		{"set command validate error", "", "1606830655", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
-				Detail:  "invalid format",
+				Detail:  `"invalid format"`,
 			},
 		}},
 		{"ok", "set 10", "1606830655.000010", Response{
@@ -140,11 +140,11 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				},
 			}
 
-			ctx := context.TODO()
+			ac := appcontext.TODO()
 
 			mu := updatetimerevent.NewMockInputPort(ctrl)
 			if c.text != "" && c.ts != "" {
-				mu.EXPECT().SaveIntervalMin(gomock.Eq(ctx), gomock.Eq(caseData.MessageEvent.User), gomock.Any(), gomock.Eq(10), gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
+				mu.EXPECT().SaveIntervalMin(ac, caseData.MessageEvent.User, gomock.Any(), 10, gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
 
 					output := outputPort.(*SaveEventOutputReceivePresenter)
 					output.Resp = c.resp
@@ -155,8 +155,13 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				ml := log.NewMockLogger(ctrl)
 
 				ts, _ := caseData.MessageEvent.eventUnixTimeStamp()
-				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", caseData.MessageEvent.User, time.Unix(ts, 0).UTC(), 10))
-				ml.EXPECT().Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", c.resp))
+				ml.EXPECT().InfoWithContext(ac, "call inputport", map[string]interface{}{
+					"user":              caseData.MessageEvent.User,
+					"interval":          10,
+					"notification time": time.Unix(ts, 0).UTC(),
+				})
+
+				ml.EXPECT().InfoWithContext(ac, "return from inputport", c.resp)
 				log.SetDefaultLogger(ml)
 			}
 
@@ -165,7 +170,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			di.SetDi(md)
 
 			h := NewSaveEventHandlerFunctor()
-			got := h.Handle(ctx, caseData)
+			got := h.Handle(ac, caseData)
 			assert.Equal(t, &c.resp, got)
 		})
 	}

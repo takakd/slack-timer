@@ -6,6 +6,8 @@ import (
 	"slacktimer/internal/app/util/di"
 	"testing"
 
+	"slacktimer/internal/app/util/appcontext"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +18,7 @@ func TestNewSlackHandler(t *testing.T) {
 
 	s := slack.NewMockAPI(ctrl)
 	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get(gomock.Eq("slack.API")).Return(s)
+	d.EXPECT().Get("slack.API").Return(s)
 	di.SetDi(d)
 
 	h := NewSlackHandler()
@@ -32,51 +34,53 @@ func TestSlackApi_Notify(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		s := slack.NewMockAPI(ctrl)
-		s.EXPECT().ConversationsOpen(gomock.Eq(caseUserID)).Return(caseChannelID, nil)
-		s.EXPECT().ChatPostMessage(gomock.Eq(caseChannelID), gomock.Eq(caseMessage)).Return(nil)
+		ms := slack.NewMockAPI(ctrl)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), caseChannelID, caseMessage).Return(nil)
 
-		d := di.NewMockDI(ctrl)
-		d.EXPECT().Get(gomock.Eq("slack.API")).Return(s)
-		di.SetDi(d)
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("slack.API").Return(ms)
+		di.SetDi(md)
 
 		h := NewSlackHandler()
-		err := h.Notify(caseUserID, caseMessage)
+		err := h.Notify(appcontext.TODO(), caseUserID, caseMessage)
 		assert.NoError(t, err)
 	})
 
 	t.Run("ng:conversations.open", func(t *testing.T) {
-		caseError := errors.New("test error")
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		s := slack.NewMockAPI(ctrl)
-		s.EXPECT().ConversationsOpen(gomock.Eq(caseUserID)).Return("", caseError)
+		caseError := errors.New("test error")
 
-		d := di.NewMockDI(ctrl)
-		d.EXPECT().Get(gomock.Eq("slack.API")).Return(s)
-		di.SetDi(d)
+		ms := slack.NewMockAPI(ctrl)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return("", caseError)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("slack.API").Return(ms)
+		di.SetDi(md)
 
 		h := NewSlackHandler()
-		err := h.Notify(caseUserID, caseMessage)
+		err := h.Notify(appcontext.TODO(), caseUserID, caseMessage)
 		assert.Equal(t, caseError, err)
 	})
 
 	t.Run("ng:chatpostmessage", func(t *testing.T) {
-		caseError := errors.New("test error")
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		s := slack.NewMockAPI(ctrl)
-		s.EXPECT().ConversationsOpen(gomock.Eq(caseUserID)).Return(caseChannelID, nil)
-		s.EXPECT().ChatPostMessage(gomock.Eq(caseChannelID), gomock.Eq(caseMessage)).Return(caseError)
+		caseError := errors.New("test error")
 
-		d := di.NewMockDI(ctrl)
-		d.EXPECT().Get(gomock.Eq("slack.API")).Return(s)
-		di.SetDi(d)
+		ms := slack.NewMockAPI(ctrl)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), caseChannelID, caseMessage).Return(caseError)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("slack.API").Return(ms)
+		di.SetDi(md)
 
 		h := NewSlackHandler()
-		err := h.Notify(caseUserID, caseMessage)
+		err := h.Notify(appcontext.TODO(), caseUserID, caseMessage)
 		assert.Equal(t, caseError, err)
 	})
 }

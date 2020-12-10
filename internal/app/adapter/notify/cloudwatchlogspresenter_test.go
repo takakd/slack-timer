@@ -2,10 +2,11 @@ package notify
 
 import (
 	"errors"
-	"fmt"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -19,36 +20,46 @@ func TestNewCloudWatchLogsPresenter(t *testing.T) {
 
 func TestCloudWatchLogsPresenter_Output(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := appcontext.TODO()
+
 		caseData := notifyevent.OutputData{
 			UserID: "test user",
 			Result: nil,
 		}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Info(fmt.Sprintf("done notified user_id=%s", caseData.UserID))
-		log.SetDefaultLogger(l)
+		ml := log.NewMockLogger(ctrl)
+		ml.EXPECT().
+			InfoWithContext(ac, "done notified", map[string]interface{}{
+				"user_id": caseData.UserID,
+			})
+		log.SetDefaultLogger(ml)
 
 		o := &CloudWatchLogsPresenter{}
-		o.Output(caseData)
+		o.Output(appcontext.TODO(), caseData)
 	})
 
 	t.Run("ng", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := appcontext.TODO()
+
 		caseData := notifyevent.OutputData{
 			UserID: "test user",
 			Result: errors.New("error"),
 		}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		l := log.NewMockLogger(ctrl)
-		l.EXPECT().Error(fmt.Sprintf("notify user_id=%s: %v", caseData.UserID, caseData.Result))
-		log.SetDefaultLogger(l)
+		ml := log.NewMockLogger(ctrl)
+		ml.EXPECT().
+			ErrorWithContext(ac, "notify", map[string]interface{}{
+				"data": caseData,
+			})
+		log.SetDefaultLogger(ml)
 
 		o := &CloudWatchLogsPresenter{}
-		o.Output(caseData)
+		o.Output(appcontext.TODO(), caseData)
 	})
 }

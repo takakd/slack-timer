@@ -1,12 +1,13 @@
 package notify
 
 import (
-	"context"
 	"errors"
 	"slacktimer/internal/app/usecase/notifyevent"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"testing"
+
+	"slacktimer/internal/app/util/appcontext"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -16,21 +17,21 @@ func TestNewController(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	i := notifyevent.NewMockInputPort(ctrl)
-	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get(gomock.Eq("notifyevent.InputPort")).Return(i)
+	mi := notifyevent.NewMockInputPort(ctrl)
+	md := di.NewMockDI(ctrl)
+	md.EXPECT().Get("notifyevent.InputPort").Return(mi)
 
-	di.SetDi(d)
+	di.SetDi(md)
 
 	h := NewController()
-	assert.Equal(t, i, h.InputPort)
+	assert.Equal(t, mi, h.InputPort)
 }
 
 func TestController_Handle(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	ctx := context.TODO()
+	ac := appcontext.TODO()
 	caseInput := HandleInput{
 		UserID:  "test user",
 		Message: "test message",
@@ -38,25 +39,24 @@ func TestController_Handle(t *testing.T) {
 	caseError := errors.New("test error")
 
 	ml := log.NewMockLogger(ctrl)
-	gomock.InOrder(
-		ml.EXPECT().Info(gomock.Any(), gomock.Any()),
-		ml.EXPECT().Info(gomock.Any()),
-	)
+	ml.EXPECT().InfoWithContext(ac, "call inputport", gomock.Any())
+	ml.EXPECT().InfoWithContext(ac, "return from inputport", gomock.Any())
+	ml.EXPECT().InfoWithContext(ac, "handler output", gomock.Any())
 	log.SetDefaultLogger(ml)
 
-	i := notifyevent.NewMockInputPort(ctrl)
-	i.EXPECT().NotifyEvent(gomock.Eq(ctx), gomock.Eq(notifyevent.InputData{
+	mi := notifyevent.NewMockInputPort(ctrl)
+	mi.EXPECT().NotifyEvent(ac, notifyevent.InputData{
 		UserID:  caseInput.UserID,
 		Message: caseInput.Message,
-	})).Return(caseError)
+	}).Return(caseError)
 
-	d := di.NewMockDI(ctrl)
-	d.EXPECT().Get("notifyevent.InputPort").Return(i)
+	md := di.NewMockDI(ctrl)
+	md.EXPECT().Get("notifyevent.InputPort").Return(mi)
 
-	di.SetDi(d)
+	di.SetDi(md)
 
 	h := NewController()
-	resp := h.Handle(ctx, caseInput)
+	resp := h.Handle(ac, caseInput)
 	assert.Equal(t, &Response{
 		Error: caseError,
 	}, resp)

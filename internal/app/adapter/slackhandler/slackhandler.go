@@ -3,6 +3,7 @@ package slackhandler
 
 import (
 	"slacktimer/internal/app/driver/slack"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 )
 
@@ -20,15 +21,15 @@ func NewSlackHandler() *SlackHandler {
 }
 
 // Notify notify message to user identified by userID.
-func (s SlackHandler) Notify(userID string, message string) error {
+func (s SlackHandler) Notify(ac appcontext.AppContext, userID string, message string) error {
 	// Need to open DM channel to send DM.
-	channelID, err := s.api.ConversationsOpen(userID)
+	channelID, err := s.api.ConversationsOpen(ac, userID)
 	if err != nil {
 		return err
 	}
 
 	// Send DM.
-	err = s.api.ChatPostMessage(channelID, message)
+	err = s.api.ChatPostMessage(ac, channelID, message)
 	if err != nil {
 		return err
 	}

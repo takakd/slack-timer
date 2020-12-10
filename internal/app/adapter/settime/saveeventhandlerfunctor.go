@@ -1,12 +1,11 @@
 package settime
 
 import (
-	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
 	"slacktimer/internal/pkg/helper"
@@ -22,7 +21,7 @@ var (
 
 // SaveEventHandler handles "set" command.
 type SaveEventHandler interface {
-	Handle(ctx context.Context, data EventCallbackData) *Response
+	Handle(ac appcontext.AppContext, data EventCallbackData) *Response
 }
 
 // SaveEventHandlerFunctor handle "Set" command.
@@ -41,9 +40,8 @@ func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	}
 }
 
-// Validate parameters.
-// TODO: naming parse? because set remindinterval value.
-func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.ValidateErrorBag {
+// validate and parse parameters.
+func (se *SaveEventHandlerFunctor) parse(data EventCallbackData) *validator.ValidateErrorBag {
 	bag := validator.NewValidateErrorBag()
 
 	// Extract second part. e.g.1607054661.000200 -> 160705466.
@@ -73,22 +71,26 @@ func (se *SaveEventHandlerFunctor) validate(data EventCallbackData) *validator.V
 }
 
 // Handle saves event sent by user.
-func (se SaveEventHandlerFunctor) Handle(ctx context.Context, data EventCallbackData) *Response {
-	if validateErrors := se.validate(data); len(validateErrors.GetErrors()) > 0 {
+func (se SaveEventHandlerFunctor) Handle(ac appcontext.AppContext, data EventCallbackData) *Response {
+	if validateErrors := se.parse(data); len(validateErrors.GetErrors()) > 0 {
 		var firstError *validator.ValidateError
 		for _, v := range validateErrors.GetErrors() {
 			firstError = v
 			break
 		}
-		return newErrorHandlerResponse("invalid parameter", firstError.Summary)
+		return newErrorHandlerResponse(ac, "invalid parameter", firstError.Summary)
 	}
 
-	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin user=%s notificationtime=%s interval=%d", data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin))
+	log.InfoWithContext(ac, "call inputport", map[string]interface{}{
+		"user":              data.MessageEvent.User,
+		"interval":          se.remindIntervalInMin,
+		"notification time": se.notificationTime,
+	})
 
 	presenter := NewSaveEventOutputReceivePresenter()
-	se.inputPort.SaveIntervalMin(ctx, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
+	se.inputPort.SaveIntervalMin(ac, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
 
-	log.Info(fmt.Sprintf("updatetimerevent.InputPort.SaveIntervalMin output.resp=%v", presenter.Resp))
+	log.InfoWithContext(ac, "return from inputport", presenter.Resp)
 
 	return &presenter.Resp
 }

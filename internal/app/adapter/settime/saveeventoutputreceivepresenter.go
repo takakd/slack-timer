@@ -1,10 +1,10 @@
 package settime
 
 import (
-	"fmt"
 	"net/http"
 	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/usecase/updatetimerevent"
+	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/log"
 )
 
@@ -25,13 +25,13 @@ func NewSaveEventOutputReceivePresenter() *SaveEventOutputReceivePresenter {
 }
 
 // Output receives interactor outputs and keep them inside.
-func (s *SaveEventOutputReceivePresenter) Output(data updatetimerevent.OutputData) {
+func (s *SaveEventOutputReceivePresenter) Output(ac appcontext.AppContext, data updatetimerevent.OutputData) {
 	s.Resp = Response{
 		Error: data.Result,
 	}
 
 	if data.Result != nil {
-		log.Info(fmt.Sprintf("SaveEventOutputReceivePresenter.Output error=%v", data.Result))
+		log.ErrorWithContext(ac, "settime outputport", data.Result)
 		s.Resp.StatusCode = http.StatusInternalServerError
 		s.Resp.Body = "internal server error"
 		return

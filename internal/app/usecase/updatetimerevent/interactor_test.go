@@ -1,7 +1,6 @@
 package updatetimerevent
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"slacktimer/internal/app/enterpriserule"
@@ -15,7 +14,6 @@ import (
 func TestInteractor_saveTimerEventValue(t *testing.T) {
 
 	t.Run("ok:create", func(t *testing.T) {
-		ctx := context.TODO()
 		userID := "abc"
 		caseTime := time.Now().UTC()
 
@@ -27,10 +25,9 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		defer ctrl.Finish()
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(userID)).
-			Return(nil, nil)
+		m.EXPECT().FindTimerEvent(userID).Return(nil, nil)
 
-		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(_ context.Context, event *enterpriserule.TimerEvent) (*enterpriserule.TimerEvent, error) {
+		m.EXPECT().SaveTimerEvent(gomock.Any()).DoAndReturn(func(event *enterpriserule.TimerEvent) (*enterpriserule.TimerEvent, error) {
 			return event, nil
 		})
 
@@ -38,13 +35,12 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(ctx, userID, caseTime, caseEvent.IntervalMin)
+		data := interactor.saveTimerEventValue(userID, caseTime, caseEvent.IntervalMin)
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
 	})
 
 	t.Run("ok:next notify", func(t *testing.T) {
-		ctx := context.TODO()
 		caseTime := time.Now().UTC()
 
 		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
@@ -55,10 +51,9 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		defer ctrl.Finish()
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvent.UserID)).
+		m.EXPECT().FindTimerEvent(caseEvent.UserID).
 			Return(caseEvent, nil)
-		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvent)).
-			Return(nil, nil)
+		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
 		interactor := &Interactor{
 			repository: m,
@@ -68,7 +63,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		want.IntervalMin = caseEvent.IntervalMin
 		want.NotificationTime = caseTime.Add(time.Duration(want.IntervalMin) * time.Minute)
 
-		data := interactor.saveTimerEventValue(ctx, caseEvent.UserID, caseTime, 0)
+		data := interactor.saveTimerEventValue(caseEvent.UserID, caseTime, 0)
 
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
@@ -81,64 +76,57 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ctx := context.TODO()
 		userID := "abc"
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(userID)).
-			Return(nil, nil)
+		m.EXPECT().FindTimerEvent(userID).Return(nil, nil)
 
 		interval := 1
 		caseEvent, _ := enterpriserule.NewTimerEvent(userID)
 		caseEvent.NotificationTime = caseTime.Add(time.Duration(interval) * time.Minute)
 		caseEvent.IntervalMin = interval
-		m.EXPECT().SaveTimerEvent(gomock.Eq(ctx), gomock.Eq(caseEvent)).
-			Return(nil, nil)
+		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
 		interactor := &Interactor{
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(ctx, userID, caseTime, interval)
+		data := interactor.saveTimerEventValue(userID, caseTime, interval)
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
 	})
 
 	t.Run("ng:create", func(t *testing.T) {
-		ctx := context.TODO()
 		userID := ""
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(userID)).
-			Return(nil, nil)
+		m.EXPECT().FindTimerEvent(userID).Return(nil, nil)
 
 		interactor := &Interactor{
 			repository: m,
 		}
 
 		noUse := time.Now()
-		data := interactor.saveTimerEventValue(context.TODO(), userID, noUse, 0)
+		data := interactor.saveTimerEventValue(userID, noUse, 0)
 		assert.Equal(t, fmt.Errorf("creating timer event error userID=%v: %w", userID, errors.New("must set userID")), data.Result)
 	})
 
 	t.Run("ng:update", func(t *testing.T) {
-		ctx := context.TODO()
 		userID := ""
 		err := errors.New("error")
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(gomock.Eq(ctx), gomock.Eq(userID)).
-			Return(nil, err)
+		m.EXPECT().FindTimerEvent(userID).Return(nil, err)
 
 		interactor := &Interactor{
 			repository: m,
 		}
 
 		noUse := time.Now()
-		data := interactor.saveTimerEventValue(context.TODO(), userID, noUse, 0)
+		data := interactor.saveTimerEventValue(userID, noUse, 0)
 		assert.Equal(t, fmt.Errorf("finding timer event error userID=%v: %w", userID, err), data.Result)
 	})
 }
