@@ -125,6 +125,6 @@ func TestLambdaFunctor_Handle(t *testing.T) {
 
 		h := NewLambdaFunctor()
 		err = h.Handle(ctx, caseInput)
-		assert.Error(t, errors.New("error happend count=1"), err)
+		assert.Error(t, errors.New("error happened count=1"), err)
 	})
 }
