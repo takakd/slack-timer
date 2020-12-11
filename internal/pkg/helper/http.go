@@ -39,32 +39,6 @@ func GetResponseBody(resp *http.Response) ([]byte, error) {
 	return body, err
 }
 
-//
-//type ErrorJsonResponse struct {
-//	Summary   string `json:"summary"`
-//	ErrorCode string `json:"error_code"`
-//	Detail    string `json:"detail"`
-//}
-//
-//// Create error response in json format.
-//func NewErrorJsonResponse(summary string, errorCode string, detail string) ([]byte, error) {
-//	response := &ErrorJsonResponse{
-//		Summary:   summary,
-//		ErrorCode: errorCode,
-//		Detail:    detail,
-//	}
-//	return json.Marshal(response)
-//}
-
-//// Write error response data to http.ResponseWriter.
-//func WriteErrorJsonResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, summary, errorCode, detail string) error {
-//	body, err := NewErrorJsonResponse(summary, errorCode, detail)
-//	if err != nil {
-//		return err
-//	}
-//	return WriteJSONResponse(w, headers, httpStatusCode, body)
-//}
-
 // WriteJSONResponse sets JSON response data to http.ResponseWriter.
 func WriteJSONResponse(w http.ResponseWriter, headers map[string]string, httpStatusCode int, body []byte) error {
 	w.Header().Set("Content-Type", "application/json")
