@@ -104,7 +104,7 @@ func ExampleParseUnixStr() {
 	fmt.Println(t.UTC().Format(time.RFC3339))
 
 	// Output:
-	// 2020-12-12T01:42:22+09:00
+	// 2020-12-11T16:42:22Z
 }
 
 func ExampleIsStruct() {
