@@ -101,7 +101,7 @@ func ExampleParseUnixStr() {
 		// Handle if error happened
 	}
 
-	fmt.Println(t.Format(time.RFC3339))
+	fmt.Println(t.UTC().Format(time.RFC3339))
 
 	// Output:
 	// 2020-12-12T01:42:22+09:00
