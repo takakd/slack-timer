@@ -23,9 +23,9 @@ func TestSaveEventHandlerFunctor_parseTs(t *testing.T) {
 		min   int
 		valid bool
 	}{
-		{"ok", "set 10", "1606830655.000003", 10, true},
-		{"ng", "set 10", "1606830655", 10, true},
-		{"ng", "set 10", "", 10, false},
+		{"ok", "set 10 Hi!", "1606830655.000003", 10, true},
+		{"ng", "set 10 Hi!", "1606830655", 10, true},
+		{"ng", "set 10 Hi!", "", 10, false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -65,9 +65,10 @@ func TestSaveEventHandlerFunctor_parseSet(t *testing.T) {
 		min   int
 		valid bool
 	}{
-		{"ok", "set 10", "1606830655", 10, true},
-		{"ok", "set 1", "1606830655", 1, true},
-		{"ng", "set -1", "1606830655", 0, false},
+		{"ok", "set 10 Hi!", "1606830655", 10, true},
+		{"ok", "set 1 Hi!", "1606830655", 1, true},
+		{"ng", "set -1 Hi!", "1606830655", 0, false},
+		{"ng", "set 10", "1606830655", 0, false},
 		{"ng", "set", "1606830655", 0, false},
 	}
 	for _, c := range cases {
@@ -107,7 +108,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 		ts   string
 		resp Response
 	}{
-		{"timestamp validate error", "set 10", "", Response{
+		{"timestamp validate error", "set 10 Hi!", "", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
@@ -121,7 +122,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				Detail:  `"invalid format"`,
 			},
 		}},
-		{"ok", "set 10", "1606830655.000010", Response{
+		{"ok", "set 10 Hi!", "1606830655.000010", Response{
 			StatusCode: http.StatusOK,
 			Body:       "success",
 		}},
@@ -143,8 +144,23 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			ac := appcontext.TODO()
 
 			mu := updatetimerevent.NewMockInputPort(ctrl)
+
+			md := di.NewMockDI(ctrl)
+			md.EXPECT().Get("updatetimerevent.InputPort").Return(mu)
+			di.SetDi(md)
+
+			h := NewSaveEventHandlerFunctor()
+
 			if c.text != "" && c.ts != "" {
-				mu.EXPECT().SaveIntervalMin(ac, caseData.MessageEvent.User, gomock.Any(), 10, gomock.Any()).DoAndReturn(func(_, _, _, _, outputPort interface{}) {
+				h.parse(caseData)
+
+				input := updatetimerevent.SaveEventInputData{
+					UserID:      caseData.MessageEvent.User,
+					CurrentTime: h.notificationTime,
+					Minutes:     h.remindIntervalInMin,
+					Text:        h.text,
+				}
+				mu.EXPECT().SaveIntervalMin(ac, input, gomock.Any()).DoAndReturn(func(_, _, outputPort interface{}) {
 
 					output := outputPort.(*SaveEventOutputReceivePresenter)
 					output.Resp = c.resp
@@ -158,6 +174,7 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				ml.EXPECT().InfoWithContext(ac, "call inputport", map[string]interface{}{
 					"user":              caseData.MessageEvent.User,
 					"interval":          10,
+					"text":              "Hi!",
 					"notification time": time.Unix(ts, 0).UTC(),
 				})
 
@@ -165,11 +182,6 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				log.SetDefaultLogger(ml)
 			}
 
-			md := di.NewMockDI(ctrl)
-			md.EXPECT().Get("updatetimerevent.InputPort").Return(mu)
-			di.SetDi(md)
-
-			h := NewSaveEventHandlerFunctor()
 			got := h.Handle(ac, caseData)
 			assert.Equal(t, &c.resp, got)
 		})

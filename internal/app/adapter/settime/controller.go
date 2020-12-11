@@ -12,7 +12,7 @@ import (
 type Controller struct {
 }
 
-// NewController create new struct.
+// NewController creates new struct.
 func NewController() *Controller {
 	h := &Controller{}
 	return h
@@ -29,13 +29,23 @@ func (s Controller) Handle(ac appcontext.AppContext, input HandleInput) *Respons
 		return rh.Handle(ac, input.EventData)
 	}
 
-	// Set interval minutes event
-	if !input.EventData.MessageEvent.isSetTimeEvent() {
-		return newErrorHandlerResponse(ac, "invalid event", input.EventData)
-	}
+	var resp *Response
+	if input.EventData.MessageEvent.isSetTimeEvent() {
+		rh := di.Get("settime.SaveEventHandler").(SaveEventHandler)
+		resp = rh.Handle(ac, input.EventData)
 
-	rh := di.Get("settime.SaveEventHandler").(SaveEventHandler)
-	return rh.Handle(ac, input.EventData)
+	} else if input.EventData.MessageEvent.isOnEvent() {
+		rh := di.Get("settime.OnEventHandler").(OnEventHandler)
+		resp = rh.Handle(ac, input.EventData)
+
+	} else if input.EventData.MessageEvent.isOffEvent() {
+		rh := di.Get("settime.OffEventHandler").(OffEventHandler)
+		resp = rh.Handle(ac, input.EventData)
+
+	} else {
+		resp = newErrorHandlerResponse(ac, "invalid event", input.EventData)
+	}
+	return resp
 }
 
 // ResponseErrorBody is used if response status is error.

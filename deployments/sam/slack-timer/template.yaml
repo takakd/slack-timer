@@ -223,7 +223,7 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: INCLUDE
-            NonKeyAttributes: ["State", "IntervalMin"]
+            NonKeyAttributes: ["State", "IntervalMin", "Text"]
 
 Outputs:
   # Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api

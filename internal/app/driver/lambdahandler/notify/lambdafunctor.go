@@ -15,7 +15,7 @@ type LambdaFunctor struct {
 	ctrl notify.ControllerHandler
 }
 
-// NewLambdaFunctor create new struct.
+// NewLambdaFunctor creates new struct.
 func NewLambdaFunctor() *LambdaFunctor {
 	h := &LambdaFunctor{}
 	h.ctrl = di.Get("notify.ControllerHandler").(notify.ControllerHandler)

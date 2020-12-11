@@ -16,7 +16,7 @@ type Interactor struct {
 
 var _ InputPort = (*Interactor)(nil)
 
-// NewInteractor create new struct.
+// NewInteractor creates new struct.
 func NewInteractor() *Interactor {
 	return &Interactor{
 		outputPort: di.Get("notifyevent.OutputPort").(OutputPort),
@@ -45,7 +45,7 @@ func (s Interactor) NotifyEvent(ac appcontext.AppContext, input InputData) error
 	log.InfoWithContext(ac, "found event", logDetail)
 
 	// Check item to be notified
-	if !event.Queued() {
+	if event.State != enterpriserule.TimerEventStateQueued {
 		log.InfoWithContext(ac, "already notified", logDetail)
 		s.outputPort.Output(ac, outputData)
 		return nil
@@ -61,7 +61,7 @@ func (s Interactor) NotifyEvent(ac appcontext.AppContext, input InputData) error
 	log.InfoWithContext(ac, "notified", logDetail)
 
 	event.IncrementNotificationTime()
-	event.SetWait()
+	event.State = enterpriserule.TimerEventStateWait
 
 	_, outputData.Result = s.repository.SaveTimerEvent(event)
 	if outputData.Result != nil {

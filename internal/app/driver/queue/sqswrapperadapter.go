@@ -12,7 +12,7 @@ type SqsWrapperAdapter struct {
 
 var _ SqsWrapper = (*SqsWrapperAdapter)(nil)
 
-// NewSqsWrapperAdapter create new struct.
+// NewSqsWrapperAdapter creates new struct.
 func NewSqsWrapperAdapter() *SqsWrapperAdapter {
 	return &SqsWrapperAdapter{
 		sqs: sqs.New(session.New()),

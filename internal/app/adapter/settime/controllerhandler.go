@@ -12,6 +12,8 @@ import (
 // Command types entered by users.
 const (
 	_cmdSet = "set"
+	_cmdOn  = "on"
+	_cmdOff = "off"
 )
 
 // ControllerHandler is called by Lambda handler.
@@ -74,17 +76,26 @@ func (m MessageEvent) eventUnixTimeStamp() (ts int64, err error) {
 	return
 }
 
-func (m MessageEvent) isSetTimeEvent() bool {
+func (m MessageEvent) isMatchCommand(pattern, cmd string) bool {
 	if m.Type != "message" {
 		return false
 	}
-
-	// e.g. set 10
-	re := regexp.MustCompile(`^([^\s]*)\s*`)
+	re := regexp.MustCompile(fmt.Sprintf(pattern, cmd))
 	matches := re.FindStringSubmatch(m.Text)
-	if matches == nil || matches[1] != _cmdSet {
+	if matches == nil || len(matches) < 2 || matches[1] != cmd {
 		return false
 	}
-
 	return true
+}
+
+func (m MessageEvent) isSetTimeEvent() bool {
+	return m.isMatchCommand(`^(%s)\s+(\d+)\s+([\s\S]*)`, _cmdSet)
+}
+
+func (m MessageEvent) isOnEvent() bool {
+	return m.isMatchCommand(`^(%s)$`, _cmdOn)
+}
+
+func (m MessageEvent) isOffEvent() bool {
+	return m.isMatchCommand(`^(%s)$`, _cmdOff)
 }

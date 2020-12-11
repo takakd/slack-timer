@@ -68,7 +68,7 @@ func TestController_Handle(t *testing.T) {
 		assert.Equal(t, wantResp, got)
 	})
 
-	t.Run("ok", func(t *testing.T) {
+	t.Run("ok:set time", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -78,7 +78,7 @@ func TestController_Handle(t *testing.T) {
 			EventData: EventCallbackData{
 				MessageEvent: MessageEvent{
 					Type: "message",
-					Text: "set 10",
+					Text: "set 10 message",
 				},
 			},
 		}
@@ -99,6 +99,40 @@ func TestController_Handle(t *testing.T) {
 		got := h.Handle(ac, caseInput)
 		assert.Equal(t, wantResp, got)
 
+	})
+
+	t.Run("ng:invalid command", func(t *testing.T) {
+		cases := []struct {
+			name string
+			cmd  string
+		}{
+			{name: "set time", cmd: "set 10"},
+			{name: "on", cmd: "onn"},
+			{name: "off", cmd: "offf"},
+		}
+		for _, c := range cases {
+			t.Run(c.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
+
+				ac := appcontext.TODO()
+
+				caseInput := HandleInput{
+					EventData: EventCallbackData{
+						MessageEvent: MessageEvent{
+							Type: "message",
+							Text: c.cmd,
+						},
+					},
+				}
+
+				wantResp := newErrorHandlerResponse(ac, "invalid event", caseInput.EventData)
+
+				h := NewController()
+				got := h.Handle(ac, caseInput)
+				assert.Equal(t, wantResp, got)
+			})
+		}
 	})
 }
 

@@ -19,7 +19,7 @@ type LambdaFunctor struct {
 	ctrl settime.ControllerHandler
 }
 
-// NewLambdaFunctor create new struct.
+// NewLambdaFunctor creates new struct.
 func NewLambdaFunctor() *LambdaFunctor {
 	h := &LambdaFunctor{}
 	h.ctrl = di.Get("settime.ControllerHandler").(settime.ControllerHandler)

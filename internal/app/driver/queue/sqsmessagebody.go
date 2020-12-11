@@ -6,7 +6,7 @@ type SqsMessageBody struct {
 	Text   string `json:"text"`
 }
 
-// NewSqsMessageBody create new struct.
+// NewSqsMessageBody creates new struct.
 func NewSqsMessageBody() *SqsMessageBody {
 	return &SqsMessageBody{}
 }

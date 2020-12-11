@@ -15,10 +15,11 @@ type Controller struct {
 
 var _ ControllerHandler = (*Controller)(nil)
 
-// NewController create new struct.
+// NewController creates new struct.
 func NewController() *Controller {
 	h := &Controller{
 		InputPort: di.Get("enqueueevent.InputPort").(enqueueevent.InputPort),
+		// TODO: presenter get from di
 	}
 	return h
 }

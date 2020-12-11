@@ -17,7 +17,7 @@ type LambdaFunctor struct {
 
 var _ LambdaHandler = (*LambdaFunctor)(nil)
 
-// NewLambdaFunctor create new struct.
+// NewLambdaFunctor creates new struct.
 func NewLambdaFunctor() *LambdaFunctor {
 	h := &LambdaFunctor{}
 	h.ctrl = di.Get("enqueue.ControllerHandler").(enqueue.ControllerHandler)

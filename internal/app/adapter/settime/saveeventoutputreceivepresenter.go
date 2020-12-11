@@ -19,7 +19,7 @@ type SaveEventOutputReceivePresenter struct {
 
 var _ updatetimerevent.OutputPort = (*SaveEventOutputReceivePresenter)(nil)
 
-// NewSaveEventOutputReceivePresenter create new struct.
+// NewSaveEventOutputReceivePresenter creates new struct.
 func NewSaveEventOutputReceivePresenter() *SaveEventOutputReceivePresenter {
 	return &SaveEventOutputReceivePresenter{}
 }

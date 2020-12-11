@@ -23,7 +23,7 @@ type URLVerificationResponseBody struct {
 
 var _ URLVerificationRequestHandler = (*URLVerificationRequestHandlerFunctor)(nil)
 
-// NewURLVerificationRequestHandlerFunctor create new struct.
+// NewURLVerificationRequestHandlerFunctor creates new struct.
 func NewURLVerificationRequestHandlerFunctor() *URLVerificationRequestHandlerFunctor {
 	return &URLVerificationRequestHandlerFunctor{}
 }

@@ -14,10 +14,11 @@ type Controller struct {
 
 var _ ControllerHandler = (*Controller)(nil)
 
-// NewController create new struct.
+// NewController creates new struct.
 func NewController() *Controller {
 	h := &Controller{
 		InputPort: di.Get("notifyevent.InputPort").(notifyevent.InputPort),
+		// TODO: presenter get from di
 	}
 	return h
 }
@@ -30,6 +31,8 @@ func (n Controller) Handle(ac appcontext.AppContext, input HandleInput) *Respons
 		UserID:  input.UserID,
 		Message: input.Message,
 	}
+
+	// Receive error to send error state to SQS.
 	err := n.InputPort.NotifyEvent(ac, data)
 
 	log.InfoWithContext(ac, "return from inputport", err)

@@ -7,7 +7,6 @@ package updatetimerevent
 import (
 	reflect "reflect"
 	appcontext "slacktimer/internal/app/util/appcontext"
-	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,25 +35,25 @@ func (m *MockInputPort) EXPECT() *MockInputPortMockRecorder {
 }
 
 // UpdateNotificationTime mocks base method
-func (m *MockInputPort) UpdateNotificationTime(ac appcontext.AppContext, userID string, notificationTime time.Time, presenter OutputPort) {
+func (m *MockInputPort) UpdateNotificationTime(ac appcontext.AppContext, input UpdateNotificationTimeInputData, presenter OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateNotificationTime", ac, userID, notificationTime, presenter)
+	m.ctrl.Call(m, "UpdateNotificationTime", ac, input, presenter)
 }
 
 // UpdateNotificationTime indicates an expected call of UpdateNotificationTime
-func (mr *MockInputPortMockRecorder) UpdateNotificationTime(ac, userID, notificationTime, presenter interface{}) *gomock.Call {
+func (mr *MockInputPortMockRecorder) UpdateNotificationTime(ac, input, presenter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockInputPort)(nil).UpdateNotificationTime), ac, userID, notificationTime, presenter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockInputPort)(nil).UpdateNotificationTime), ac, input, presenter)
 }
 
 // SaveIntervalMin mocks base method
-func (m *MockInputPort) SaveIntervalMin(ac appcontext.AppContext, userID string, currentTime time.Time, minutes int, presenter OutputPort) {
+func (m *MockInputPort) SaveIntervalMin(ac appcontext.AppContext, input SaveEventInputData, presenter OutputPort) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SaveIntervalMin", ac, userID, currentTime, minutes, presenter)
+	m.ctrl.Call(m, "SaveIntervalMin", ac, input, presenter)
 }
 
 // SaveIntervalMin indicates an expected call of SaveIntervalMin
-func (mr *MockInputPortMockRecorder) SaveIntervalMin(ac, userID, currentTime, minutes, presenter interface{}) *gomock.Call {
+func (mr *MockInputPortMockRecorder) SaveIntervalMin(ac, input, presenter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveIntervalMin", reflect.TypeOf((*MockInputPort)(nil).SaveIntervalMin), ac, userID, currentTime, minutes, presenter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveIntervalMin", reflect.TypeOf((*MockInputPort)(nil).SaveIntervalMin), ac, input, presenter)
 }
