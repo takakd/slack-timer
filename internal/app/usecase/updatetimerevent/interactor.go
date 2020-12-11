@@ -34,7 +34,7 @@ func (s Interactor) saveTimerEventValue(userID string, notificationTime time.Tim
 	}
 
 	if event == nil {
-		if event, err = enterpriserule.NewTimerEvent(userID, text); err != nil {
+		if event, err = enterpriserule.NewTimerEvent(userID); err != nil {
 			outputData.Result = fmt.Errorf("creating timer event error userID=%v: %w", userID, err)
 			return outputData
 		}
@@ -44,8 +44,9 @@ func (s Interactor) saveTimerEventValue(userID string, notificationTime time.Tim
 		event.IntervalMin = remindInterval
 	}
 
-	// Set next notify time.
+	// Update values.
 	event.NotificationTime = notificationTime.Add(time.Duration(event.IntervalMin) * time.Minute)
+	event.Text = text
 
 	if _, err = s.repository.SaveTimerEvent(event); err != nil {
 		outputData.Result = fmt.Errorf("saving timer event error userID=%v: %w", userID, err)

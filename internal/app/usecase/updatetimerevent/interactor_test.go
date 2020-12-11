@@ -17,7 +17,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		userID := "abc"
 		caseTime := time.Now().UTC()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent(userID, "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent(userID)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = caseTime.Add(time.Duration(caseEvent.IntervalMin) * time.Minute)
 
@@ -35,7 +35,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(userID, caseTime, caseEvent.IntervalMin, caseEvent.Text())
+		data := interactor.saveTimerEventValue(userID, caseTime, caseEvent.IntervalMin, caseEvent.Text)
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
 	})
@@ -43,9 +43,10 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 	t.Run("ok:next notify", func(t *testing.T) {
 		caseTime := time.Now().UTC()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
 		caseEvent.NotificationTime = caseTime
 		caseEvent.IntervalMin = 10
+		caseEvent.Text = "Hi!"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -59,11 +60,12 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID(), caseEvent.Text())
+		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID())
+		want.Text = "Hi!"
 		want.IntervalMin = caseEvent.IntervalMin
 		want.NotificationTime = caseTime.Add(time.Duration(want.IntervalMin) * time.Minute)
 
-		data := interactor.saveTimerEventValue(caseEvent.UserID(), caseTime, 0, caseEvent.Text())
+		data := interactor.saveTimerEventValue(caseEvent.UserID(), caseTime, 0, caseEvent.Text)
 
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
@@ -81,9 +83,10 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		m.EXPECT().FindTimerEvent(userID).Return(nil, nil)
 
 		interval := 1
-		caseEvent, _ := enterpriserule.NewTimerEvent(userID, "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent(userID)
 		caseEvent.NotificationTime = caseTime.Add(time.Duration(interval) * time.Minute)
 		caseEvent.IntervalMin = interval
+		caseEvent.Text = "Hi!"
 		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
 		interactor := &Interactor{

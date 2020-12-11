@@ -41,7 +41,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			UserID:  "test",
 			Message: "message",
 		}
-		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID)
 		require.NoError(t, err)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = time.Now()
@@ -84,7 +84,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			Message: "message",
 		}
 
-		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID)
 		require.NoError(t, err)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = time.Now()
@@ -122,7 +122,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			Message: "message",
 		}
 
-		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID)
 		require.NoError(t, err)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = time.Now()
@@ -199,7 +199,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			Message: "message",
 		}
 
-		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID)
 		require.NoError(t, err)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = time.Now()

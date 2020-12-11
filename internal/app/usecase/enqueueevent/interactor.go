@@ -38,15 +38,15 @@ func (s Interactor) EnqueueEvent(ac appcontext.AppContext, data InputData) {
 	}
 
 	for _, e := range events {
-		if e.State == enterpriserule.TimerEventStateQueued {
-			// Skip if it has already queued.
+		if e.State != enterpriserule.TimerEventStateWait {
+			// Skip if the event is enqueued or disabled.
 			continue
 		}
 
 		// Enqueue notification message, and send notify by other lambda corresponded queue.
 		id, err := s.queue.Enqueue(QueueMessage{
 			UserID: e.UserID(),
-			Text:   e.Text(),
+			Text:   e.Text,
 		})
 		if err != nil {
 			log.ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %v", e.UserID(), err))

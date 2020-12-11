@@ -45,16 +45,16 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
-		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1", "text1")
-		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2", "text2")
+		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
+		caseEvents[0].State = enterpriserule.TimerEventStateWait
+		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
+		caseEvents[1].State = enterpriserule.TimerEventStateWait
 		caseQueueMsg := []QueueMessage{
 			{
 				UserID: caseEvents[0].UserID(),
-				Text:   "text1",
 			},
 			{
 				UserID: caseEvents[1].UserID(),
-				Text:   "text2",
 			},
 		}
 		caseOutputData := OutputData{
@@ -127,16 +127,16 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		}
 
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
-		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1", "text1")
-		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2", "text2")
+		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
+		caseEvents[0].State = enterpriserule.TimerEventStateWait
+		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
+		caseEvents[1].State = enterpriserule.TimerEventStateWait
 		caseQueueMsg := []QueueMessage{
 			{
 				UserID: caseEvents[0].UserID(),
-				Text:   "text1",
 			},
 			{
 				UserID: caseEvents[1].UserID(),
-				Text:   "text2",
 			},
 		}
 		caseOutputData := OutputData{
@@ -185,16 +185,16 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		}
 
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
-		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1", "text1")
-		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2", "text2")
+		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
+		caseEvents[0].State = enterpriserule.TimerEventStateWait
+		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
+		caseEvents[1].State = enterpriserule.TimerEventStateWait
 		caseQueueMsg := []QueueMessage{
 			{
 				UserID: caseEvents[0].UserID(),
-				Text:   "text1",
 			},
 			{
 				UserID: caseEvents[1].UserID(),
-				Text:   "text2",
 			},
 		}
 		caseOutputData := OutputData{

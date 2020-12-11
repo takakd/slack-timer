@@ -10,6 +10,8 @@ import (
 	"slacktimer/internal/app/driver/slack"
 	"slacktimer/internal/app/usecase/enqueueevent"
 	"slacktimer/internal/app/usecase/notifyevent"
+	"slacktimer/internal/app/usecase/timeroffevent"
+	"slacktimer/internal/app/usecase/timeronevent"
 	"slacktimer/internal/app/usecase/updatetimerevent"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log/driver"
@@ -57,6 +59,10 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 		c = settime.NewURLVerificationRequestHandlerFunctor()
 	case "settime.SaveEventHandler":
 		c = settime.NewSaveEventHandlerFunctor()
+	case "settime.OnEventHandler":
+		c = settime.NewOnEventHandlerFunctor()
+	case "settime.OffEventHandler":
+		c = settime.NewOffEventHandlerFunctor()
 	case "settime.ControllerHandler":
 		c = settime.NewController()
 	case "updatetimerevent.InputPort":
@@ -65,6 +71,16 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 		c = repository.NewDynamoDb()
 	case "settime.OnEventOutputReceivePresenter":
 		c = settime.NewOnEventOutputReceivePresenter()
+	case "settime.OffEventOutputReceivePresenter":
+		c = settime.NewOffEventOutputReceivePresenter()
+	case "timeroffevent.InputPort":
+		c = timeroffevent.NewInteractor()
+	case "timeronevent.InputPort":
+		c = timeronevent.NewInteractor()
+	case "timeroffevent.Repository":
+		c = repository.NewDynamoDb()
+	case "timeronevent.Repository":
+		c = repository.NewDynamoDb()
 	}
 	return c, c != nil
 }

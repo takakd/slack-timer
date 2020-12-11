@@ -46,7 +46,7 @@ type TimerEventDbItem struct {
 func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 	t := &TimerEventDbItem{
 		UserID:           event.UserID(),
-		Text:             event.Text(),
+		Text:             event.Text,
 		NotificationTime: event.NotificationTime.Format(time.RFC3339),
 		IntervalMin:      event.IntervalMin,
 		State:            string(event.State),
@@ -56,12 +56,13 @@ func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 
 // TimerEvent generates enterpriserule.TimerEvent struct.
 func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
-	e, err := enterpriserule.NewTimerEvent(t.UserID, t.Text)
+	e, err := enterpriserule.NewTimerEvent(t.UserID)
 	if err != nil {
 		return nil, err
 	}
 	e.IntervalMin = t.IntervalMin
 	e.State = enterpriserule.TimerEventState(t.State)
+	e.Text = t.Text
 
 	e.NotificationTime, err = time.Parse(time.RFC3339, t.NotificationTime)
 	if err != nil {

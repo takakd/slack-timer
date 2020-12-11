@@ -16,19 +16,18 @@ var (
 
 // TimerEvent holds notification properties and notification state.
 type TimerEvent struct {
-	//UserID           string          `dynamodbav:"UserId"`
-	//NotificationTime time.Time       `dynamodbav:"NotificationTime"`
-	//IntervalMin      int             `dynamodbav:"IntervalMin"`
-	//State            TimerEventState `dynamodbav:"State"`
-	//Text             string          `dynamodbav:"Text"`
 	userID           string
-	text             string
+	Text             string
 	NotificationTime time.Time
 	IntervalMin      int
 	State            TimerEventState
 }
 
 // TimerEventState represents the type of Queueing state.
+// The details of states are below:
+// 		TimerEventStateWait: wait for enqueueing.
+// 		TimerEventStateQueued: wait for notifying.
+// 		TimerEventStateDisabled: disabled, not enqueueing and notifying.
 type TimerEventState string
 
 const (
@@ -41,17 +40,13 @@ const (
 )
 
 // NewTimerEvent creates new struct.
-func NewTimerEvent(userID, text string) (*TimerEvent, error) {
+func NewTimerEvent(userID string) (*TimerEvent, error) {
 	if userID == "" {
 		return nil, ErrMustSetUserID
-	}
-	if text == "" {
-		return nil, ErrMustSetText
 	}
 
 	p := &TimerEvent{
 		userID: userID,
-		text:   text,
 		State:  TimerEventStateWait,
 	}
 	return p, nil
@@ -70,9 +65,4 @@ func (p *TimerEvent) IncrementNotificationTime() {
 // UserID returns the ID of having this event.
 func (p TimerEvent) UserID() string {
 	return p.userID
-}
-
-// Text returns the text of this event.
-func (p TimerEvent) Text() string {
-	return p.text
 }

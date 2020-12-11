@@ -48,7 +48,7 @@ func TestInteractor_SetEventOff(t *testing.T) {
 
 		ac := appcontext.TODO()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
 		caseEvent.State = enterpriserule.TimerEventStateWait
 
 		m := NewMockRepository(ctrl)
@@ -56,7 +56,7 @@ func TestInteractor_SetEventOff(t *testing.T) {
 			Return(caseEvent, nil)
 		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
-		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID(), caseEvent.Text())
+		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID())
 		want.State = enterpriserule.TimerEventStateDisabled
 
 		wantOutputData := OutputData{
@@ -85,7 +85,7 @@ func TestInteractor_SetEventOff(t *testing.T) {
 
 		caseError := errors.New("error")
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
 		caseEvent.State = enterpriserule.TimerEventStateWait
 
 		m := NewMockRepository(ctrl)
@@ -147,7 +147,7 @@ func TestInteractor_SetEventOff(t *testing.T) {
 
 		ac := appcontext.TODO()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
 		caseEvent.State = enterpriserule.TimerEventStateWait
 
 		caseError := errors.New("error")

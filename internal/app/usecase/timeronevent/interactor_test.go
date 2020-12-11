@@ -46,7 +46,8 @@ func TestInteractor_SetEventOn(t *testing.T) {
 
 		ac := appcontext.TODO()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
+		caseEvent.Text = "Hi!"
 		caseEvent.State = enterpriserule.TimerEventStateDisabled
 
 		m := NewMockRepository(ctrl)
@@ -54,10 +55,11 @@ func TestInteractor_SetEventOn(t *testing.T) {
 			Return(caseEvent, nil)
 		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
-		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID(), caseEvent.Text())
+		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID())
+		want.Text = caseEvent.Text
 		want.NotificationTime = caseEvent.NotificationTime
 		want.IntervalMin = caseEvent.IntervalMin
-		caseEvent.State = enterpriserule.TimerEventStateWait
+		want.State = enterpriserule.TimerEventStateWait
 
 		wantOutputData := OutputData{
 			Result:     nil,
@@ -85,7 +87,8 @@ func TestInteractor_SetEventOn(t *testing.T) {
 
 		caseError := errors.New("error")
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
+		caseEvent.Text = "Hi!"
 		caseEvent.NotificationTime = time.Now().UTC()
 		caseEvent.IntervalMin = 10
 		caseEvent.State = enterpriserule.TimerEventStateDisabled
@@ -149,7 +152,7 @@ func TestInteractor_SetEventOn(t *testing.T) {
 
 		ac := appcontext.TODO()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
 		caseEvent.NotificationTime = time.Now().UTC()
 		caseEvent.IntervalMin = 10
 		caseEvent.State = enterpriserule.TimerEventStateDisabled
@@ -161,10 +164,10 @@ func TestInteractor_SetEventOn(t *testing.T) {
 			Return(caseEvent, nil)
 		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, caseError)
 
-		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID(), caseEvent.Text())
+		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID())
 		want.NotificationTime = caseEvent.NotificationTime
 		want.IntervalMin = caseEvent.IntervalMin
-		caseEvent.State = enterpriserule.TimerEventStateWait
+		want.State = enterpriserule.TimerEventStateWait
 
 		wantOutputData := OutputData{
 			Result:     fmt.Errorf("saving timer event error userID=%v: %w", caseEvent.UserID(), caseError),

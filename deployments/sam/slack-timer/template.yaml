@@ -98,8 +98,8 @@ Resources:
       # Ref: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
       Policies:
         - CloudWatchPutMetricPolicy: {}
-#        - DynamoDBCrudPolicy:
-#            TableName: !Ref EventTimerTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
 #      Environment:
 #        APP_ENV: "def"
 #        DYNAMODB_TABLE: "event"
@@ -117,8 +117,8 @@ Resources:
       Handler: main
       Policies:
         - CloudWatchPutMetricPolicy: {}
-#        - DynamoDBCrudPolicy:
-#            TableName: !Ref EventTimerTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
         - SQSSendMessagePolicy:
             QueueName: !GetAtt NotifyQueue.QueueName
 #      Environment:
@@ -171,8 +171,8 @@ Resources:
             BatchSize: 10
       Policies:
         - CloudWatchPutMetricPolicy: {}
-#        - DynamoDBCrudPolicy:
-#            TableName: !Ref EventTimerTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventTimerTable
         - SQSPollerPolicy:
             QueueName: !Ref NotifyQueue
       Environment:
@@ -189,41 +189,41 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt NotifyQueue.Arn
 
-#  # DynamoDB
-#  EventTimerTable:
-#    # Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
-#    Type: AWS::DynamoDB::Table
-#    Properties:
-#      AttributeDefinitions:
-#        - AttributeName: UserId
-#          AttributeType: S
-#        - AttributeName: NotificationTime
-#          AttributeType: S
-#        - AttributeName: Dummy
-#          AttributeType: N
-#      BillingMode: PROVISIONED
-#      KeySchema:
-#        - AttributeName: UserId
-#          KeyType: HASH
-#      ProvisionedThroughput:
-#        ReadCapacityUnits: 5
-#        WriteCapacityUnits: 5
-#      TableName: event
-#      # Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-dynamodb-gsi.html
-#      GlobalSecondaryIndexes:
-#        - IndexName: TimeIndex
-#          ProvisionedThroughput:
-#            ReadCapacityUnits: 5
-#            WriteCapacityUnits: 5
-#          KeySchema:
-#            # Because of sorting NotificationTime.
-#            - AttributeName: Dummy
-#              KeyType: HASH
-#            - AttributeName: NotificationTime
-#              KeyType: RANGE
-#          Projection:
-#            ProjectionType: INCLUDE
-#            NonKeyAttributes: ["State", "IntervalMin", "Text"]
+  # DynamoDB
+  EventTimerTable:
+    # Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: UserId
+          AttributeType: S
+        - AttributeName: NotificationTime
+          AttributeType: S
+        - AttributeName: Dummy
+          AttributeType: N
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: UserId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: event
+      # Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-dynamodb-gsi.html
+      GlobalSecondaryIndexes:
+        - IndexName: TimeIndex
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+          KeySchema:
+            # Because of sorting NotificationTime.
+            - AttributeName: Dummy
+              KeyType: HASH
+            - AttributeName: NotificationTime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: INCLUDE
+            NonKeyAttributes: ["State", "IntervalMin", "Text"]
 
 Outputs:
   # Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
@@ -239,6 +239,6 @@ Outputs:
 #  NotifyFunction:
 #    Description: "Notify Function ARN"
 #    Value: !GetAtt NotifyFunction.Arn
-#  EventTable:
-#    Description: "Event Table ARN"
-#    Value: !GetAtt EventTimerTable.Arn
+  EventTable:
+    Description: "Event Table ARN"
+    Value: !GetAtt EventTimerTable.Arn

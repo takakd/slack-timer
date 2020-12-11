@@ -19,7 +19,8 @@ import (
 func TestNewTimerEventDbItem(t *testing.T) {
 	caseTime := time.Now()
 
-	caseEvent, err := enterpriserule.NewTimerEvent("test_user", "Hi!")
+	caseEvent, err := enterpriserule.NewTimerEvent("test_user")
+	caseEvent.Text = "Hi!"
 	require.NoError(t, err)
 	caseEvent.NotificationTime = caseTime
 	caseEvent.IntervalMin = 3
@@ -33,7 +34,8 @@ func TestNewTimerEventDbItem(t *testing.T) {
 func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseTime := time.Now().UTC().Truncate(time.Second)
-		want, err := enterpriserule.NewTimerEvent("test_user", "Hi!")
+		want, err := enterpriserule.NewTimerEvent("test_user")
+		want.Text = "Hi!"
 		require.NoError(t, err)
 		want.NotificationTime = caseTime
 		want.IntervalMin = 3
@@ -45,7 +47,8 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 
 	t.Run("ng:notification time", func(t *testing.T) {
 		caseTime := time.Now().Truncate(time.Second)
-		event, err := enterpriserule.NewTimerEvent("test_user", "Hi!")
+		event, err := enterpriserule.NewTimerEvent("test_user")
+		event.Text = "Hi!"
 		require.NoError(t, err)
 		event.NotificationTime = caseTime
 		event.IntervalMin = 3
