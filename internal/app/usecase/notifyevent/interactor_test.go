@@ -11,6 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewInteractor(t *testing.T) {
@@ -40,12 +41,11 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			UserID:  "test",
 			Message: "message",
 		}
-		caseEvent := &enterpriserule.TimerEvent{
-			UserID:           caseInput.UserID,
-			IntervalMin:      10,
-			NotificationTime: time.Now(),
-		}
-		caseEvent.SetQueued()
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		require.NoError(t, err)
+		caseEvent.IntervalMin = 10
+		caseEvent.NotificationTime = time.Now()
+		caseEvent.State = enterpriserule.TimerEventStateQueued
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -73,7 +73,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		di.SetDi(d)
 
 		i := NewInteractor()
-		err := i.NotifyEvent(ac, caseInput)
+		err = i.NotifyEvent(ac, caseInput)
 		assert.NoError(t, err)
 	})
 
@@ -84,12 +84,11 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			Message: "message",
 		}
 
-		caseEvent := &enterpriserule.TimerEvent{
-			UserID:           caseInput.UserID,
-			IntervalMin:      10,
-			NotificationTime: time.Now(),
-		}
-		caseEvent.SetWait()
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		require.NoError(t, err)
+		caseEvent.IntervalMin = 10
+		caseEvent.NotificationTime = time.Now()
+		caseEvent.State = enterpriserule.TimerEventStateWait
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -112,7 +111,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		di.SetDi(d)
 
 		i := NewInteractor()
-		err := i.NotifyEvent(ac, caseInput)
+		err = i.NotifyEvent(ac, caseInput)
 		assert.NoError(t, err)
 	})
 
@@ -123,12 +122,11 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			Message: "message",
 		}
 
-		caseEvent := &enterpriserule.TimerEvent{
-			UserID:           caseInput.UserID,
-			IntervalMin:      10,
-			NotificationTime: time.Now(),
-		}
-		caseEvent.SetQueued()
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		require.NoError(t, err)
+		caseEvent.IntervalMin = 10
+		caseEvent.NotificationTime = time.Now()
+		caseEvent.State = enterpriserule.TimerEventStateQueued
 
 		caseError := errors.New("notify error")
 
@@ -156,7 +154,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		di.SetDi(d)
 
 		i := NewInteractor()
-		err := i.NotifyEvent(ac, caseInput)
+		err = i.NotifyEvent(ac, caseInput)
 		assert.Equal(t, caseError, err)
 	})
 
@@ -200,12 +198,12 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 			UserID:  "test",
 			Message: "message",
 		}
-		caseEvent := &enterpriserule.TimerEvent{
-			UserID:           caseInput.UserID,
-			IntervalMin:      10,
-			NotificationTime: time.Now(),
-		}
-		caseEvent.SetQueued()
+
+		caseEvent, err := enterpriserule.NewTimerEvent(caseInput.UserID, caseInput.Message)
+		require.NoError(t, err)
+		caseEvent.IntervalMin = 10
+		caseEvent.NotificationTime = time.Now()
+		caseEvent.State = enterpriserule.TimerEventStateQueued
 
 		caseError := errors.New("save error")
 
@@ -235,7 +233,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		di.SetDi(d)
 
 		i := NewInteractor()
-		err := i.NotifyEvent(ac, caseInput)
+		err = i.NotifyEvent(ac, caseInput)
 		assert.Equal(t, caseError, err)
 	})
 }

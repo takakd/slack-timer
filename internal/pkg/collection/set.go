@@ -13,7 +13,7 @@ type Set struct {
 	values map[interface{}]int
 }
 
-// NewSet create new struct.
+// NewSet creates new struct.
 func NewSet() *Set {
 	set := &Set{}
 	set.values = make(map[interface{}]int)

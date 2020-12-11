@@ -18,7 +18,7 @@ type CloudWatchLogger struct {
 
 var _ log2.Logger = (*CloudWatchLogger)(nil)
 
-// NewCloudWatchLogger create new struct.
+// NewCloudWatchLogger creates new struct.
 func NewCloudWatchLogger() *CloudWatchLogger {
 	return &CloudWatchLogger{
 		logger: log.New(os.Stdout, "", 0),

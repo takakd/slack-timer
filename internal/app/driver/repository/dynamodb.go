@@ -32,6 +32,7 @@ type DbItemState string
 // TimerEventDbItem s DAO for repository.
 type TimerEventDbItem struct {
 	UserID           string `dynamodbav:"UserId"`
+	Text             string `dynamodbav:"Text"`
 	NotificationTime string `dynamodbav:"NotificationTime"`
 	IntervalMin      int    `dynamodbav:"IntervalMin"`
 	// Ref. https://forums.aws.amazon.com/thread.jspa?threadID=330244&tstart=0
@@ -41,10 +42,11 @@ type TimerEventDbItem struct {
 	Dummy int `dynamodbav:"Dummy"`
 }
 
-// NewTimerEventDbItem create new struct.
+// NewTimerEventDbItem creates new struct.
 func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 	t := &TimerEventDbItem{
-		UserID:           event.UserID,
+		UserID:           event.UserID(),
+		Text:             event.Text(),
 		NotificationTime: event.NotificationTime.Format(time.RFC3339),
 		IntervalMin:      event.IntervalMin,
 		State:            string(event.State),
@@ -54,13 +56,13 @@ func NewTimerEventDbItem(event *enterpriserule.TimerEvent) *TimerEventDbItem {
 
 // TimerEvent generates enterpriserule.TimerEvent struct.
 func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
-	e := &enterpriserule.TimerEvent{
-		UserID:      t.UserID,
-		IntervalMin: t.IntervalMin,
-		State:       enterpriserule.TimerEventState(t.State),
+	e, err := enterpriserule.NewTimerEvent(t.UserID, t.Text)
+	if err != nil {
+		return nil, err
 	}
+	e.IntervalMin = t.IntervalMin
+	e.State = enterpriserule.TimerEventState(t.State)
 
-	var err error
 	e.NotificationTime, err = time.Parse(time.RFC3339, t.NotificationTime)
 	if err != nil {
 		return nil, err
@@ -69,7 +71,7 @@ func (t TimerEventDbItem) TimerEvent() (*enterpriserule.TimerEvent, error) {
 	return e, nil
 }
 
-// NewDynamoDb create new struct.
+// NewDynamoDb creates new struct.
 func NewDynamoDb() *DynamoDb {
 	return &DynamoDb{
 		wrp: di.Get("repository.DynamoDbWrapper").(DynamoDbWrapper),

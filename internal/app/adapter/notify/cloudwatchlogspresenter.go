@@ -12,7 +12,7 @@ type CloudWatchLogsPresenter struct {
 
 var _ notifyevent.OutputPort = (*CloudWatchLogsPresenter)(nil)
 
-// NewCloudWatchLogsPresenter create new struct.
+// NewCloudWatchLogsPresenter creates new struct.
 func NewCloudWatchLogsPresenter() *CloudWatchLogsPresenter {
 	return &CloudWatchLogsPresenter{}
 }

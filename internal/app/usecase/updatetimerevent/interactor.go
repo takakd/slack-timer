@@ -15,7 +15,7 @@ type Interactor struct {
 
 var _ InputPort = (*Interactor)(nil)
 
-// NewInteractor create new struct.
+// NewInteractor creates new struct.
 func NewInteractor() *Interactor {
 	return &Interactor{
 		repository: di.Get("updatetimerevent.Repository").(Repository),
@@ -23,7 +23,7 @@ func NewInteractor() *Interactor {
 }
 
 // Common processing.
-func (s Interactor) saveTimerEventValue(userID string, notificationTime time.Time, remindInterval int) *OutputData {
+func (s Interactor) saveTimerEventValue(userID string, notificationTime time.Time, remindInterval int, text string) *OutputData {
 
 	outputData := &OutputData{}
 
@@ -34,7 +34,7 @@ func (s Interactor) saveTimerEventValue(userID string, notificationTime time.Tim
 	}
 
 	if event == nil {
-		if event, err = enterpriserule.NewTimerEvent(userID); err != nil {
+		if event, err = enterpriserule.NewTimerEvent(userID, text); err != nil {
 			outputData.Result = fmt.Errorf("creating timer event error userID=%v: %w", userID, err)
 			return outputData
 		}
@@ -57,17 +57,17 @@ func (s Interactor) saveTimerEventValue(userID string, notificationTime time.Tim
 }
 
 // UpdateNotificationTime sets notificationTime to the notification time of the event which corresponds to userID.
-func (s Interactor) UpdateNotificationTime(ac appcontext.AppContext, userID string, notificationTime time.Time, presenter OutputPort) {
-	data := s.saveTimerEventValue(userID, notificationTime, 0)
+func (s Interactor) UpdateNotificationTime(ac appcontext.AppContext, input UpdateNotificationTimeInputData, presenter OutputPort) {
+	data := s.saveTimerEventValue(input.UserID, input.NotificationTime, 0, "")
 	if presenter != nil {
 		presenter.Output(ac, *data)
 	}
 }
 
 // SaveIntervalMin sets notification interval to the event which corresponds to userID.
-func (s Interactor) SaveIntervalMin(ac appcontext.AppContext, userID string, currentTime time.Time, minutes int, presetner OutputPort) {
-	data := s.saveTimerEventValue(userID, currentTime, minutes)
-	if presetner != nil {
-		presetner.Output(ac, *data)
+func (s Interactor) SaveIntervalMin(ac appcontext.AppContext, input SaveEventInputData, presenter OutputPort) {
+	data := s.saveTimerEventValue(input.UserID, input.CurrentTime, input.Minutes, input.Text)
+	if presenter != nil {
+		presenter.Output(ac, *data)
 	}
 }

@@ -2,6 +2,7 @@ package enqueueevent
 
 import (
 	"fmt"
+	"slacktimer/internal/app/enterpriserule"
 	"slacktimer/internal/app/util/appcontext"
 	"slacktimer/internal/app/util/di"
 	"slacktimer/internal/app/util/log"
@@ -14,7 +15,7 @@ type Interactor struct {
 	queue      Queue
 }
 
-// NewInteractor create new struct.
+// NewInteractor creates new struct.
 func NewInteractor() *Interactor {
 	return &Interactor{
 		repository: di.Get("enqueueevent.Repository").(Repository),
@@ -37,29 +38,29 @@ func (s Interactor) EnqueueEvent(ac appcontext.AppContext, data InputData) {
 	}
 
 	for _, e := range events {
-		if e.Queued() {
+		if e.State == enterpriserule.TimerEventStateQueued {
 			// Skip if it has already queued.
 			continue
 		}
 
 		// Enqueue notification message, and send notify by other lambda corresponded queue.
 		id, err := s.queue.Enqueue(QueueMessage{
-			UserID: e.UserID,
-			Text:   "test",
+			UserID: e.UserID(),
+			Text:   e.Text(),
 		})
 		if err != nil {
-			log.ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %v", e.UserID, err))
+			log.ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %v", e.UserID(), err))
 			continue
 		}
 
 		// Update state.
-		e.SetQueued()
+		e.State = enterpriserule.TimerEventStateQueued
 		if _, err := s.repository.SaveTimerEvent(e); err != nil {
-			log.ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %v", e.UserID, err))
+			log.ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %v", e.UserID(), err))
 			continue
 		}
 
-		outputData.NotifiedUserIDList = append(outputData.NotifiedUserIDList, e.UserID)
+		outputData.NotifiedUserIDList = append(outputData.NotifiedUserIDList, e.UserID())
 		outputData.QueueMessageIDList = append(outputData.QueueMessageIDList, id)
 	}
 

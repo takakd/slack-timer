@@ -17,7 +17,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		userID := "abc"
 		caseTime := time.Now().UTC()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent(userID)
+		caseEvent, _ := enterpriserule.NewTimerEvent(userID, "Hi!")
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = caseTime.Add(time.Duration(caseEvent.IntervalMin) * time.Minute)
 
@@ -35,7 +35,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(userID, caseTime, caseEvent.IntervalMin)
+		data := interactor.saveTimerEventValue(userID, caseTime, caseEvent.IntervalMin, caseEvent.Text())
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
 	})
@@ -43,7 +43,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 	t.Run("ok:next notify", func(t *testing.T) {
 		caseTime := time.Now().UTC()
 
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
+		caseEvent, _ := enterpriserule.NewTimerEvent("abc", "Hi!")
 		caseEvent.NotificationTime = caseTime
 		caseEvent.IntervalMin = 10
 
@@ -51,7 +51,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		defer ctrl.Finish()
 
 		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(caseEvent.UserID).
+		m.EXPECT().FindTimerEvent(caseEvent.UserID()).
 			Return(caseEvent, nil)
 		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
@@ -59,11 +59,11 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID)
+		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID(), caseEvent.Text())
 		want.IntervalMin = caseEvent.IntervalMin
 		want.NotificationTime = caseTime.Add(time.Duration(want.IntervalMin) * time.Minute)
 
-		data := interactor.saveTimerEventValue(caseEvent.UserID, caseTime, 0)
+		data := interactor.saveTimerEventValue(caseEvent.UserID(), caseTime, 0, caseEvent.Text())
 
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
@@ -81,7 +81,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		m.EXPECT().FindTimerEvent(userID).Return(nil, nil)
 
 		interval := 1
-		caseEvent, _ := enterpriserule.NewTimerEvent(userID)
+		caseEvent, _ := enterpriserule.NewTimerEvent(userID, "Hi!")
 		caseEvent.NotificationTime = caseTime.Add(time.Duration(interval) * time.Minute)
 		caseEvent.IntervalMin = interval
 		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
@@ -90,7 +90,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 			repository: m,
 		}
 
-		data := interactor.saveTimerEventValue(userID, caseTime, interval)
+		data := interactor.saveTimerEventValue(userID, caseTime, interval, "Hi!")
 		assert.NoError(t, data.Result)
 		assert.Equal(t, caseEvent, data.SavedEvent)
 	})
@@ -108,7 +108,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		}
 
 		noUse := time.Now()
-		data := interactor.saveTimerEventValue(userID, noUse, 0)
+		data := interactor.saveTimerEventValue(userID, noUse, 0, "Hi!")
 		assert.Equal(t, fmt.Errorf("creating timer event error userID=%v: %w", userID, errors.New("must set userID")), data.Result)
 	})
 
@@ -126,7 +126,7 @@ func TestInteractor_saveTimerEventValue(t *testing.T) {
 		}
 
 		noUse := time.Now()
-		data := interactor.saveTimerEventValue(userID, noUse, 0)
+		data := interactor.saveTimerEventValue(userID, noUse, 0, "Hi!")
 		assert.Equal(t, fmt.Errorf("finding timer event error userID=%v: %w", userID, err), data.Result)
 	})
 }

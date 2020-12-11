@@ -10,33 +10,49 @@ import (
 var (
 	// ErrMustSetUserID returns if UserID parameter is empty.
 	ErrMustSetUserID = errors.New("must set userID")
+	// ErrMustSetText returns if Text parameter is empty.
+	ErrMustSetText = errors.New("must set text")
 )
 
 // TimerEvent holds notification properties and notification state.
 type TimerEvent struct {
-	UserID           string          `dynamodbav:"UserId" db:"user_id" bson:"user_id"`
-	NotificationTime time.Time       `dynamodbav:"NotificationTime" db:"notification_time_utc" bson:"notification_time_utc"`
-	IntervalMin      int             `dynamodbav:"IntervalMin" db:"interval_min" bson:"interval_min"`
-	State            TimerEventState `dynamodbav:"State" db:"state" bson:"state"`
+	//UserID           string          `dynamodbav:"UserId"`
+	//NotificationTime time.Time       `dynamodbav:"NotificationTime"`
+	//IntervalMin      int             `dynamodbav:"IntervalMin"`
+	//State            TimerEventState `dynamodbav:"State"`
+	//Text             string          `dynamodbav:"Text"`
+	userID           string
+	text             string
+	NotificationTime time.Time
+	IntervalMin      int
+	State            TimerEventState
 }
 
 // TimerEventState represents the type of Queueing state.
 type TimerEventState string
 
 const (
-	_timerEventStateWait   TimerEventState = "wait"
-	_timerEventStateQueued TimerEventState = "queued"
+	// TimerEventStateWait represents the state of waiting for queueing.
+	TimerEventStateWait TimerEventState = "wait"
+	// TimerEventStateQueued represents the state enqueued.
+	TimerEventStateQueued TimerEventState = "queued"
+	// TimerEventStateDisabled represents the disabled state.
+	TimerEventStateDisabled TimerEventState = "disabled"
 )
 
-// NewTimerEvent create new struct.
-func NewTimerEvent(userID string) (*TimerEvent, error) {
+// NewTimerEvent creates new struct.
+func NewTimerEvent(userID, text string) (*TimerEvent, error) {
 	if userID == "" {
 		return nil, ErrMustSetUserID
 	}
+	if text == "" {
+		return nil, ErrMustSetText
+	}
 
 	p := &TimerEvent{
-		UserID: userID,
-		State:  _timerEventStateWait,
+		userID: userID,
+		text:   text,
+		State:  TimerEventStateWait,
 	}
 	return p, nil
 }
@@ -51,17 +67,12 @@ func (p *TimerEvent) IncrementNotificationTime() {
 	p.NotificationTime = p.NotificationTime.Add(time.Duration(p.IntervalMin) * time.Minute)
 }
 
-// Queued returns whether this event is queued.
-func (p TimerEvent) Queued() bool {
-	return p.State == _timerEventStateQueued
+// UserID returns the ID of having this event.
+func (p TimerEvent) UserID() string {
+	return p.userID
 }
 
-// SetQueued sets this event state to queued state.
-func (p *TimerEvent) SetQueued() {
-	p.State = _timerEventStateQueued
-}
-
-// SetWait sets this event state to waiting state.
-func (p *TimerEvent) SetWait() {
-	p.State = _timerEventStateWait
+// Text returns the text of this event.
+func (p TimerEvent) Text() string {
+	return p.text
 }

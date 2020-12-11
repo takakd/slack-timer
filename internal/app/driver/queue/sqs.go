@@ -26,7 +26,7 @@ type Sqs struct {
 
 var _ enqueueevent.Queue = (*Sqs)(nil)
 
-// NewSqs create new struct.
+// NewSqs creates new struct.
 func NewSqs() *Sqs {
 	return &Sqs{
 		wrp: di.Get("queue.SqsWrapper").(SqsWrapper),

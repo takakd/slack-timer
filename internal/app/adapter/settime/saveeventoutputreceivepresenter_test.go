@@ -58,7 +58,7 @@ func TestSaveEventOutputReceivePresenter_Output(t *testing.T) {
 
 			} else {
 				var err error
-				c.data.SavedEvent, err = enterpriserule.NewTimerEvent("test")
+				c.data.SavedEvent, err = enterpriserule.NewTimerEvent("test", "Hi!")
 				require.NoError(t, err)
 
 				p.Output(appcontext.TODO(), *c.data)

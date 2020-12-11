@@ -24,7 +24,7 @@ type APIDriver struct {
 
 var _ API = (*APIDriver)(nil)
 
-// NewAPIDriver create new struct.
+// NewAPIDriver creates new struct.
 func NewAPIDriver() *APIDriver {
 	s := &APIDriver{}
 	return s

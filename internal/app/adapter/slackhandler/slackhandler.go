@@ -12,7 +12,7 @@ type SlackHandler struct {
 	api slack.API
 }
 
-// NewSlackHandler create new struct.
+// NewSlackHandler creates new struct.
 func NewSlackHandler() *SlackHandler {
 	s := &SlackHandler{
 		api: di.Get("slack.API").(slack.API),

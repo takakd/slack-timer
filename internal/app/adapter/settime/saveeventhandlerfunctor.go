@@ -2,6 +2,7 @@ package settime
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"slacktimer/internal/app/adapter/validator"
 	"slacktimer/internal/app/usecase/updatetimerevent"
@@ -26,14 +27,16 @@ type SaveEventHandler interface {
 
 // SaveEventHandlerFunctor handle "Set" command.
 type SaveEventHandlerFunctor struct {
+	// TODO: presenter get from di
+	inputPort           updatetimerevent.InputPort
 	notificationTime    time.Time
 	remindIntervalInMin int
-	inputPort           updatetimerevent.InputPort
+	text                string
 }
 
 var _ SaveEventHandler = (*SaveEventHandlerFunctor)(nil)
 
-// NewSaveEventHandlerFunctor create new struct.
+// NewSaveEventHandlerFunctor creates new struct.
 func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	return &SaveEventHandlerFunctor{
 		inputPort: di.Get("updatetimerevent.InputPort").(updatetimerevent.InputPort),
@@ -58,14 +61,15 @@ func (se *SaveEventHandlerFunctor) parse(data EventCallbackData) *validator.Vali
 	se.notificationTime = eventTime.UTC()
 
 	// e.g. set 10
-	re := regexp.MustCompile(`^(.*)\s+([0-9]+)$`)
+	re := regexp.MustCompile(fmt.Sprintf(`^(%s)\s+(\d+)\s+([\s\S]*)`, _cmdSet))
 	m := re.FindStringSubmatch(data.MessageEvent.Text)
-	if m == nil {
+	if m == nil || len(m) < 4 {
 		bag.SetError("interval", "invalid format", ErrInvalidFormat)
 		return bag
 	}
 	minutes, _ := strconv.Atoi(m[2])
 	se.remindIntervalInMin = minutes
+	se.text = m[3]
 
 	return bag
 }
@@ -85,10 +89,17 @@ func (se SaveEventHandlerFunctor) Handle(ac appcontext.AppContext, data EventCal
 		"user":              data.MessageEvent.User,
 		"interval":          se.remindIntervalInMin,
 		"notification time": se.notificationTime,
+		"text":              se.text,
 	})
 
+	input := updatetimerevent.SaveEventInputData{
+		UserID:      data.MessageEvent.User,
+		CurrentTime: se.notificationTime,
+		Minutes:     se.remindIntervalInMin,
+		Text:        se.text,
+	}
 	presenter := NewSaveEventOutputReceivePresenter()
-	se.inputPort.SaveIntervalMin(ac, data.MessageEvent.User, se.notificationTime, se.remindIntervalInMin, presenter)
+	se.inputPort.SaveIntervalMin(ac, input, presenter)
 
 	log.InfoWithContext(ac, "return from inputport", presenter.Resp)
 

@@ -16,7 +16,7 @@ type EnvConfig struct {
 
 var _ config.Config = (*EnvConfig)(nil)
 
-// NewEnvConfig create new struct.
+// NewEnvConfig creates new struct.
 func NewEnvConfig(filepathList ...string) *EnvConfig {
 	if len(filepathList) > 0 {
 		if err := godotenv.Load(filepathList...); err != nil {

@@ -10,7 +10,7 @@ type ValidateErrorBag struct {
 	errors map[string]*ValidateError
 }
 
-// NewValidateErrorBag create new struct.
+// NewValidateErrorBag creates new struct.
 func NewValidateErrorBag() *ValidateErrorBag {
 	b := &ValidateErrorBag{}
 	b.errors = make(map[string]*ValidateError)

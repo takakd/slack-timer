@@ -63,6 +63,8 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 		c = updatetimerevent.NewInteractor()
 	case "updatetimerevent.Repository":
 		c = repository.NewDynamoDb()
+	case "settime.OnEventOutputReceivePresenter":
+		c = settime.NewOnEventOutputReceivePresenter()
 	}
 	return c, c != nil
 }

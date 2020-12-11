@@ -45,22 +45,22 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		defer ctrl.Finish()
 
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
-		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
-		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
+		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1", "text1")
+		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2", "text2")
 		caseQueueMsg := []QueueMessage{
 			{
-				UserID: caseEvents[0].UserID,
-				Text:   "test",
+				UserID: caseEvents[0].UserID(),
+				Text:   "text1",
 			},
 			{
-				UserID: caseEvents[1].UserID,
-				Text:   "test",
+				UserID: caseEvents[1].UserID(),
+				Text:   "text2",
 			},
 		}
 		caseOutputData := OutputData{
 			NotifiedUserIDList: []string{
-				caseEvents[0].UserID,
-				caseEvents[1].UserID,
+				caseEvents[0].UserID(),
+				caseEvents[1].UserID(),
 			},
 			QueueMessageIDList: []string{
 				"mid1", "mid2",
@@ -127,21 +127,21 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		}
 
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
-		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
-		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
+		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1", "text1")
+		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2", "text2")
 		caseQueueMsg := []QueueMessage{
 			{
-				UserID: caseEvents[0].UserID,
-				Text:   "test",
+				UserID: caseEvents[0].UserID(),
+				Text:   "text1",
 			},
 			{
-				UserID: caseEvents[1].UserID,
-				Text:   "test",
+				UserID: caseEvents[1].UserID(),
+				Text:   "text2",
 			},
 		}
 		caseOutputData := OutputData{
 			NotifiedUserIDList: []string{
-				caseEvents[0].UserID,
+				caseEvents[0].UserID(),
 			},
 			QueueMessageIDList: []string{
 				"mid1",
@@ -162,7 +162,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(appcontext.TODO(), caseOutputData)
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %s", caseEvents[1].UserID, caseError))
+		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %s", caseEvents[1].UserID(), caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{
@@ -185,21 +185,21 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		}
 
 		caseEvents := make([]*enterpriserule.TimerEvent, 2)
-		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1")
-		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2")
+		caseEvents[0], _ = enterpriserule.NewTimerEvent("id1", "text1")
+		caseEvents[1], _ = enterpriserule.NewTimerEvent("id2", "text2")
 		caseQueueMsg := []QueueMessage{
 			{
-				UserID: caseEvents[0].UserID,
-				Text:   "test",
+				UserID: caseEvents[0].UserID(),
+				Text:   "text1",
 			},
 			{
-				UserID: caseEvents[1].UserID,
-				Text:   "test",
+				UserID: caseEvents[1].UserID(),
+				Text:   "text2",
 			},
 		}
 		caseOutputData := OutputData{
 			NotifiedUserIDList: []string{
-				caseEvents[0].UserID,
+				caseEvents[0].UserID(),
 			},
 			QueueMessageIDList: []string{
 				"mid1",
@@ -221,7 +221,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(appcontext.TODO(), caseOutputData)
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %s", caseEvents[1].UserID, caseError))
+		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %s", caseEvents[1].UserID(), caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{

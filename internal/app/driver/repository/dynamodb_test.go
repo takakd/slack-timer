@@ -13,17 +13,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewTimerEventDbItem(t *testing.T) {
 	caseTime := time.Now()
-	caseEvent := &enterpriserule.TimerEvent{
-		UserID:           "test_user",
-		NotificationTime: caseTime,
-		IntervalMin:      3,
-	}
+
+	caseEvent, err := enterpriserule.NewTimerEvent("test_user", "Hi!")
+	require.NoError(t, err)
+	caseEvent.NotificationTime = caseTime
+	caseEvent.IntervalMin = 3
+
 	got := NewTimerEventDbItem(caseEvent)
-	assert.Equal(t, caseEvent.UserID, got.UserID)
+	assert.Equal(t, caseEvent.UserID(), got.UserID)
 	assert.Equal(t, caseEvent.NotificationTime.Format(time.RFC3339), got.NotificationTime)
 	assert.Equal(t, caseEvent.IntervalMin, got.IntervalMin)
 }
@@ -31,11 +33,11 @@ func TestNewTimerEventDbItem(t *testing.T) {
 func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		caseTime := time.Now().UTC().Truncate(time.Second)
-		want := &enterpriserule.TimerEvent{
-			UserID:           "test_user",
-			NotificationTime: caseTime,
-			IntervalMin:      3,
-		}
+		want, err := enterpriserule.NewTimerEvent("test_user", "Hi!")
+		require.NoError(t, err)
+		want.NotificationTime = caseTime
+		want.IntervalMin = 3
+
 		got, err := NewTimerEventDbItem(want).TimerEvent()
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
@@ -43,11 +45,11 @@ func TestTimerEventDbItem_TimerEvent(t *testing.T) {
 
 	t.Run("ng:notification time", func(t *testing.T) {
 		caseTime := time.Now().Truncate(time.Second)
-		event := &enterpriserule.TimerEvent{
-			UserID:           "test_user",
-			NotificationTime: caseTime,
-			IntervalMin:      3,
-		}
+		event, err := enterpriserule.NewTimerEvent("test_user", "Hi!")
+		require.NoError(t, err)
+		event.NotificationTime = caseTime
+		event.IntervalMin = 3
+
 		item := NewTimerEventDbItem(event)
 		item.NotificationTime = "invalid time format"
 		got, err := item.TimerEvent()
@@ -251,6 +253,7 @@ func TestDynamoDb_FindTimerEvent(t *testing.T) {
 			UserID:           caseUserID,
 			NotificationTime: time.Now().Format(time.RFC3339),
 			Dummy:            1,
+			Text:             "Hi!",
 		}
 
 		ctrl := gomock.NewController(t)
@@ -387,11 +390,13 @@ func TestDynamoDb_FindTimerEventByTime(t *testing.T) {
 				UserID:           "abc1",
 				Dummy:            1,
 				NotificationTime: caseTime,
+				Text:             "Hi!",
 			},
 			{
 				UserID:           "abc2",
 				Dummy:            1,
 				NotificationTime: caseTime,
+				Text:             "Hi!",
 			},
 		}
 
@@ -438,6 +443,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 			UserID:           "test user",
 			Dummy:            1,
 			NotificationTime: time.Now().Format(time.RFC3339),
+			Text:             "Hi!",
 		}
 		caseErr := errors.New("dummy error")
 
@@ -468,6 +474,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 			UserID:           "test user",
 			Dummy:            1,
 			NotificationTime: time.Now().Format(time.RFC3339),
+			Text:             "Hi!",
 		}
 		caseTableName := "disable"
 		caseErr := errors.New("dummy error")
@@ -508,6 +515,7 @@ func TestDynamoDb_SaveTimerEvent(t *testing.T) {
 			UserID:           "test user",
 			Dummy:            1,
 			NotificationTime: time.Now().Format(time.RFC3339),
+			Text:             "Hi!",
 		}
 		caseTableName := "disable"
 		caseInput := &dynamodb.PutItemInput{

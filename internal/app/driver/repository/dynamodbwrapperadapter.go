@@ -13,7 +13,7 @@ type DynamoDbWrapperAdapter struct {
 
 var _ DynamoDbWrapper = (*DynamoDbWrapperAdapter)(nil)
 
-// NewDynamoDbWrapperAdapter create new struct.
+// NewDynamoDbWrapperAdapter creates new struct.
 func NewDynamoDbWrapperAdapter() *DynamoDbWrapperAdapter {
 	return &DynamoDbWrapperAdapter{
 		svc: dynamodb.New(session.New()),
