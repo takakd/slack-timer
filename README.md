@@ -1,6 +1,8 @@
-# [WIP] Slack Timer
+# Slack Timer
 
-Simple timer on Slack, which notifies on periodically.
+Simple periodically timer on Slack, Sending message to DM Channel.
+
+> ⚠️ This is a code kata project with golang and clean architecture. Please use "Reminder" if it needs the feature of timer.
 
 ![Timer](website/peter-yost-I9jJXmNkXR4-unsplash.jpg?raw=true)
 
@@ -18,7 +20,7 @@ Simple timer on Slack, which notifies on periodically.
 
 ## Table of Contents
 
-- [Installation](#installation)
+- [Installation](#installation)  
 - [Usage](#usage)
 - [Support](#support)
 - [License](#license)
