@@ -1,8 +1,8 @@
 # Slack Timer
 
-Simple periodically timer on Slack, Sending message to DM Channel.
+Simple periodically timer on Slack, sending a message to DM Channel.
 
-> ⚠️ This project is [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) with golang and Clean Architecture. Please use "Reminder" if it needs the feature of timer on Slack.
+> ⚠️ This project is [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) with [Golang](https://golang.org/) and [Clean Architecuture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).  Please use [Reminder](https://slack.com/help/articles/208423427-Set-a-reminder) if the timer feature on Slack is needed.
 
 ![Timer](website/peter-yost-I9jJXmNkXR4-unsplash.jpg?raw=true)
 
@@ -21,7 +21,7 @@ Simple periodically timer on Slack, Sending message to DM Channel.
 ## Table of Contents
 
 - [Features](#features)
-- [Installation](#installation)
+- [Setup](#setup)
 - [Usage](#usage)
 - [Development](#development)
 - [License](#license)
@@ -105,11 +105,9 @@ Bot Token Scopes | im:write
 Bot Token Scopes | mpim:read
 User Token Scopes | im.history
 
-**- That's all.**
-
 ## Usage
 
-Providing three commands to control this app. Add Slack app and enter command in the app message window.
+Provide three commands to control this app. Add the app channel on Slack workspace and enter commands in the app channel message window.
 
 Command | Format | Action
 --- | --- | ---
@@ -119,7 +117,7 @@ Off | off | Suspend to notify.
 
 **e.g.**
 
-Receive `I'm active` message by 15 minutes.
+Receive `I'm active` by 15 minutes.
 ```
 set 15 I'm active!
 ```
@@ -131,7 +129,7 @@ off
 
 Start the notification.
 ```
-off
+on
 ```
 
 ## Development
@@ -148,7 +146,7 @@ off
 2. Run `go mod vendor` for getting moduels.
 2. Install AWS SAM CLI by following [Installing the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
-### Build command
+### Command
 
 **Testing**
 ```
@@ -171,8 +169,11 @@ $ make fmt
 * Design is followed by Clean architecture.
 https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
+#### Design
 
-```
+#### Source
+
+```shell
 .
 |-- .circleci
 |   `-- config.yml      <-- Circle CI config
@@ -301,8 +302,6 @@ https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 |-- website     <-- GitHub readme assets
 |   `-- peter-yost-I9jJXmNkXR4-unsplash.jpg
 ```
-
-> 
 
 ## Support
 
