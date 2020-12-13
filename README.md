@@ -70,10 +70,14 @@ Value             https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod
 Successfully created/updated stack - slacktimer in ap-northeast-1
 ```
 
-### 2. Creating Slack app
+### 2. Creating and Installing Slack app
 
-Create Slack app having Event Subscriptions, Bots, and Permissions features in a workspace.
-Ref. https://api.slack.com/reference
+Create Slack app having Event Subscriptions, Bots, and Permissions features in a workspace. After that, install it in the workspace. It will be showed in the workspace, if it succeeded in installing.  
+These control can be in `Basic Information` page in the Slack app page.
+
+**Ref.**
+* [Basic app setup](https://api.slack.com/authentication/basics)
+* [Reference guides for app features](https://api.slack.com/reference)
 
 Details of features are below.
 
@@ -83,8 +87,9 @@ Details of features are below.
 * Enter the API URL to Request URL Field. Use the URL added `/slack` to the API Gateway Endpoint: e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified✅" if it had succeeded in setup.
 * Add "message.im" event to "Subscribe to events on behalf of users" section.
 
-#### Bots
+#### Bots - App Home
 
+* Add scopes according to [Bot Token Scopes](#bot_token_scopes)
 * Enter "App Display Name" as you like.
 * Enable "Message Tab" on "Show Tabs" section.
 
@@ -92,15 +97,10 @@ Details of features are below.
 
 Add scopes as follow.
 
-**Bot Token Scopes**
-- channels:read
-- chat:write
-- im:history
-- im:read
+#####Bot Token Scopes
 - im:write
-- mpim:read
 
-**User Token Scopes**
+#####User Token Scopes
 - im.history
 
 ## Usage
