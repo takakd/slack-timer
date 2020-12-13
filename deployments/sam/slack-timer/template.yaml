@@ -230,6 +230,9 @@ Outputs:
   SlackEventAPIRequestURL:
     Description: "Enter this URL as the Request URL notified by Slack"
     Value: !Sub "https://${SetTimerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/callback/slack"
+  EventQueueURL:
+    Description: "Enter this URL as SQS_URL in Lambda's environment value"
+    Value: !Ref NotifyQueue
   EventTableName:
     Description: "User's state table on DynamoDB"
     Value: !GetAtt EventTimerTable.Arn
