@@ -60,7 +60,7 @@ func newErrorHandlerResponse(ac appcontext.AppContext, message string, detail in
 	}
 	if detail != nil {
 		if detailJSON, err := json.Marshal(detail); err != nil {
-			log.ErrorWithContext(ac, "marshal error", err)
+			log.ErrorWithContext(ac, "marshal error", err.Error())
 		} else {
 			body.Detail = string(detailJSON)
 		}

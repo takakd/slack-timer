@@ -31,7 +31,7 @@ func (s *SaveEventOutputReceivePresenter) Output(ac appcontext.AppContext, data 
 	}
 
 	if data.Result != nil {
-		log.ErrorWithContext(ac, "settime outputport", data.Result)
+		log.ErrorWithContext(ac, "settime outputport", data.Result.Error())
 		s.Resp.StatusCode = http.StatusInternalServerError
 		s.Resp.Body = "internal server error"
 		return

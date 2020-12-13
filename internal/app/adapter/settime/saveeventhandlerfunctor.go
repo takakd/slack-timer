@@ -90,6 +90,7 @@ func (se SaveEventHandlerFunctor) Handle(ac appcontext.AppContext, data EventCal
 		"interval":          se.remindIntervalInMin,
 		"notification time": se.notificationTime,
 		"text":              se.text,
+		"ts":                data.MessageEvent.Ts,
 	})
 
 	input := updatetimerevent.SaveEventInputData{

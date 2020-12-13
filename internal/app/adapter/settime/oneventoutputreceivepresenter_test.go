@@ -45,7 +45,7 @@ func TestOnEventOutputReceivePresenter_Output(t *testing.T) {
 
 			if c.data.Result != nil {
 				ml := log.NewMockLogger(ctrl)
-				ml.EXPECT().ErrorWithContext(ac, "settime offevent outputport", c.data.Result)
+				ml.EXPECT().ErrorWithContext(ac, "settime offevent outputport", c.data.Result.Error())
 				log.SetDefaultLogger(ml)
 
 				p.Output(appcontext.TODO(), *c.data)

@@ -81,6 +81,8 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 		c = repository.NewDynamoDb()
 	case "timeronevent.Repository":
 		c = repository.NewDynamoDb()
+	case "updatetimerevent.Replier":
+		c = slackhandler.NewSlackHandler()
 	}
 	return c, c != nil
 }

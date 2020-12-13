@@ -141,8 +141,10 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		defer ctrl.Finish()
 
 		caseToken := "test token"
-		caseChannelID := "test channel"
-		caseText := "test message"
+		caseBody := ChatPostMessageRequestBody{
+			Channel: "test channel",
+			Text:    "test message",
+		}
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			buf, err := ioutil.ReadAll(r.Body)
@@ -151,8 +153,8 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 			var reqBody ChatPostMessageRequestBody
 			err = json.Unmarshal(buf, &reqBody)
 			require.NoError(t, err)
-			assert.Equal(t, reqBody.Channel, caseChannelID)
-			assert.Equal(t, reqBody.Text, caseText)
+			assert.Equal(t, reqBody.Channel, caseBody.Channel)
+			assert.Equal(t, reqBody.Text, caseBody.Text)
 
 			respBody := &ChatPostMessageResponseBody{
 				Ok: true,
@@ -171,7 +173,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		err := d.ChatPostMessage(appcontext.TODO(), caseChannelID, caseText)
+		err := d.ChatPostMessage(appcontext.TODO(), caseBody)
 		assert.NoError(t, err)
 	})
 
@@ -185,7 +187,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 
 		assert.Panics(t, func() {
 			d := NewAPIDriver()
-			d.ChatPostMessage(appcontext.TODO(), "test", "test")
+			d.ChatPostMessage(appcontext.TODO(), ChatPostMessageRequestBody{})
 		})
 	})
 
@@ -212,7 +214,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		err := d.ChatPostMessage(appcontext.TODO(), "test", "test")
+		err := d.ChatPostMessage(appcontext.TODO(), ChatPostMessageRequestBody{})
 		assert.Error(t, err)
 	})
 
@@ -238,7 +240,7 @@ func TestAPIDriver_ChatPostMessage(t *testing.T) {
 		config.SetConfig(c)
 
 		d := NewAPIDriver()
-		err := d.ChatPostMessage(appcontext.TODO(), "test", "test")
+		err := d.ChatPostMessage(appcontext.TODO(), ChatPostMessageRequestBody{})
 		assert.Error(t, err)
 	})
 }

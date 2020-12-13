@@ -162,7 +162,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(appcontext.TODO(), caseOutputData)
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %s", caseEvents[1].UserID(), caseError))
+		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("enqueue error user_id=%s: %v", caseEvents[1].UserID(), caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{
@@ -221,7 +221,7 @@ func TestInteractor_EnqueueEvent(t *testing.T) {
 		o.EXPECT().Output(appcontext.TODO(), caseOutputData)
 
 		l := log.NewMockLogger(ctrl)
-		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %s", caseEvents[1].UserID(), caseError))
+		l.EXPECT().ErrorWithContext(ac, fmt.Sprintf("update error user_id=%s: %v", caseEvents[1].UserID(), caseError))
 		log.SetDefaultLogger(l)
 
 		interactor := &Interactor{

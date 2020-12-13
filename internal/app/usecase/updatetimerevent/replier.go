@@ -1,9 +1,9 @@
-package notifyevent
+package updatetimerevent
 
 import "slacktimer/internal/app/util/appcontext"
 
-// Notifier defines notifying methods used in notifying usecase.
-type Notifier interface {
+// Replier defines replying methods used in updatetimerevent usecase.
+type Replier interface {
 	// SendMessage an event to user.
 	SendMessage(ac appcontext.AppContext, userID string, text string) error
 }

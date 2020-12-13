@@ -34,16 +34,16 @@ func (m *MockNotifier) EXPECT() *MockNotifierMockRecorder {
 	return m.recorder
 }
 
-// Notify mocks base method
-func (m *MockNotifier) Notify(ac appcontext.AppContext, userID, message string) error {
+// SendMessage mocks base method
+func (m *MockNotifier) SendMessage(ac appcontext.AppContext, userID, text string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Notify", ac, userID, message)
+	ret := m.ctrl.Call(m, "SendMessage", ac, userID, text)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Notify indicates an expected call of Notify
-func (mr *MockNotifierMockRecorder) Notify(ac, userID, message interface{}) *gomock.Call {
+// SendMessage indicates an expected call of SendMessage
+func (mr *MockNotifierMockRecorder) SendMessage(ac, userID, text interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Notify", reflect.TypeOf((*MockNotifier)(nil).Notify), ac, userID, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockNotifier)(nil).SendMessage), ac, userID, text)
 }

@@ -52,7 +52,7 @@ func (s Interactor) NotifyEvent(ac appcontext.AppContext, input InputData) error
 	}
 
 	// Send notify.
-	outputData.Result = s.notifier.Notify(ac, input.UserID, input.Message)
+	outputData.Result = s.notifier.SendMessage(ac, input.UserID, input.Message)
 	if outputData.Result != nil {
 		s.outputPort.Output(ac, outputData)
 		return outputData.Result

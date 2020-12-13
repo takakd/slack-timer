@@ -62,7 +62,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(ac, caseInput.UserID, caseInput.Message).Return(nil)
+		n.EXPECT().SendMessage(ac, caseInput.UserID, caseInput.Message).Return(nil)
 
 		r.EXPECT().SaveTimerEvent(caseEvent).Return(caseEvent, nil)
 
@@ -145,7 +145,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(ac, caseInput.UserID, caseInput.Message).Return(caseError)
+		n.EXPECT().SendMessage(ac, caseInput.UserID, caseInput.Message).Return(caseError)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)
@@ -222,7 +222,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(ac, caseInput.UserID, caseInput.Message).Return(nil)
+		n.EXPECT().SendMessage(ac, caseInput.UserID, caseInput.Message).Return(nil)
 
 		r.EXPECT().SaveTimerEvent(caseEvent).Return(nil, caseError)
 
