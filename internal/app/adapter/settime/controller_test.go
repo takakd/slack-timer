@@ -77,8 +77,9 @@ func TestController_Handle(t *testing.T) {
 		caseInput := HandleInput{
 			EventData: EventCallbackData{
 				MessageEvent: MessageEvent{
-					Type: "message",
-					Text: "set 10 message",
+					Type:        "message",
+					ChannelType: "im",
+					Text:        "set 10 message",
 				},
 			},
 		}
@@ -120,8 +121,9 @@ func TestController_Handle(t *testing.T) {
 				caseInput := HandleInput{
 					EventData: EventCallbackData{
 						MessageEvent: MessageEvent{
-							Type: "message",
-							Text: c.cmd,
+							Type:        "message",
+							ChannelType: "im",
+							Text:        c.cmd,
 						},
 					},
 				}

@@ -32,22 +32,25 @@ func TestEventCallbackData_isVerificationEvent(t *testing.T) {
 
 func TestMessageEvent_isSetTimeEvent(t *testing.T) {
 	cases := []struct {
-		name      string
-		eventType string
-		text      string
-		isSet     bool
+		name        string
+		eventType   string
+		channelType string
+		text        string
+		isSet       bool
 	}{
-		{"ok:with text", "message", "set 10 Hi!", true},
-		{"ng:without text", "message", "set 10", false},
-		{"ng:wrong type", "wrong", "set 10", false},
-		{"ng:wrong body", "messazge", "set a", false},
-		{"ng:empty body", "messazge", "", false},
+		{"ok:with text", "message", "im", "set 10 Hi!", true},
+		{"ng:without text", "message", "im", "set 10", false},
+		{"ng:wrong event type", "wrong", "im", "set 10", false},
+		{"ng:wrong channel type", "wrong", "channel", "set 10", false},
+		{"ng:wrong body", "message", "im", "set a", false},
+		{"ng:empty body", "message", "im", "", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			d := &MessageEvent{
-				Type: c.eventType,
-				Text: c.text,
+				Type:        c.eventType,
+				ChannelType: c.channelType,
+				Text:        c.text,
 			}
 			got := d.isSetTimeEvent()
 			assert.Equal(t, c.isSet, got)
@@ -57,21 +60,24 @@ func TestMessageEvent_isSetTimeEvent(t *testing.T) {
 
 func TestMessageEvent_isOnEvent(t *testing.T) {
 	cases := []struct {
-		name      string
-		eventType string
-		text      string
-		isSet     bool
+		name        string
+		eventType   string
+		channelType string
+		text        string
+		isSet       bool
 	}{
-		{"ok", "message", "on", true},
-		{"ng:wrong type", "wrong", "on", false},
-		{"ng:wrong body", "messazge", "onwrong", false},
-		{"ng:empty body", "messazge", "", false},
+		{"ok", "message", "im", "on", true},
+		{"ng:wrong event type", "wrong", "im", "on", false},
+		{"ng:wrong channel type", "message", "channel", "on", false},
+		{"ng:wrong body", "message", "im", "onwrong", false},
+		{"ng:empty body", "message", "im", "", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			d := &MessageEvent{
-				Type: c.eventType,
-				Text: c.text,
+				Type:        c.eventType,
+				ChannelType: c.channelType,
+				Text:        c.text,
 			}
 			got := d.isOnEvent()
 			assert.Equal(t, c.isSet, got)
@@ -81,21 +87,24 @@ func TestMessageEvent_isOnEvent(t *testing.T) {
 
 func TestMessageEvent_isOffEvent(t *testing.T) {
 	cases := []struct {
-		name      string
-		eventType string
-		text      string
-		isSet     bool
+		name        string
+		eventType   string
+		channelType string
+		text        string
+		isSet       bool
 	}{
-		{"ok", "message", "off", true},
-		{"ng:wrong type", "wrong", "off", false},
-		{"ng:wrong body", "messazge", "offwrong", false},
-		{"ng:empty body", "messazge", "", false},
+		{"ok", "message", "im", "off", true},
+		{"ng:wrong event type", "wrong", "im", "off", false},
+		{"ng:wrong channel type", "message", "channel", "off", false},
+		{"ng:wrong body", "message", "im", "offwrong", false},
+		{"ng:empty body", "message", "im", "", false},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			d := &MessageEvent{
-				Type: c.eventType,
-				Text: c.text,
+				Type:        c.eventType,
+				ChannelType: c.channelType,
+				Text:        c.text,
 			}
 			got := d.isOffEvent()
 			assert.Equal(t, c.isSet, got)

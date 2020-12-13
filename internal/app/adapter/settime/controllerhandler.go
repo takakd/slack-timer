@@ -56,12 +56,14 @@ func (e EventCallbackData) isVerificationEvent() bool {
 }
 
 // MessageEvent represents the message data in EventCallbackData.
+// Ref: https://api.slack.com/events/message.im
 type MessageEvent struct {
-	Type    string `json:"type"`
-	EventTs string `json:"event_ts"`
-	User    string `json:"user"`
-	Ts      string `json:"ts"`
-	Text    string `json:"text"`
+	Type        string `json:"type"`
+	EventTs     string `json:"event_ts"`
+	User        string `json:"user"`
+	Ts          string `json:"ts"`
+	Text        string `json:"text"`
+	ChannelType string `json:"channel_type"`
 }
 
 // Extract second, because the format of timestamp sent by Slack has nano second.
@@ -77,7 +79,8 @@ func (m MessageEvent) eventUnixTimeStamp() (ts int64, err error) {
 }
 
 func (m MessageEvent) isMatchCommand(pattern, cmd string) bool {
-	if m.Type != "message" {
+	// Only use in DM channel.
+	if m.Type != "message" || m.ChannelType != "im" {
 		return false
 	}
 	re := regexp.MustCompile(fmt.Sprintf(pattern, cmd))
