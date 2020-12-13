@@ -1,5 +1,8 @@
-# Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2.1
+
+orbs:
+  slack: circleci/slack@3.4.2
+
 jobs:
   test:
     docker:
@@ -20,5 +23,8 @@ jobs:
           success_message: "Test is OK.🤗"
           failure_message: "Test Failed.🥺"
           webhook: $SLACK_WEBHOOK
-orbs:
-  slack: circleci/slack@3.4.2
+
+workflows:
+  test:
+    jobs:
+      - test
