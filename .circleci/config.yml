@@ -12,6 +12,7 @@ jobs:
     steps:
       - checkout
       # Format, imports, lint, vet, and test.
+      - run: go get golang.org/x/tools/cmd/goimports
       - run: go fmt ./...
       - run: goimports -w $(find . -type f -name "*.go" -not -path "./vendor/*")
       - run: golint ./cmd/... ./internal/...
