@@ -89,7 +89,7 @@ Details of features are below.
 
 #### Bots - App Home
 
-* Add scopes according to [Bot Token Scopes](#bot_token_scopes)
+* Add scopes according to [Bot Token Scopes](#user-content-bot-token-scopes)
 * Enter "App Display Name" as you like.
 * Enable "Message Tab" on "Show Tabs" section.
 
