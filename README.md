@@ -84,7 +84,7 @@ Details of features are below.
 #### Event Subscriptions
 
 * Enable events.
-* Enter the API URL to Request URL Field. Use the URL added `/slack` to the API Gateway Endpoint: e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified✅" if it had succeeded in setup.
+* Enter the API URL to Request URL Field. Use the URL added `/slack` to the API Gateway Endpoint: e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified √" if it had succeeded in setup.
 * Add "message.im" event to "Subscribe to events on behalf of users" section.
 
 #### Bots - App Home
@@ -97,10 +97,10 @@ Details of features are below.
 
 Add scopes as follow.
 
-#####Bot Token Scopes
+##### Bot Token Scopes
 - im:write
 
-#####User Token Scopes
+##### User Token Scopes
 - im.history
 
 ## Usage
