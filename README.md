@@ -2,7 +2,7 @@
 
 Simple periodically timer on Slack, sending a message to DM Channel.
 
-> ⚠️ This project is [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) with [Golang](https://golang.org/) and [Clean Architecuture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).  Please use [Reminder](https://slack.com/help/articles/208423427-Set-a-reminder) if the timer feature on Slack is needed.
+> ⚠️ This project is [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) with [Golang](https://golang.org/) and [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).  Please use [Reminder](https://slack.com/help/articles/208423427-Set-a-reminder) if the timer feature on Slack is needed.
 
 ![Timer](website/peter-yost-I9jJXmNkXR4-unsplash.jpg?raw=true)
 
@@ -28,20 +28,20 @@ Simple periodically timer on Slack, sending a message to DM Channel.
 
 ## Features
 
-* Notify message by interval minutes we set. 
-* Set On/Off notification.
+* Notify message on Slack by interval minutes. 
+* Set on and off a notification.
 
 ## Setup
 
 ### Requirements
 
-* Slack account: necessary to create Slack App.
-* AWS account: necessary to control Lambda, DynamoDB, SQS, CloudWatch, and CloudFormation.
+* Slack account
+* AWS account assigned policies: Lambda, DynamoDB, SQS, CloudWatch, and CloudFormation
 * [AWS SAM CLI, version 1.7.0](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
-### 1. Deploy to AWS
+### 1. Creating AWS resources
 
-Deploy codes to AWS by SAM CLI.
+Creating AWS resources by SAM CLI.
 
 ```
 $ cd ./deployments/sam/slack-timer
@@ -64,26 +64,29 @@ Configuring SAM deploy
 ...
 CloudFormation outputs from deployed stack
 ...
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Outputs                                                                                                                                                                                                                                                          
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Key                 SetTimerAPI                                                                                                                                                                                                                                  
-Value               https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack                                                                                                                                                                      
+--------------------------------------------------------------------------------------------
+Outputs
+--------------------------------------------------------------------------------------------
+Key
+SetTimerAPI
+Value             https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack
 ...
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
 
 Successfully created/updated stack - slacktimer in ap-northeast-1
 ```
 
-### 2. Creating Slack App
+### 2. Creating Slack app
 
-Create Slack App on your workspace which has Event Subscriptions, Bots and Permissions features.
-Ref: https://api.slack.com/start/overview#what
+Create Slack app having Event Subscriptions, Bots, and Permissions features in a workspace.
+Ref. https://api.slack.com/reference
+
+Details of features are below.
 
 #### Event Subscriptions
 
-* Set enable events.
-* Enter the API URL deployed at "1. Deploy to AWS" to Request URL Field.  It will show "Verified✅" if it had succeeded deployment.
+* Enable events.
+* Enter the API URL to Request URL Field. Use the URL added `/slack` to the API Gateway Endpoint: e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified✅" if it had succeeded in setup.
 * Add "message.im" event to "Subscribe to events on behalf of users" section.
 
 #### Bots
@@ -95,19 +98,20 @@ Ref: https://api.slack.com/start/overview#what
 
 Add scopes as follow.
 
-Features and functionality | permission
---- | ----
-Bot Token Scopes | channels:read
-Bot Token Scopes | chat:write
-Bot Token Scopes | im:history
-Bot Token Scopes | im:read
-Bot Token Scopes | im:write
-Bot Token Scopes | mpim:read
-User Token Scopes | im.history
+**Bot Token Scopes**
+- channels:read
+- chat:write
+- im:history
+- im:read
+- im:write
+- mpim:read
+
+**User Token Scopes**
+- im.history
 
 ## Usage
 
-Provide three commands to control this app. Add the app channel on Slack workspace and enter commands in the app channel message window.
+This app provides three commands to control this app. Add its channel on Slack workspace and enter commands in its channel message window.
 
 Command | Format | Action
 --- | --- | ---
@@ -117,7 +121,7 @@ Off | off | Suspend to notify.
 
 **e.g.**
 
-Receive `I'm active` by 15 minutes.
+Receive `I'm active` message every 15 minutes.
 ```
 set 15 I'm active!
 ```
@@ -136,42 +140,42 @@ on
 
 ### Tech Stacks
 
-* AWS Serverless: Lambda, DynamoDB, SQS, CloudWatch, API Gateway and CloudFormation.
-* Golang version go1.14.4 darwin/amd64
-* Clean Architecture
+* AWS Serverless: Lambda, DynamoDB, SQS, CloudWatch, API Gateway, and CloudFormation.
+* Golang
+* Clean Architecture 
 
 ### Setup
 
 1. Install Golang by following [Download and install](https://golang.org/doc/install)
-2. Run `go mod vendor` for getting moduels.
-2. Install AWS SAM CLI by following [Installing the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+2. Run `go mod vendor` to get modules.
+3. Install AWS SAM CLI by following [Installing the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
 ### Command
 
 **Testing**
 ```
-# With details; "-v" and "-cover".
+# With details: "-v" and "-cover"
 $ make test
 
-# No details; no flags.
+# No details: without flags
 $ make test_light
 ```
 
-**Code format**
+**Formatting codes**
 ```
-# Run "go fmt", in addition to "goimports" and "go lint".
+# Run "go fmt", "goimports", and "go lint".
 $ make fmt
 ```
 
 ### Structure
 
-* Directory structure is followed by [golang-standards/project-layout](https://github.com/golang-standards/project-layout).
-* Design is followed by Clean architecture.
+* Directory structure refers to [golang-standards/project-layout](https://github.com/golang-standards/project-layout).
+* Design refers to Clean architecture.
 https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 #### Design
 
-#### Source
+#### Sources
 
 ```shell
 .
@@ -303,16 +307,14 @@ https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 |   `-- peter-yost-I9jJXmNkXR4-unsplash.jpg
 ```
 
-## Support
-
-Get in touch is here.
+## Get in touch
 
 - [Dev.to](https://dev.to/takakd)
 - [Twitter](https://twitter.com/takakdkd)
 
 ## Contributing
 
-This is just [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) project, but welcome to issues and reviews, don't hesitate to create issue and PR.
+This is just [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) project, but welcome to issues and reviews. Don't hesitate to create issues and PR.
 
 ## License
 
