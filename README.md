@@ -4,7 +4,7 @@ Simple periodically timer on Slack, sending a message to DM Channel.
 
 > ⚠️ This project is [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) with [Golang](https://golang.org/) and [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).  Please use [Reminder](https://slack.com/help/articles/208423427-Set-a-reminder) if the timer feature on Slack is needed.
 
-![Timer](website/peter-yost-I9jJXmNkXR4-unsplash.jpg?raw=true)
+![Ticking Stopwatch](website/peter-yost-I9jJXmNkXR4-unsplash.jpg?raw=true)
 
 <span>Photo by <a href="https://unsplash.com/@odysseus_?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Peter Yost</a> on <a href="https://unsplash.com/s/photos/stopwatch?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
 
@@ -21,6 +21,8 @@ Simple periodically timer on Slack, sending a message to DM Channel.
 - [License](#license)
 
 ## Features
+
+![Video](website/video.gif?raw=true)
 
 * Notify message on Slack by interval minutes. 
 * Set on and off a notification.
@@ -61,9 +63,9 @@ CloudFormation outputs from deployed stack
 --------------------------------------------------------------------------------------------
 Outputs
 --------------------------------------------------------------------------------------------
-Key
-SetTimerAPI
-Value             https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack
+Key                 SlackEventAPIRequestURL
+Description         Enter this URL as the Request URL notified by Slack  
+Value               https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack
 ...
 --------------------------------------------------------------------------------------------
 
@@ -84,7 +86,7 @@ Details of features are below.
 #### Event Subscriptions
 
 * Enable events.
-* Enter the API URL to Request URL Field. Use the URL added `/slack` to the API Gateway Endpoint: e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified √" if it had succeeded in setup.
+* Enter `SlackEventAPIRequestURL` which is showed in Cloudformation outputs to Request URL Field. e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified √" if it had succeeded in setup.
 * Add "message.im" event to "Subscribe to events on behalf of users" section.
 
 #### Bots - App Home
@@ -98,7 +100,7 @@ Details of features are below.
 Add scopes as follow.
 
 ##### Bot Token Scopes
-- im:write
+- chat:write
 
 ##### User Token Scopes
 - im.history
