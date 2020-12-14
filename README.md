@@ -72,7 +72,35 @@ Value               https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Pr
 Successfully created/updated stack - slacktimer in ap-northeast-1
 ```
 
-### 2. Creating and Installing Slack app
+### 2. Set Lambda environment variables
+
+Set each environment variable to each Lambda function the following.
+
+#### EnqueueFunction
+
+Key | Value
+---- | ----
+APP_ENV | `prod` or `dev`
+APP_LOG_LEVEL	| `debug` or `info` or `error`
+DYNAMODB_INDEX_NAME | `TimeIndex`
+DYNAMODB_INDEX_PRIMARY_KEY_VALUE | `1`
+DYNAMODB_TABLE | `EventTableName` value in Cloudformation outputs.
+SQS_URL |	`EventQueueURL` value in Cloudformation outputs.
+
+#### SetTimerFunction and NotifyFunction
+
+Key | Value
+---- | ----
+APP_ENV | `prod` or `dev`
+APP_LOG_LEVEL	| `debug` or `info` or `error`
+DYNAMODB_INDEX_NAME | `TimeIndex`
+DYNAMODB_INDEX_PRIMARY_KEY_VALUE | `1`
+DYNAMODB_TABLE | `event`
+SLACK_API_BOT_TOKEN | Bot User OAuth Access token in `OAuth & Permissions` page on Slack api page. It can be seen after creating Slack app. e.g. `xoxb-xxxxxxxxxxxxx`
+SLACK_API_URL_CHATPOSTMESSAGE | `https://slack.com/api/chat.postMessage`
+SLACK_API_URL_CONVERSATIONSOPEN | `https://slack.com/api/conversations.open`
+
+### 3. Creating and Installing Slack app
 
 Create Slack app having Event Subscriptions, Bots, and Permissions features in a workspace. After that, install it in the workspace. It will be showed in the workspace, if it succeeded in installing.  
 These control can be in `Basic Information` page in the Slack app page.
@@ -86,7 +114,7 @@ Details of features are below.
 #### Event Subscriptions
 
 * Enable events.
-* Enter `SlackEventAPIRequestURL` which is showed in Cloudformation outputs to Request URL Field. e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified √" if it had succeeded in setup.
+* Enter `SlackEventAPIRequestURL` value which is showed in Cloudformation outputs to Request URL Field. e.g. `https://<API_ID>.execute-api.ap-northeast-1.amazonaws.com/Prod/callback/slack`. After entering, it will show "Verified √" if it had succeeded in setup.
 * Add "message.im" event to "Subscribe to events on behalf of users" section.
 
 #### Bots - App Home

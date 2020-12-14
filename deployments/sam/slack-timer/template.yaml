@@ -56,21 +56,6 @@ Resources:
         IntegrationHttpMethod: POST
         # Ref: Uri section in https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration.html
         Uri: !Join ["", ["arn:aws:apigateway:", !Ref AWS::Region, ":lambda:path/2015-03-31/functions/", !GetAtt SetTimerFunction.Arn, "/invocations"]]
-        #Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SetTimerFunction.Arn}/invocations
-#        RequestTemplates:
-#          application/json: "{\"body\":$input.json('$')}"
-#        PassthroughBehavior: WHEN_NO_TEMPLATES
-#        IntegrationResponses:
-#          - StatusCode: 200
-#            SelectionPattern: ""
-#          - StatusCode: 500
-#            SelectionPattern: ".*integration_status:500.*"
-#            ContentHandling: CONVERT_TO_TEXT
-#            ResponseParameters:
-#              # Enclose single quote for using static value. Ref: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters
-#              method.response.header.X-Slack-No-Retry: "'1'"
-#            ResponseTemplates:
-#              application/json: "{\"message\":$input.json('$.message'),\"status\":$input('$.status'),\"detail\":$input('$.detail'),\"detail2\":$input('$')}"
       MethodResponses:
         - StatusCode: 200
         - StatusCode: 500
@@ -101,13 +86,14 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref EventTimerTable
 #      Environment:
-#        APP_ENV: "def"
-#        DYNAMODB_TABLE: "event"
-#        DYNAMODB_INDEX_PRIMARY_KEY_VALUE: "1"
-#        DYNAMODB_INDEX_NAME: "TimeIndex"
-#        DYNAMODB_TABLE: ""
-#        DYNAMODB_TABLE: ""
-#        DYNAMODB_TABLE: ""
+#        APP_ENV: dev
+#        APP_LOG_LEVEL: debug
+#        DYNAMODB_INDEX_NAME: TimeIndex
+#        DYNAMODB_INDEX_PRIMARY_KEY_VALUE: 1
+#        DYNAMODB_TABLE: event
+#        SLACK_API_BOT_TOKEN: xoxb-xxxxxxxxxxxxx
+#        SLACK_API_URL_CHATPOSTMESSAGE: https://slack.com/api/chat.postMessage
+#        SLACK_API_URL_CONVERSATIONSOPEN: https://slack.com/api/conversations.open
 
   # CloudWatch - Lambda
   EnqueueFunction:
@@ -122,8 +108,12 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName: !GetAtt NotifyQueue.QueueName
 #      Environment:
-#        DYNAMODB_TABLE: ""
-#        SQS_URL: ""
+#        APP_ENV: dev
+#        APP_LOG_LEVEL: debug
+#        DYNAMODB_INDEX_NAME: TimeIndex
+#        DYNAMODB_INDEX_PRIMARY_KEY_VALUE: 1
+#        DYNAMODB_TABLE: event
+#        SQS_URL: https://sqs.ap-northeast-1.amazonaws.com/{xxxxxxxxxxxxx}/EventQueue.fifo
 
   # CloudWatch - Lambda - Permission
   EnqueueFunctionPermission:
@@ -142,7 +132,7 @@ Resources:
       Name: regular-execution-enqueue-function
       # Run every 1 minute
       ScheduleExpression: "cron(0/1 * * * ? *)"
-      State: DISABLED
+      State: ENABLED
       Targets:
         - Arn: !GetAtt EnqueueFunction.Arn
           Id: Id1
@@ -175,10 +165,15 @@ Resources:
             TableName: !Ref EventTimerTable
         - SQSPollerPolicy:
             QueueName: !Ref NotifyQueue
-      Environment:
-        #SLACK_API_URL_CONVERSATIONSOPEN
-        #SLACK_API_URL_CHATPOSTMESSAGE
-        #SLACK_API_BOT_TOKEN
+#      Environment:
+#        APP_ENV: dev
+#        APP_LOG_LEVEL: debug
+#        DYNAMODB_INDEX_NAME: TimeIndex
+#        DYNAMODB_INDEX_PRIMARY_KEY_VALUE: 1
+#        DYNAMODB_TABLE: event
+#        SLACK_API_BOT_TOKEN: xoxb-xxxxxxxxxxxxx
+#        SLACK_API_URL_CHATPOSTMESSAGE: https://slack.com/api/chat.postMessage
+#        SLACK_API_URL_CONVERSATIONSOPEN: https://slack.com/api/conversations.open
 
   # SQS - Lambda - Permission
   NotifyFunctionPermission:
