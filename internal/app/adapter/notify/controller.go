@@ -9,7 +9,7 @@ import (
 
 // Controller implements ControllerHandler.
 type Controller struct {
-	InputPort notifyevent.InputPort
+	inputPort notifyevent.InputPort
 }
 
 var _ ControllerHandler = (*Controller)(nil)
@@ -17,8 +17,7 @@ var _ ControllerHandler = (*Controller)(nil)
 // NewController creates new struct.
 func NewController() *Controller {
 	h := &Controller{
-		InputPort: di.Get("notifyevent.InputPort").(notifyevent.InputPort),
-		// TODO: presenter get from di
+		inputPort: di.Get("notifyevent.InputPort").(notifyevent.InputPort),
 	}
 	return h
 }
@@ -33,7 +32,7 @@ func (n Controller) Handle(ac appcontext.AppContext, input HandleInput) *Respons
 	}
 
 	// Receive error to send error state to SQS.
-	err := n.InputPort.NotifyEvent(ac, data)
+	err := n.inputPort.NotifyEvent(ac, data)
 
 	log.InfoWithContext(ac, "return from inputport", err)
 

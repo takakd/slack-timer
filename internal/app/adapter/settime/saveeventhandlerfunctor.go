@@ -27,8 +27,8 @@ type SaveEventHandler interface {
 
 // SaveEventHandlerFunctor handle "Set" command.
 type SaveEventHandlerFunctor struct {
-	// TODO: presenter get from di
 	inputPort           updatetimerevent.InputPort
+	presenter           *SaveEventOutputReceivePresenter
 	notificationTime    time.Time
 	remindIntervalInMin int
 	text                string
@@ -40,6 +40,7 @@ var _ SaveEventHandler = (*SaveEventHandlerFunctor)(nil)
 func NewSaveEventHandlerFunctor() *SaveEventHandlerFunctor {
 	return &SaveEventHandlerFunctor{
 		inputPort: di.Get("updatetimerevent.InputPort").(updatetimerevent.InputPort),
+		presenter: di.Get("settime.SaveEventOutputReceivePresenter").(*SaveEventOutputReceivePresenter),
 	}
 }
 
@@ -90,6 +91,7 @@ func (se SaveEventHandlerFunctor) Handle(ac appcontext.AppContext, data EventCal
 		"interval":          se.remindIntervalInMin,
 		"notification time": se.notificationTime,
 		"text":              se.text,
+		"ts":                data.MessageEvent.Ts,
 	})
 
 	input := updatetimerevent.SaveEventInputData{
@@ -98,10 +100,9 @@ func (se SaveEventHandlerFunctor) Handle(ac appcontext.AppContext, data EventCal
 		Minutes:     se.remindIntervalInMin,
 		Text:        se.text,
 	}
-	presenter := NewSaveEventOutputReceivePresenter()
-	se.inputPort.SaveIntervalMin(ac, input, presenter)
+	se.inputPort.SaveIntervalMin(ac, input, se.presenter)
 
-	log.InfoWithContext(ac, "return from inputport", presenter.Resp)
+	log.InfoWithContext(ac, "return from inputport", se.presenter.Resp)
 
-	return &presenter.Resp
+	return &se.presenter.Resp
 }

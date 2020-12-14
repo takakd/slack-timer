@@ -30,6 +30,25 @@ func TestEventCallbackData_isVerificationEvent(t *testing.T) {
 	}
 }
 
+func TestMessageEvent_isBotMessage(t *testing.T) {
+	cases := []struct {
+		name  string
+		botID string
+		want  bool
+	}{
+		{"ok", "ABC1234567", true},
+		{"ng", "", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			caseMessage := &MessageEvent{
+				BotID: c.botID,
+			}
+			assert.Equal(t, c.want, caseMessage.isBotMessage())
+		})
+	}
+}
+
 func TestMessageEvent_isSetTimeEvent(t *testing.T) {
 	cases := []struct {
 		name        string

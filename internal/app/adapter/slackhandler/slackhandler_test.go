@@ -25,25 +25,52 @@ func TestNewSlackHandler(t *testing.T) {
 	assert.Equal(t, s, h.api)
 }
 
-func TestSlackApi_Notify(t *testing.T) {
+func TestSlackHandler_chatPost(t *testing.T) {
 	caseUserID := "test user"
 	caseMessage := "test message"
 	caseChannelID := "test channel id"
 
-	t.Run("ok", func(t *testing.T) {
+	t.Run("ok:notify", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		ms := slack.NewMockAPI(ctrl)
 		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
-		ms.EXPECT().ChatPostMessage(appcontext.TODO(), caseChannelID, caseMessage).Return(nil)
+
+		wantBody := slack.ChatPostMessageRequestBody{
+			Channel: caseChannelID,
+			Text:    caseMessage,
+		}
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), wantBody).Return(nil)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("slack.API").Return(ms)
 		di.SetDi(md)
 
 		h := NewSlackHandler()
-		err := h.Notify(appcontext.TODO(), caseUserID, caseMessage)
+		err := h.SendMessage(appcontext.TODO(), caseUserID, caseMessage)
+		assert.NoError(t, err)
+	})
+
+	t.Run("ok:reply", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ms := slack.NewMockAPI(ctrl)
+		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
+
+		wantBody := slack.ChatPostMessageRequestBody{
+			Channel: caseChannelID,
+			Text:    caseMessage,
+		}
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), wantBody).Return(nil)
+
+		md := di.NewMockDI(ctrl)
+		md.EXPECT().Get("slack.API").Return(ms)
+		di.SetDi(md)
+
+		h := NewSlackHandler()
+		err := h.SendMessage(appcontext.TODO(), caseUserID, caseMessage)
 		assert.NoError(t, err)
 	})
 
@@ -61,7 +88,7 @@ func TestSlackApi_Notify(t *testing.T) {
 		di.SetDi(md)
 
 		h := NewSlackHandler()
-		err := h.Notify(appcontext.TODO(), caseUserID, caseMessage)
+		err := h.SendMessage(appcontext.TODO(), caseUserID, caseMessage)
 		assert.Equal(t, caseError, err)
 	})
 
@@ -73,14 +100,14 @@ func TestSlackApi_Notify(t *testing.T) {
 
 		ms := slack.NewMockAPI(ctrl)
 		ms.EXPECT().ConversationsOpen(appcontext.TODO(), caseUserID).Return(caseChannelID, nil)
-		ms.EXPECT().ChatPostMessage(appcontext.TODO(), caseChannelID, caseMessage).Return(caseError)
+		ms.EXPECT().ChatPostMessage(appcontext.TODO(), gomock.Any()).Return(caseError)
 
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("slack.API").Return(ms)
 		di.SetDi(md)
 
 		h := NewSlackHandler()
-		err := h.Notify(appcontext.TODO(), caseUserID, caseMessage)
+		err := h.SendMessage(appcontext.TODO(), caseUserID, caseMessage)
 		assert.Equal(t, caseError, err)
 	})
 }

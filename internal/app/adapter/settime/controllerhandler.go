@@ -64,6 +64,8 @@ type MessageEvent struct {
 	Ts          string `json:"ts"`
 	Text        string `json:"text"`
 	ChannelType string `json:"channel_type"`
+	// This field is only included in message from the bot.
+	BotID string `json:"bot_id,omitempty"`
 }
 
 // Extract second, because the format of timestamp sent by Slack has nano second.
@@ -76,6 +78,10 @@ func (m MessageEvent) eventUnixTimeStamp() (ts int64, err error) {
 
 	ts, err = strconv.ParseInt(s[0], 10, 64)
 	return
+}
+
+func (m MessageEvent) isBotMessage() bool {
+	return m.BotID != ""
 }
 
 func (m MessageEvent) isMatchCommand(pattern, cmd string) bool {

@@ -227,18 +227,21 @@ Resources:
 
 Outputs:
   # Ref: https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  SetTimerAPI:
-    Description: "API Gateway endpoint URL for Prod environment for Slack Event API callback."
-    Value: !Sub "https://${SetTimerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  SetTimerFunction:
+  SlackEventAPIRequestURL:
+    Description: "Enter this URL as the Request URL notified by Slack"
+    Value: !Sub "https://${SetTimerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/callback/slack"
+  EventQueueURL:
+    Description: "Enter this URL as SQS_URL in Lambda's environment value"
+    Value: !Ref NotifyQueue
+  EventTableName:
+    Description: "User's state table on DynamoDB"
+    Value: !GetAtt EventTimerTable.Arn
+  SetTimerLambdaFunctionArn:
     Description: "SetTimer Function ARN"
     Value: !GetAtt SetTimerFunction.Arn
-  EnqueueFunction:
+  EnqueueLambdaFunctionArn:
     Description: "Enqueue Function ARN"
     Value: !GetAtt SetTimerFunction.Arn
-#  NotifyFunction:
-#    Description: "Notify Function ARN"
-#    Value: !GetAtt NotifyFunction.Arn
-  EventTable:
-    Description: "Event Table ARN"
-    Value: !GetAtt EventTimerTable.Arn
+  NotifyLambdaFunctionArn:
+    Description: "Notify Function ARN"
+    Value: !GetAtt NotifyFunction.Arn

@@ -30,6 +30,16 @@ func (s Controller) Handle(ac appcontext.AppContext, input HandleInput) *Respons
 	}
 
 	var resp *Response
+
+	if input.EventData.MessageEvent.isBotMessage() {
+		log.InfoWithContext(ac, "ignore bot message")
+		resp = &Response{
+			StatusCode: http.StatusOK,
+			Body:       "bot message",
+		}
+		return resp
+	}
+
 	if input.EventData.MessageEvent.isSetTimeEvent() {
 		rh := di.Get("settime.SaveEventHandler").(SaveEventHandler)
 		resp = rh.Handle(ac, input.EventData)
@@ -60,7 +70,7 @@ func newErrorHandlerResponse(ac appcontext.AppContext, message string, detail in
 	}
 	if detail != nil {
 		if detailJSON, err := json.Marshal(detail); err != nil {
-			log.ErrorWithContext(ac, "marshal error", err)
+			log.ErrorWithContext(ac, "marshal error", err.Error())
 		} else {
 			body.Detail = string(detailJSON)
 		}

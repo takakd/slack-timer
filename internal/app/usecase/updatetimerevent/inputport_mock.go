@@ -34,18 +34,6 @@ func (m *MockInputPort) EXPECT() *MockInputPortMockRecorder {
 	return m.recorder
 }
 
-// UpdateNotificationTime mocks base method
-func (m *MockInputPort) UpdateNotificationTime(ac appcontext.AppContext, input UpdateNotificationTimeInputData, presenter OutputPort) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateNotificationTime", ac, input, presenter)
-}
-
-// UpdateNotificationTime indicates an expected call of UpdateNotificationTime
-func (mr *MockInputPortMockRecorder) UpdateNotificationTime(ac, input, presenter interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNotificationTime", reflect.TypeOf((*MockInputPort)(nil).UpdateNotificationTime), ac, input, presenter)
-}
-
 // SaveIntervalMin mocks base method
 func (m *MockInputPort) SaveIntervalMin(ac appcontext.AppContext, input SaveEventInputData, presenter OutputPort) {
 	m.ctrl.T.Helper()

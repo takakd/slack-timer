@@ -33,8 +33,11 @@ func TestSaveEventHandlerFunctor_parseTs(t *testing.T) {
 			defer ctrl.Finish()
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
+			mp := NewSaveEventOutputReceivePresenter()
+
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
+			md.EXPECT().Get("settime.SaveEventOutputReceivePresenter").Return(mp)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -77,8 +80,11 @@ func TestSaveEventHandlerFunctor_parseSet(t *testing.T) {
 			defer ctrl.Finish()
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
+			mp := NewSaveEventOutputReceivePresenter()
+
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
+			md.EXPECT().Get("settime.SaveEventOutputReceivePresenter").Return(mp)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -103,26 +109,27 @@ func TestSaveEventHandlerFunctor_parseSet(t *testing.T) {
 
 func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 	cases := []struct {
-		name string
-		text string
-		ts   string
-		resp Response
+		name    string
+		text    string
+		message string
+		ts      string
+		resp    Response
 	}{
-		{"timestamp validate error", "set 10 Hi!", "", Response{
+		{"timestamp validate error", "set 10 Hi!", "Hi!", "", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
 				Detail:  `"invalid format"`,
 			},
 		}},
-		{"set command validate error", "", "1606830655", Response{
+		{"set command validate error", "", "", "1606830655", Response{
 			StatusCode: http.StatusInternalServerError,
 			Body: &ResponseErrorBody{
 				Message: "invalid parameter",
 				Detail:  `"invalid format"`,
 			},
 		}},
-		{"ok", "set 10 Hi!", "1606830655.000010", Response{
+		{"ok", "set 10 Hi!", "Hi!", "1606830655.000010", Response{
 			StatusCode: http.StatusOK,
 			Body:       "success",
 		}},
@@ -138,15 +145,18 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 					User:    "test",
 					Text:    c.text,
 					EventTs: c.ts,
+					Ts:      c.ts,
 				},
 			}
 
 			ac := appcontext.TODO()
 
 			mu := updatetimerevent.NewMockInputPort(ctrl)
+			mp := NewSaveEventOutputReceivePresenter()
 
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mu)
+			md.EXPECT().Get("settime.SaveEventOutputReceivePresenter").Return(mp)
 			di.SetDi(md)
 
 			h := NewSaveEventHandlerFunctor()
@@ -158,10 +168,9 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 					UserID:      caseData.MessageEvent.User,
 					CurrentTime: h.notificationTime,
 					Minutes:     h.remindIntervalInMin,
-					Text:        h.text,
+					Text:        c.message,
 				}
 				mu.EXPECT().SaveIntervalMin(ac, input, gomock.Any()).DoAndReturn(func(_, _, outputPort interface{}) {
-
 					output := outputPort.(*SaveEventOutputReceivePresenter)
 					output.Resp = c.resp
 				})
@@ -174,8 +183,9 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 				ml.EXPECT().InfoWithContext(ac, "call inputport", map[string]interface{}{
 					"user":              caseData.MessageEvent.User,
 					"interval":          10,
-					"text":              "Hi!",
+					"text":              c.message,
 					"notification time": time.Unix(ts, 0).UTC(),
+					"ts":                caseData.MessageEvent.Ts,
 				})
 
 				ml.EXPECT().InfoWithContext(ac, "return from inputport", c.resp)

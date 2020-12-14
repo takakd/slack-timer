@@ -44,15 +44,15 @@ func (s Interactor) NotifyEvent(ac appcontext.AppContext, input InputData) error
 
 	log.InfoWithContext(ac, "found event", logDetail)
 
-	// Check item to be notified
-	if event.State != enterpriserule.TimerEventStateQueued {
-		log.InfoWithContext(ac, "already notified", logDetail)
+	// Check item is disabled
+	if event.State == enterpriserule.TimerEventStateDisabled {
+		log.InfoWithContext(ac, "event is suspended", logDetail)
 		s.outputPort.Output(ac, outputData)
 		return nil
 	}
 
 	// Send notify.
-	outputData.Result = s.notifier.Notify(ac, input.UserID, input.Message)
+	outputData.Result = s.notifier.SendMessage(ac, input.UserID, input.Message)
 	if outputData.Result != nil {
 		s.outputPort.Output(ac, outputData)
 		return outputData.Result

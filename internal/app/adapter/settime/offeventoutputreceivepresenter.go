@@ -31,7 +31,7 @@ func (s *OffEventOutputReceivePresenter) Output(ac appcontext.AppContext, data t
 	}
 
 	if data.Result != nil {
-		log.ErrorWithContext(ac, "settime offevent outputport", data.Result)
+		log.ErrorWithContext(ac, "settime offevent outputport", data.Result.Error())
 		s.Resp.StatusCode = http.StatusInternalServerError
 		s.Resp.Body = "internal server error"
 		return

@@ -20,8 +20,8 @@ func NewSlackHandler() *SlackHandler {
 	return s
 }
 
-// Notify notify message to user identified by userID.
-func (s SlackHandler) Notify(ac appcontext.AppContext, userID string, message string) error {
+// SendMessage notify message to user identified by userID.
+func (s SlackHandler) SendMessage(ac appcontext.AppContext, userID string, text string) error {
 	// Need to open DM channel to send DM.
 	channelID, err := s.api.ConversationsOpen(ac, userID)
 	if err != nil {
@@ -29,7 +29,11 @@ func (s SlackHandler) Notify(ac appcontext.AppContext, userID string, message st
 	}
 
 	// Send DM.
-	err = s.api.ChatPostMessage(ac, channelID, message)
+	body := slack.ChatPostMessageRequestBody{
+		Text:    text,
+		Channel: channelID,
+	}
+	err = s.api.ChatPostMessage(ac, body)
 	if err != nil {
 		return err
 	}

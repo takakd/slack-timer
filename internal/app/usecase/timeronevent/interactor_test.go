@@ -20,8 +20,10 @@ func TestNewInteractor(t *testing.T) {
 		defer ctrl.Finish()
 
 		mr := NewMockRepository(ctrl)
+		mp := NewMockReplier(ctrl)
 		md := di.NewMockDI(ctrl)
 		md.EXPECT().Get("timeronevent.Repository").Return(mr)
+		md.EXPECT().Get("timeronevent.Replier").Return(mp)
 		di.SetDi(md)
 
 		NewInteractor()
@@ -50,10 +52,10 @@ func TestInteractor_SetEventOn(t *testing.T) {
 		caseEvent.Text = "Hi!"
 		caseEvent.State = enterpriserule.TimerEventStateDisabled
 
-		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(caseEvent.UserID()).
+		mr := NewMockRepository(ctrl)
+		mr.EXPECT().FindTimerEvent(caseEvent.UserID()).
 			Return(caseEvent, nil)
-		m.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
+		mr.EXPECT().SaveTimerEvent(caseEvent).Return(nil, nil)
 
 		want, _ := enterpriserule.NewTimerEvent(caseEvent.UserID())
 		want.Text = caseEvent.Text
@@ -66,84 +68,71 @@ func TestInteractor_SetEventOn(t *testing.T) {
 			SavedEvent: want,
 		}
 
-		mp := NewMockOutputPort(ctrl)
-		mp.EXPECT().Output(ac, wantOutputData)
+		mp := NewMockReplier(ctrl)
+		mp.EXPECT().SendMessage(ac, caseEvent.UserID(), ReplySuccess).Return(nil)
+
+		mo := NewMockOutputPort(ctrl)
+		mo.EXPECT().Output(ac, wantOutputData)
 
 		interactor := &Interactor{
-			repository: m,
+			repository: mr,
+			replier:    mp,
 		}
 
 		caseInput := InputData{
 			UserID: caseEvent.UserID(),
 		}
-		interactor.SetEventOn(ac, caseInput, mp)
+		interactor.SetEventOn(ac, caseInput, mo)
 	})
 
-	t.Run("ng:find", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		ac := appcontext.TODO()
-
-		caseError := errors.New("error")
-
-		caseEvent, _ := enterpriserule.NewTimerEvent("abc")
-		caseEvent.Text = "Hi!"
-		caseEvent.NotificationTime = time.Now().UTC()
-		caseEvent.IntervalMin = 10
-		caseEvent.State = enterpriserule.TimerEventStateDisabled
-
-		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(caseEvent.UserID()).
-			Return(nil, caseError)
-
-		wantOutputData := OutputData{
-			Result:     fmt.Errorf("finding timer event error userID=%v: %w", caseEvent.UserID(), caseError),
-			SavedEvent: nil,
+	t.Run("ng:find error", func(t *testing.T) {
+		cases := []struct {
+			name   string
+			userID string
+		}{
+			{"find error", "test"},
+			{"find nil", ""},
 		}
+		for _, c := range cases {
+			t.Run(c.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
 
-		mp := NewMockOutputPort(ctrl)
-		mp.EXPECT().Output(ac, wantOutputData)
+				ac := appcontext.TODO()
 
-		interactor := &Interactor{
-			repository: m,
+				var caseError error
+				if c.userID != "" {
+					caseError = errors.New("error")
+				}
+
+				m := NewMockRepository(ctrl)
+				m.EXPECT().FindTimerEvent(c.userID).
+					Return(nil, caseError)
+
+				wantOutputData := OutputData{
+					Result:     fmt.Errorf("finding timer event error userID=%v: %w", c.userID, caseError),
+					SavedEvent: nil,
+				}
+
+				mp := NewMockReplier(ctrl)
+				if c.userID != "" {
+					mp.EXPECT().SendMessage(ac, c.userID, ReplyFailure).Return(nil)
+				}
+
+				mo := NewMockOutputPort(ctrl)
+				mo.EXPECT().Output(ac, wantOutputData)
+
+				interactor := &Interactor{
+					repository: m,
+					replier:    mp,
+				}
+
+				caseInput := InputData{
+					UserID: c.userID,
+				}
+				interactor.SetEventOn(ac, caseInput, mo)
+			})
 		}
-
-		caseInput := InputData{
-			UserID: caseEvent.UserID(),
-		}
-		interactor.SetEventOn(ac, caseInput, mp)
-	})
-
-	t.Run("ng:find", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		ac := appcontext.TODO()
-
-		var caseError error
-		caseUserID := "test"
-
-		m := NewMockRepository(ctrl)
-		m.EXPECT().FindTimerEvent(caseUserID).
-			Return(nil, nil)
-
-		wantOutputData := OutputData{
-			Result:     fmt.Errorf("finding timer event error userID=%v: %w", caseUserID, caseError),
-			SavedEvent: nil,
-		}
-
-		mp := NewMockOutputPort(ctrl)
-		mp.EXPECT().Output(ac, wantOutputData)
-
-		interactor := &Interactor{
-			repository: m,
-		}
-
-		caseInput := InputData{
-			UserID: caseUserID,
-		}
-		interactor.SetEventOn(ac, caseInput, mp)
 	})
 
 	t.Run("ng:save", func(t *testing.T) {
@@ -174,16 +163,53 @@ func TestInteractor_SetEventOn(t *testing.T) {
 			SavedEvent: nil,
 		}
 
-		mp := NewMockOutputPort(ctrl)
-		mp.EXPECT().Output(ac, wantOutputData)
+		mp := NewMockReplier(ctrl)
+		mp.EXPECT().SendMessage(ac, caseEvent.UserID(), ReplyFailure)
+
+		mo := NewMockOutputPort(ctrl)
+		mo.EXPECT().Output(ac, wantOutputData)
 
 		interactor := &Interactor{
 			repository: m,
+			replier:    mp,
 		}
 
 		caseInput := InputData{
 			UserID: caseEvent.UserID(),
 		}
-		interactor.SetEventOn(ac, caseInput, mp)
+		interactor.SetEventOn(ac, caseInput, mo)
+	})
+
+	t.Run("ng:reply", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := appcontext.TODO()
+
+		caseUserID := "test"
+		caseError := errors.New("error")
+
+		mr := NewMockRepository(ctrl)
+		mr.EXPECT().FindTimerEvent(caseUserID).Return(nil, nil)
+
+		mp := NewMockReplier(ctrl)
+		mp.EXPECT().SendMessage(ac, caseUserID, ReplyFailure).Return(caseError)
+
+		wantOutputData := OutputData{
+			SavedEvent: nil,
+			Result:     fmt.Errorf("reply error userID=%v: %w", caseUserID, caseError),
+		}
+		mo := NewMockOutputPort(ctrl)
+		mo.EXPECT().Output(ac, wantOutputData)
+
+		interactor := &Interactor{
+			repository: mr,
+			replier:    mp,
+		}
+
+		caseInput := InputData{
+			UserID: caseUserID,
+		}
+		interactor.SetEventOn(ac, caseInput, mo)
 	})
 }

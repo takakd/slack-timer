@@ -62,7 +62,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(ac, caseInput.UserID, caseInput.Message).Return(nil)
+		n.EXPECT().SendMessage(ac, caseInput.UserID, caseInput.Message).Return(nil)
 
 		r.EXPECT().SaveTimerEvent(caseEvent).Return(caseEvent, nil)
 
@@ -77,7 +77,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("ng:already notified", func(t *testing.T) {
+	t.Run("ng:disabled event", func(t *testing.T) {
 		ac := appcontext.TODO()
 		caseInput := InputData{
 			UserID:  "test",
@@ -88,7 +88,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		require.NoError(t, err)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = time.Now()
-		caseEvent.State = enterpriserule.TimerEventStateWait
+		caseEvent.State = enterpriserule.TimerEventStateDisabled
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -145,7 +145,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(ac, caseInput.UserID, caseInput.Message).Return(caseError)
+		n.EXPECT().SendMessage(ac, caseInput.UserID, caseInput.Message).Return(caseError)
 
 		d.EXPECT().Get("notifyevent.OutputPort").Return(o)
 		d.EXPECT().Get("notifyevent.Repository").Return(r)
@@ -222,7 +222,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 
 		r.EXPECT().FindTimerEvent(caseInput.UserID).Return(caseEvent, nil)
 
-		n.EXPECT().Notify(ac, caseInput.UserID, caseInput.Message).Return(nil)
+		n.EXPECT().SendMessage(ac, caseInput.UserID, caseInput.Message).Return(nil)
 
 		r.EXPECT().SaveTimerEvent(caseEvent).Return(nil, caseError)
 

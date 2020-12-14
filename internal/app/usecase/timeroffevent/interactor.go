@@ -7,9 +7,17 @@ import (
 	"slacktimer/internal/app/util/di"
 )
 
+const (
+	// ReplySuccess is message to be replied on success.
+	ReplySuccess = "OK, suspended the notification."
+	// ReplyFailure is message to be replied on failure.
+	ReplyFailure = "Failed, check command syntax."
+)
+
 // Interactor implements timeroffevent.InputPort.
 type Interactor struct {
 	repository Repository
+	replier    Replier
 }
 
 var _ InputPort = (*Interactor)(nil)
@@ -18,6 +26,7 @@ var _ InputPort = (*Interactor)(nil)
 func NewInteractor() *Interactor {
 	return &Interactor{
 		repository: di.Get("timeroffevent.Repository").(Repository),
+		replier:    di.Get("timeroffevent.Replier").(Replier),
 	}
 }
 
@@ -26,6 +35,18 @@ func (s Interactor) SetEventOff(ac appcontext.AppContext, input InputData, prese
 	outputData := OutputData{}
 
 	present := func() {
+		if input.UserID != "" {
+			msg := ReplySuccess
+			if outputData.Result != nil {
+				msg = ReplyFailure
+			}
+
+			// Reply result.
+			if err := s.replier.SendMessage(ac, input.UserID, msg); err != nil {
+				outputData.Result = fmt.Errorf("reply error userID=%v: %w", input.UserID, err)
+			}
+		}
+
 		if presenter != nil {
 			presenter.Output(ac, outputData)
 		}
