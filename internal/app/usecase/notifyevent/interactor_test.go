@@ -77,7 +77,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("ng:already notified", func(t *testing.T) {
+	t.Run("ng:disabled event", func(t *testing.T) {
 		ac := appcontext.TODO()
 		caseInput := InputData{
 			UserID:  "test",
@@ -88,7 +88,7 @@ func TestInteractor_NotifyEvent(t *testing.T) {
 		require.NoError(t, err)
 		caseEvent.IntervalMin = 10
 		caseEvent.NotificationTime = time.Now()
-		caseEvent.State = enterpriserule.TimerEventStateWait
+		caseEvent.State = enterpriserule.TimerEventStateDisabled
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()

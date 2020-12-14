@@ -9,9 +9,9 @@ import (
 
 const (
 	// ReplySuccess is message to be replied on success.
-	ReplySuccess = "OK, suspend the notification."
+	ReplySuccess = "OK, suspended the notification."
 	// ReplyFailure is message to be replied on failure.
-	ReplyFailure = "Failed, Check command syntax."
+	ReplyFailure = "Failed, check command syntax."
 )
 
 // Interactor implements timeroffevent.InputPort.

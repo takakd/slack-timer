@@ -11,7 +11,7 @@ const (
 	// ReplySuccess is message to be replied on success.
 	ReplySuccess = "OK, start the notification."
 	// ReplyFailure is message to be replied on failure.
-	ReplyFailure = "Failed, Check command syntax."
+	ReplyFailure = "Failed, check command syntax."
 )
 
 // Interactor implements timeronevent.InputPort.
