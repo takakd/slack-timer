@@ -23,11 +23,6 @@ Simple periodically timer on Slack, sending a message to DM Channel.
 ## Features
 
 ![Video](website/video.gif?raw=true)
-<a target="_blank" rel="noopener noreferrer" href="website/video.gif?raw=true"><img src="website/video.gif?raw=true" alt="Video" style="width:730px;"></a>
-
-![Video](./website/video.gif?raw=true | width=40)
-![Video](/takakd/slack-timer/blob/readme/website/video.gif?raw=true | width=730)
-![Video](/takakd/slack-timer/blob/readme/website/video.gif | width=730)
 
 * Notify message on Slack by interval minutes. 
 * Set on and off a notification.
