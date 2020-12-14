@@ -22,7 +22,7 @@ Simple periodically timer on Slack, sending a message to DM Channel.
 
 ## Features
 
-![Video](website/video.gif | width=730)
+![Video](website/video.gif?raw=true)
 
 * Notify message on Slack by interval minutes. 
 * Set on and off a notification.
