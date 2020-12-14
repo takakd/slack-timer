@@ -30,6 +30,16 @@ func (s Controller) Handle(ac appcontext.AppContext, input HandleInput) *Respons
 	}
 
 	var resp *Response
+
+	if input.EventData.MessageEvent.isBotMessage() {
+		log.InfoWithContext(ac, "ignore bot message")
+		resp = &Response{
+			StatusCode: http.StatusOK,
+			Body:       "bot message",
+		}
+		return resp
+	}
+
 	if input.EventData.MessageEvent.isSetTimeEvent() {
 		rh := di.Get("settime.SaveEventHandler").(SaveEventHandler)
 		resp = rh.Handle(ac, input.EventData)

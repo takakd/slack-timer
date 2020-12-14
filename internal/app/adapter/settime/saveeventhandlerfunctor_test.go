@@ -33,8 +33,11 @@ func TestSaveEventHandlerFunctor_parseTs(t *testing.T) {
 			defer ctrl.Finish()
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
+			mp := NewSaveEventOutputReceivePresenter()
+
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
+			md.EXPECT().Get("settime.SaveEventOutputReceivePresenter").Return(mp)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -77,8 +80,11 @@ func TestSaveEventHandlerFunctor_parseSet(t *testing.T) {
 			defer ctrl.Finish()
 
 			mi := updatetimerevent.NewMockInputPort(ctrl)
+			mp := NewSaveEventOutputReceivePresenter()
+
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mi)
+			md.EXPECT().Get("settime.SaveEventOutputReceivePresenter").Return(mp)
 			di.SetDi(md)
 
 			caseData := EventCallbackData{
@@ -146,9 +152,11 @@ func TestSaveEventHandlerFunctor_Handle(t *testing.T) {
 			ac := appcontext.TODO()
 
 			mu := updatetimerevent.NewMockInputPort(ctrl)
+			mp := NewSaveEventOutputReceivePresenter()
 
 			md := di.NewMockDI(ctrl)
 			md.EXPECT().Get("updatetimerevent.InputPort").Return(mu)
+			md.EXPECT().Get("settime.SaveEventOutputReceivePresenter").Return(mp)
 			di.SetDi(md)
 
 			h := NewSaveEventHandlerFunctor()

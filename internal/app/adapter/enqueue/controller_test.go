@@ -23,7 +23,7 @@ func TestNewController(t *testing.T) {
 	di.SetDi(md)
 
 	h := NewController()
-	assert.Equal(t, mi, h.InputPort)
+	assert.Equal(t, mi, h.inputPort)
 }
 
 func TestController_Handle(t *testing.T) {

@@ -65,18 +65,33 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 		c = settime.NewOffEventHandlerFunctor()
 	case "settime.ControllerHandler":
 		c = settime.NewController()
-	case "updatetimerevent.InputPort":
-		c = updatetimerevent.NewInteractor()
-	case "updatetimerevent.Repository":
-		c = repository.NewDynamoDb()
+	case "settime.SaveEventOutputReceivePresenter":
+		c = settime.NewSaveEventOutputReceivePresenter()
 	case "settime.OnEventOutputReceivePresenter":
 		c = settime.NewOnEventOutputReceivePresenter()
 	case "settime.OffEventOutputReceivePresenter":
 		c = settime.NewOffEventOutputReceivePresenter()
+
+	case "updatetimerevent.InputPort":
+		c = updatetimerevent.NewInteractor()
+	case "updatetimerevent.Repository":
+		c = repository.NewDynamoDb()
+	case "updatetimerevent.Replier":
+		c = slackhandler.NewSlackHandler()
+
 	case "timeroffevent.InputPort":
 		c = timeroffevent.NewInteractor()
+	case "timeroffevent.Repository":
+		c = repository.NewDynamoDb()
+	case "timeroffevent.Replier":
+		c = slackhandler.NewSlackHandler()
+
 	case "timeronevent.InputPort":
 		c = timeronevent.NewInteractor()
+	case "timeronevent.Repository":
+		c = repository.NewDynamoDb()
+	case "timeronevent.Replier":
+		c = slackhandler.NewSlackHandler()
 	}
 	return c, c != nil
 }

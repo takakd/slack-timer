@@ -19,6 +19,37 @@ func TestNewController(t *testing.T) {
 }
 
 func TestController_Handle(t *testing.T) {
+	t.Run("ok:bot", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := appcontext.TODO()
+
+		caseInput := HandleInput{
+			EventData: EventCallbackData{
+				MessageEvent: MessageEvent{
+					Type:        "message",
+					ChannelType: "im",
+					Text:        "OK, start the notification.",
+					BotID:       "ABC1234567",
+				},
+			},
+		}
+
+		wantResp := &Response{
+			StatusCode: http.StatusOK,
+			Body:       "bot message",
+		}
+
+		ml := log.NewMockLogger(ctrl)
+		ml.EXPECT().InfoWithContext(ac, "ignore bot message")
+		log.SetDefaultLogger(ml)
+
+		h := NewController()
+		got := h.Handle(ac, caseInput)
+		assert.Equal(t, wantResp, got)
+	})
+
 	t.Run("ok:verification", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()

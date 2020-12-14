@@ -65,6 +65,8 @@ func getSetTimerConcrete(name string) (interface{}, bool) {
 		c = settime.NewOffEventHandlerFunctor()
 	case "settime.ControllerHandler":
 		c = settime.NewController()
+	case "settime.SaveEventOutputReceivePresenter":
+		c = settime.NewSaveEventOutputReceivePresenter()
 	case "settime.OnEventOutputReceivePresenter":
 		c = settime.NewOnEventOutputReceivePresenter()
 	case "settime.OffEventOutputReceivePresenter":

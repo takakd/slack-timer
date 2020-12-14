@@ -10,7 +10,7 @@ import (
 
 // Controller implements ControllerHandler.
 type Controller struct {
-	InputPort enqueueevent.InputPort
+	inputPort enqueueevent.InputPort
 }
 
 var _ ControllerHandler = (*Controller)(nil)
@@ -18,8 +18,7 @@ var _ ControllerHandler = (*Controller)(nil)
 // NewController creates new struct.
 func NewController() *Controller {
 	h := &Controller{
-		InputPort: di.Get("enqueueevent.InputPort").(enqueueevent.InputPort),
-		// TODO: presenter get from di
+		inputPort: di.Get("enqueueevent.InputPort").(enqueueevent.InputPort),
 	}
 	return h
 }
@@ -31,6 +30,6 @@ func (e Controller) Handle(ac appcontext.AppContext, input HandleInput) {
 	}
 
 	log.InfoWithContext(ac, "call inputport", input)
-	e.InputPort.EnqueueEvent(ac, data)
+	e.inputPort.EnqueueEvent(ac, data)
 	log.InfoWithContext(ac, "return from inputport")
 }
