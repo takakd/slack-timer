@@ -340,7 +340,7 @@ https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 ## Contributing
 
-This is just [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) project, but welcome to issues and reviews. Don't hesitate to create issues and PR.
+This is just [Kata](https://en.wikipedia.org/wiki/Kata_(programming)) project, but issues and reviews are welcome. Don't hesitate to create issues and PR.
 
 ## License
 
